@@ -1,18 +1,100 @@
 @import "tailwindcss";
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-:root { color-scheme: light; }
-body { @apply bg-white text-slate-800 antialiased; }
+:root { 
+  color-scheme: light; 
+}
 
-.btn { @apply inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium shadow-sm transition border border-slate-200 bg-white hover:bg-slate-50; }
-.btn-primary { @apply bg-gray-500 text-white border-transparent hover:bg-gray-600; }
-.card { @apply rounded-2xl border border-slate-200 bg-white shadow-sm; }
-.input { @apply w-full rounded-xl border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-300; }
+body { 
+  @apply bg-gradient-to-br from-neutral-50 via-white to-primary-50/30 text-neutral-800 antialiased min-h-screen;
+}
+
+/* Button Styles */
+.btn { 
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium 
+  shadow-soft transition-all duration-300 border border-neutral-200 bg-white hover:bg-neutral-50 
+  hover:shadow-medium hover:scale-[1.02] active:scale-[0.98];
+}
+
+.btn-primary { 
+  @apply bg-gradient-to-r from-primary-500 to-primary-600 text-white border-transparent 
+  hover:from-primary-600 hover:to-primary-700 shadow-medium hover:shadow-large;
+}
+
+.btn-accent { 
+  @apply bg-gradient-to-r from-accent-500 to-accent-600 text-white border-transparent 
+  hover:from-accent-600 hover:to-accent-700 shadow-medium hover:shadow-large;
+}
+
+.btn-outline {
+  @apply bg-white text-primary-600 border-primary-300 hover:bg-primary-50 hover:border-primary-400;
+}
+
+/* Card Styles */
+.card { 
+  @apply rounded-2xl border border-neutral-200 bg-white shadow-soft 
+  transition-all duration-300 hover:shadow-medium;
+}
+
+.card-elevated {
+  @apply card shadow-medium hover:shadow-large;
+}
+
+/* Input Styles */
+.input { 
+  @apply w-full rounded-xl border border-neutral-300 px-4 py-2.5 
+  focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:border-primary-400 
+  transition-all duration-200 bg-white placeholder:text-neutral-400;
+}
+
+/* Badge Styles */
+.badge {
+  @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
+}
+
+/* Animation Classes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* Gradient Text */
+.gradient-text {
+  @apply bg-gradient-to-r from-primary-600 to-accent-500 bg-clip-text text-transparent;
+}
+
+/* Loading Spinner */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  @apply inline-block w-5 h-5 border-2 border-neutral-300 border-t-primary-600 rounded-full;
+  animation: spin 0.6s linear infinite;
+}

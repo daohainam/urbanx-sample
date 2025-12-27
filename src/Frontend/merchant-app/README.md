@@ -1,73 +1,151 @@
-# React + TypeScript + Vite
+# UrbanX Merchant Portal
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern merchant management portal built with React, TypeScript, Vite, and TailwindCSS.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Dashboard**: Overview of merchant statistics and quick actions
+- **Categories Management**: Create, edit, and delete product categories
+- **Products Management**: Manage product inventory with pricing and stock
+- **Orders Management**: View and manage customer orders
+- **OAuth2 Authentication**: Secure authentication using OIDC/OAuth2
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **React 19** - UI library
+- **TypeScript** - Type-safe development
+- **Vite** - Fast build tool and dev server
+- **TailwindCSS 4** - Utility-first CSS framework
+- **React Router** - Client-side routing
+- **OIDC Client** - OAuth2/OIDC authentication
+- **Lucide React** - Icon library
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Prerequisites
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- Node.js 18+ 
+- npm or yarn
+- Backend services running (see main repository README)
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Installation
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1. Copy the environment variables:
+```bash
+cp .env.example .env
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+2. Update the `.env` file with your configuration:
+```env
+VITE_API_BASE_URL=http://localhost:5000
+VITE_IDENTITY_URL=http://localhost:5005
 ```
+
+3. Install dependencies:
+```bash
+npm install
+```
+
+4. Start the development server:
+```bash
+npm run dev
+```
+
+The merchant portal will be available at `http://localhost:5174`
+
+### Build for Production
+
+```bash
+npm run build
+```
+
+The production build will be in the `dist` directory.
+
+### Preview Production Build
+
+```bash
+npm run preview
+```
+
+## Authentication
+
+The merchant portal uses OAuth2/OIDC for authentication with the following configuration:
+
+- **Client ID**: `urbanx-merchant-spa`
+- **Scopes**: `openid profile email merchant.manage`
+- **Grant Type**: Authorization Code with PKCE
+- **Redirect URI**: `http://localhost:5174/callback`
+
+### Test Credentials
+
+Username: `merchant@test.com`
+Password: `Password123!`
+
+## Project Structure
+
+```
+merchant-app/
+├── src/
+│   ├── components/       # Reusable UI components
+│   │   └── Navigation.tsx
+│   ├── layouts/          # Layout components
+│   │   └── Layout.tsx
+│   ├── lib/              # Utilities and configurations
+│   │   ├── api.ts        # API client
+│   │   └── auth-config.ts
+│   ├── pages/            # Page components
+│   │   ├── CallbackPage.tsx
+│   │   ├── CategoriesPage.tsx
+│   │   ├── DashboardPage.tsx
+│   │   ├── OrdersPage.tsx
+│   │   └── ProductsPage.tsx
+│   ├── types/            # TypeScript type definitions
+│   │   └── index.ts
+│   ├── App.tsx           # Main app component
+│   ├── main.tsx          # Entry point
+│   └── index.css         # Global styles
+├── public/               # Static assets
+├── .env.example          # Environment variables template
+├── package.json
+├── tailwind.config.js    # TailwindCSS configuration
+├── tsconfig.json         # TypeScript configuration
+└── vite.config.ts        # Vite configuration
+```
+
+## API Integration
+
+The merchant portal integrates with the following backend endpoints:
+
+### Categories
+- `GET /api/merchants/{merchantId}/categories` - List all categories
+- `POST /api/merchants/{merchantId}/categories` - Create category
+- `PUT /api/merchants/{merchantId}/categories/{id}` - Update category
+- `DELETE /api/merchants/{merchantId}/categories/{id}` - Delete category
+
+### Products
+- `GET /api/merchants/{merchantId}/products` - List all products
+- `POST /api/merchants/{merchantId}/products` - Create product
+- `PUT /api/merchants/{merchantId}/products/{id}` - Update product
+- `DELETE /api/merchants/{merchantId}/products/{id}` - Delete product
+
+### Orders
+- `GET /api/merchants/{merchantId}/orders` - List merchant orders
+- `GET /api/orders/{orderId}` - Get order details
+- `PUT /api/orders/{orderId}/status` - Update order status
+
+## Development
+
+### Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
+
+### Code Style
+
+The project uses ESLint with React and TypeScript plugins. Run `npm run lint` to check for issues.
+
+## License
+
+MIT

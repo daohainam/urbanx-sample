@@ -19,8 +19,7 @@ public class CatalogServiceIntegrationTests
         var merchantId = Guid.NewGuid();
         var products = new List<Product>
         {
-            new Product
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Name = "Gaming Laptop",
                 Description = "High performance laptop",
@@ -32,8 +31,7 @@ public class CatalogServiceIntegrationTests
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             },
-            new Product
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Name = "Wireless Mouse",
                 Description = "Ergonomic mouse",
@@ -45,8 +43,7 @@ public class CatalogServiceIntegrationTests
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             },
-            new Product
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Name = "Inactive Product",
                 Price = 100.00m,
@@ -84,8 +81,7 @@ public class CatalogServiceIntegrationTests
         var merchantId = Guid.NewGuid();
         var products = new List<Product>
         {
-            new Product
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Name = "Gaming Laptop",
                 Price = 1299.99m,
@@ -95,8 +91,7 @@ public class CatalogServiceIntegrationTests
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             },
-            new Product
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Name = "Office Laptop",
                 Price = 899.99m,
@@ -106,8 +101,7 @@ public class CatalogServiceIntegrationTests
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             },
-            new Product
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Name = "Wireless Mouse",
                 Price = 29.99m,
@@ -129,7 +123,7 @@ public class CatalogServiceIntegrationTests
 
         // Assert
         Assert.Equal(2, searchResults.Count);
-        Assert.All(searchResults, p => Assert.True(p.Name.Contains("Laptop")));
+        Assert.All(searchResults, p => Assert.Contains("Laptop", p.Name));
     }
 
     [Fact]
@@ -145,8 +139,7 @@ public class CatalogServiceIntegrationTests
         var merchantId = Guid.NewGuid();
         var products = new List<Product>
         {
-            new Product
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Name = "Laptop",
                 Price = 1299.99m,
@@ -157,8 +150,7 @@ public class CatalogServiceIntegrationTests
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             },
-            new Product
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Name = "Office Chair",
                 Price = 199.99m,
@@ -180,7 +172,7 @@ public class CatalogServiceIntegrationTests
             .ToListAsync();
 
         // Assert
-        Assert.Equal(1, electronicsProducts.Count);
+        Assert.Single(electronicsProducts);
         Assert.Equal("Laptop", electronicsProducts.First().Name);
     }
 
@@ -199,8 +191,7 @@ public class CatalogServiceIntegrationTests
         
         var products = new List<Product>
         {
-            new Product
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Name = "Product 1",
                 Price = 10.00m,
@@ -210,8 +201,7 @@ public class CatalogServiceIntegrationTests
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             },
-            new Product
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Name = "Product 2",
                 Price = 20.00m,
@@ -221,8 +211,7 @@ public class CatalogServiceIntegrationTests
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             },
-            new Product
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Name = "Product 3",
                 Price = 30.00m,

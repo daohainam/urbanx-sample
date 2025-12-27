@@ -24,15 +24,14 @@ builder.Services.AddIdentityServer(options =>
 })
 .AddInMemoryApiScopes(new ApiScope[]
 {
-    new ApiScope("catalog.read", "Read access to catalog"),
-    new ApiScope("orders.read", "Read access to orders"),
-    new ApiScope("orders.write", "Write access to orders"),
-    new ApiScope("merchant.manage", "Manage merchant resources")
+    new("catalog.read", "Read access to catalog"),
+    new("orders.read", "Read access to orders"),
+    new("orders.write", "Write access to orders"),
+    new("merchant.manage", "Manage merchant resources")
 })
 .AddInMemoryClients(new Client[]
 {
-    new Client
-    {
+    new() {
         ClientId = "urbanx-spa",
         ClientName = "UrbanX SPA",
         AllowedGrantTypes = GrantTypes.Code,
@@ -44,8 +43,7 @@ builder.Services.AddIdentityServer(options =>
         AllowedCorsOrigins = { "http://localhost:5173", "https://localhost:5173" },
         RequireConsent = false
     },
-    new Client
-    {
+    new() {
         ClientId = "urbanx-merchant-spa",
         ClientName = "UrbanX Merchant Portal",
         AllowedGrantTypes = GrantTypes.Code,
@@ -60,8 +58,7 @@ builder.Services.AddIdentityServer(options =>
 })
 .AddTestUsers(new List<Duende.IdentityServer.Test.TestUser>
 {
-    new Duende.IdentityServer.Test.TestUser
-    {
+    new() {
         SubjectId = "1",
         Username = "customer@test.com",
         Password = "Password123!",
@@ -72,8 +69,7 @@ builder.Services.AddIdentityServer(options =>
             new System.Security.Claims.Claim("role", "customer")
         }
     },
-    new Duende.IdentityServer.Test.TestUser
-    {
+    new() {
         SubjectId = "2",
         Username = "merchant@test.com",
         Password = "Password123!",

@@ -112,8 +112,7 @@ public class OrderServiceIntegrationTests
         
         var orders = new List<Models.Order>
         {
-            new Models.Order
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 CustomerId = customerId,
                 OrderNumber = "ORD-001",
@@ -123,8 +122,7 @@ public class OrderServiceIntegrationTests
                 CreatedAt = DateTime.UtcNow.AddDays(-2),
                 UpdatedAt = DateTime.UtcNow.AddDays(-2)
             },
-            new Models.Order
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 CustomerId = customerId,
                 OrderNumber = "ORD-002",

@@ -17,7 +17,7 @@ public class OrderModelsTests
         };
 
         // Assert
-        cart.Assert.NotNull(Items);
+        Assert.NotNull(cart.Items);
         Assert.Empty(cart.Items);
     }
 
@@ -59,9 +59,9 @@ public class OrderModelsTests
         };
 
         // Assert
-        order.Assert.NotNull(Items);
+        Assert.NotNull(order.Items);
         Assert.Empty(order.Items);
-        order.Assert.NotNull(StatusHistory);
+        Assert.NotNull(order.StatusHistory);
         Assert.Empty(order.StatusHistory);
     }
 
@@ -150,7 +150,7 @@ public class OrderModelsTests
         order.Items.Add(item);
 
         // Assert
-        Assert.Equal(1, order.Items.Count);
+        Assert.Single(order.Items);
         Assert.Equal(item, order.Items.First());
     }
 
@@ -182,7 +182,7 @@ public class OrderModelsTests
         order.StatusHistory.Add(statusHistory);
 
         // Assert
-        Assert.Equal(1, order.StatusHistory.Count);
+        Assert.Single(order.StatusHistory);
         Assert.Equal(OrderStatus.Confirmed, order.StatusHistory.First().Status);
     }
 }

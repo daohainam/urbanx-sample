@@ -51,8 +51,7 @@ public class MerchantServiceIntegrationTests
         
         var products = new List<MerchantProduct>
         {
-            new MerchantProduct
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 MerchantId = merchantId,
                 Name = "Product 1",
@@ -63,8 +62,7 @@ public class MerchantServiceIntegrationTests
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             },
-            new MerchantProduct
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 MerchantId = merchantId,
                 Name = "Product 2",
@@ -137,8 +135,7 @@ public class MerchantServiceIntegrationTests
         
         var categories = new List<MerchantCategory>
         {
-            new MerchantCategory
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 MerchantId = merchantId,
                 Name = "Electronics",
@@ -147,8 +144,7 @@ public class MerchantServiceIntegrationTests
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             },
-            new MerchantCategory
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 MerchantId = merchantId,
                 Name = "Clothing",

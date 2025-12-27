@@ -1,4 +1,3 @@
-using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using UrbanX.Services.Catalog.Data;
 using UrbanX.Services.Catalog.Models;
@@ -20,8 +19,8 @@ public class CatalogDbContextTests
         var entityType = context.Model.FindEntityType(typeof(Product));
 
         // Assert
-        entityType.Should().NotBeNull();
-        entityType!.FindPrimaryKey()!.Properties.Should().Contain(p => p.Name == "Id");
+        Assert.NotNull(entityType);
+        Assert.Contains(entityType!.FindPrimaryKey()!.Properties, p => p.Name == "Id");
     }
 
     [Fact]
@@ -55,9 +54,9 @@ public class CatalogDbContextTests
         using (var context = new CatalogDbContext(options))
         {
             var savedProduct = await context.Products.FindAsync(product.Id);
-            savedProduct.Should().NotBeNull();
-            savedProduct!.Name.Should().Be("Test Product");
-            savedProduct.Price.Should().Be(99.99m);
+            Assert.NotNull(savedProduct);
+            Assert.Equal("Test Product", savedProduct!.Name);
+            Assert.Equal(99.99m, savedProduct.Price);
         }
     }
 
@@ -87,7 +86,7 @@ public class CatalogDbContextTests
         await context.SaveChangesAsync();
 
         var savedProduct = await context.Products.FindAsync(product.Id);
-        savedProduct.Should().NotBeNull();
-        savedProduct!.Name.Should().Be("Test Product");
+        Assert.NotNull(savedProduct);
+        Assert.Equal("Test Product", savedProduct!.Name);
     }
 }

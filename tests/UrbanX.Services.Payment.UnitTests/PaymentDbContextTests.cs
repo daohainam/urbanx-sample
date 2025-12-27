@@ -1,4 +1,3 @@
-using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using UrbanX.Services.Payment.Data;
 using UrbanX.Services.Payment.Models;
@@ -20,8 +19,8 @@ public class PaymentDbContextTests
         var entityType = context.Model.FindEntityType(typeof(Models.Payment));
 
         // Assert
-        entityType.Should().NotBeNull();
-        entityType!.FindPrimaryKey()!.Properties.Should().Contain(p => p.Name == "Id");
+        Assert.NotNull(entityType);
+        Assert.Contains(entityType!.FindPrimaryKey()!.Properties, p => p.Name == "Id");
     }
 
     [Fact]
@@ -55,10 +54,10 @@ public class PaymentDbContextTests
         using (var context = new PaymentDbContext(options))
         {
             var savedPayment = await context.Payments.FindAsync(payment.Id);
-            savedPayment.Should().NotBeNull();
-            savedPayment!.Amount.Should().Be(99.99m);
-            savedPayment.Status.Should().Be(PaymentStatus.Completed);
-            savedPayment.TransactionId.Should().Be("TXN-123");
+            Assert.NotNull(savedPayment);
+            Assert.Equal(99.99m, savedPayment!.Amount);
+            Assert.Equal(PaymentStatus.Completed, savedPayment.Status);
+            Assert.Equal("TXN-123", savedPayment.TransactionId);
         }
     }
 
@@ -94,8 +93,8 @@ public class PaymentDbContextTests
         {
             var foundPayment = await context.Payments
                 .FirstOrDefaultAsync(p => p.OrderId == orderId);
-            foundPayment.Should().NotBeNull();
-            foundPayment!.OrderId.Should().Be(orderId);
+            Assert.NotNull(foundPayment);
+            Assert.Equal(orderId, foundPayment!.OrderId);
         }
     }
 
@@ -142,7 +141,7 @@ public class PaymentDbContextTests
         using (var context = new PaymentDbContext(options))
         {
             var allPayments = await context.Payments.ToListAsync();
-            allPayments.Should().HaveCount(2);
+            Assert.Equal(2, allPayments.Count);
         }
     }
 
@@ -184,7 +183,7 @@ public class PaymentDbContextTests
         using (var context = new PaymentDbContext(options))
         {
             var updatedPayment = await context.Payments.FindAsync(payment.Id);
-            updatedPayment!.Status.Should().Be(PaymentStatus.Completed);
+            Assert.Equal(PaymentStatus.Completed, updatedPayment!.Status);
         }
     }
 }

@@ -1,4 +1,3 @@
-using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using UrbanX.Services.Order.Data;
 using UrbanX.Services.Order.Models;
@@ -21,10 +20,10 @@ public class OrderDbContextTests
         var orderEntityType = context.Model.FindEntityType(typeof(Models.Order));
 
         // Assert
-        cartEntityType.Should().NotBeNull();
-        orderEntityType.Should().NotBeNull();
-        cartEntityType!.FindPrimaryKey()!.Properties.Should().Contain(p => p.Name == "Id");
-        orderEntityType!.FindPrimaryKey()!.Properties.Should().Contain(p => p.Name == "Id");
+        Assert.NotNull(cartEntityType);
+        Assert.NotNull(orderEntityType);
+        Assert.Contains(cartEntityType!.FindPrimaryKey()!.Properties, p => p.Name == "Id");
+        Assert.Contains(orderEntityType!.FindPrimaryKey()!.Properties, p => p.Name == "Id");
     }
 
     [Fact]
@@ -54,8 +53,8 @@ public class OrderDbContextTests
         using (var context = new OrderDbContext(options))
         {
             var savedCart = await context.Carts.FindAsync(cart.Id);
-            savedCart.Should().NotBeNull();
-            savedCart!.CustomerId.Should().Be(cart.CustomerId);
+            Assert.NotNull(savedCart);
+            Assert.Equal(cart.CustomerId, savedCart!.CustomerId);
         }
     }
 
@@ -101,9 +100,9 @@ public class OrderDbContextTests
             var savedCart = await context.Carts
                 .Include(c => c.Items)
                 .FirstOrDefaultAsync(c => c.Id == cart.Id);
-            savedCart.Should().NotBeNull();
-            savedCart!.Items.Should().HaveCount(1);
-            savedCart.Items.First().ProductName.Should().Be("Test Product");
+            Assert.NotNull(savedCart);
+            Assert.Equal(1, savedCart!.Items.Count);
+            Assert.Equal("Test Product", savedCart.Items.First().ProductName);
         }
     }
 
@@ -138,9 +137,9 @@ public class OrderDbContextTests
         using (var context = new OrderDbContext(options))
         {
             var savedOrder = await context.Orders.FindAsync(order.Id);
-            savedOrder.Should().NotBeNull();
-            savedOrder!.OrderNumber.Should().Be("ORD-001");
-            savedOrder.Status.Should().Be(OrderStatus.Pending);
+            Assert.NotNull(savedOrder);
+            Assert.Equal("ORD-001", savedOrder!.OrderNumber);
+            Assert.Equal(OrderStatus.Pending, savedOrder.Status);
         }
     }
 
@@ -200,11 +199,11 @@ public class OrderDbContextTests
                 .Include(o => o.Items)
                 .Include(o => o.StatusHistory)
                 .FirstOrDefaultAsync(o => o.Id == order.Id);
-            savedOrder.Should().NotBeNull();
-            savedOrder!.Items.Should().HaveCount(1);
-            savedOrder.Items.First().ProductName.Should().Be("Product A");
-            savedOrder.StatusHistory.Should().HaveCount(1);
-            savedOrder.StatusHistory.First().Status.Should().Be(OrderStatus.Pending);
+            Assert.NotNull(savedOrder);
+            Assert.Equal(1, savedOrder!.Items.Count);
+            Assert.Equal("Product A", savedOrder.Items.First().ProductName);
+            Assert.Equal(1, savedOrder.StatusHistory.Count);
+            Assert.Equal(OrderStatus.Pending, savedOrder.StatusHistory.First().Status);
         }
     }
 
@@ -256,8 +255,8 @@ public class OrderDbContextTests
         {
             var deletedCart = await context.Carts.FindAsync(cart.Id);
             var deletedItem = await context.CartItems.FindAsync(cartItem.Id);
-            deletedCart.Should().BeNull();
-            deletedItem.Should().BeNull();
+            Assert.Null(deletedCart);
+            Assert.Null(deletedItem);
         }
     }
 }

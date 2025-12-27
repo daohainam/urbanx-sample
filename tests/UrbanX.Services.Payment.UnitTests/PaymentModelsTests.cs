@@ -1,4 +1,3 @@
-using FluentAssertions;
 using UrbanX.Services.Payment.Models;
 
 namespace UrbanX.Services.Payment.UnitTests;
@@ -21,10 +20,10 @@ public class PaymentModelsTests
         };
 
         // Assert
-        payment.Should().NotBeNull();
-        payment.Amount.Should().Be(99.99m);
-        payment.Status.Should().Be(PaymentStatus.Pending);
-        payment.Method.Should().Be(PaymentMethod.CreditCard);
+        Assert.NotNull(payment);
+        Assert.Equal(99.99m, payment.Amount);
+        Assert.Equal(PaymentStatus.Pending, payment.Status);
+        Assert.Equal(PaymentMethod.CreditCard, payment.Method);
     }
 
     [Fact]
@@ -44,7 +43,7 @@ public class PaymentModelsTests
         };
 
         // Assert
-        payment.TransactionId.Should().BeNull();
+        Assert.Null(payment.TransactionId);
     }
 
     [Fact]
@@ -64,7 +63,7 @@ public class PaymentModelsTests
         };
 
         // Assert
-        payment.TransactionId.Should().Be("TXN-12345");
+        Assert.Equal("TXN-12345", payment.TransactionId);
     }
 
     [Theory]
@@ -76,7 +75,7 @@ public class PaymentModelsTests
     public void PaymentStatus_ShouldHaveAllDefinedValues(PaymentStatus status)
     {
         // Assert
-        Enum.IsDefined(typeof(PaymentStatus), status).Should().BeTrue();
+        Assert.True(Enum.IsDefined(typeof(PaymentStatus), status));
     }
 
     [Theory]
@@ -87,7 +86,7 @@ public class PaymentModelsTests
     public void PaymentMethod_ShouldHaveAllDefinedValues(PaymentMethod method)
     {
         // Assert
-        Enum.IsDefined(typeof(PaymentMethod), method).Should().BeTrue();
+        Assert.True(Enum.IsDefined(typeof(PaymentMethod), method));
     }
 
     [Fact]
@@ -103,8 +102,9 @@ public class PaymentModelsTests
         };
 
         // Assert
-        payments.Should().HaveCount(4);
-        payments.Select(p => p.Method).Should().OnlyHaveUniqueItems();
+        Assert.Equal(4, payments.Length);
+        var methods = payments.Select(p => p.Method).ToList();
+        Assert.Equal(methods.Count, methods.Distinct().Count());
     }
 
     [Fact]
@@ -121,7 +121,8 @@ public class PaymentModelsTests
         };
 
         // Assert
-        payments.Should().HaveCount(5);
-        payments.Select(p => p.Status).Should().OnlyHaveUniqueItems();
+        Assert.Equal(5, payments.Length);
+        var statuses = payments.Select(p => p.Status).ToList();
+        Assert.Equal(statuses.Count, statuses.Distinct().Count());
     }
 }

@@ -1,4 +1,3 @@
-using FluentAssertions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,8 +18,8 @@ public class ExtensionsTests
         var app = builder.Build();
 
         // Assert
-        app.Should().NotBeNull();
-        app.Services.Should().NotBeNull();
+        Assert.NotNull(app);
+        Assert.NotNull(app.Services);
     }
 
     [Fact]
@@ -34,8 +33,8 @@ public class ExtensionsTests
         var app = builder.Build();
 
         // Assert
-        app.Services.GetService<Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckService>()
-            .Should().NotBeNull();
+        var healthCheckService = app.Services.GetService<Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckService>();
+        Assert.NotNull(healthCheckService);
     }
 
     [Fact]
@@ -51,7 +50,7 @@ public class ExtensionsTests
         app.MapDefaultEndpoints();
 
         // Assert
-        app.Should().NotBeNull();
+        Assert.NotNull(app);
         // In a real integration test, we would verify the endpoints are mapped
     }
 
@@ -66,7 +65,7 @@ public class ExtensionsTests
         var app = builder.Build();
 
         // Assert
-        app.Should().NotBeNull();
+        Assert.NotNull(app);
         // OpenTelemetry services should be configured
     }
 }

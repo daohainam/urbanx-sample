@@ -1,4 +1,3 @@
-using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using UrbanX.Services.Payment.Data;
 using UrbanX.Services.Payment.Models;
@@ -37,9 +36,9 @@ public class PaymentServiceIntegrationTests
 
         // Assert
         var savedPayment = await context.Payments.FindAsync(payment.Id);
-        savedPayment.Should().NotBeNull();
-        savedPayment!.Status.Should().Be(PaymentStatus.Completed);
-        savedPayment.TransactionId.Should().NotBeNullOrEmpty();
+        Assert.NotNull(savedPayment);
+        Assert.Equal(PaymentStatus.Completed, savedPayment.Status);
+        Assert.False(string.IsNullOrEmpty(savedPayment.TransactionId));
     }
 
     [Fact]
@@ -73,9 +72,9 @@ public class PaymentServiceIntegrationTests
             .FirstOrDefaultAsync(p => p.OrderId == orderId);
 
         // Assert
-        foundPayment.Should().NotBeNull();
-        foundPayment!.OrderId.Should().Be(orderId);
-        foundPayment.Status.Should().Be(PaymentStatus.Completed);
+        Assert.NotNull(foundPayment);
+        Assert.Equal(orderId, foundPayment!.OrderId);
+        Assert.Equal(PaymentStatus.Completed, foundPayment.Status);
     }
 
     [Fact]
@@ -108,7 +107,7 @@ public class PaymentServiceIntegrationTests
 
         // Assert
         var savedPayment = await context.Payments.FindAsync(payment.Id);
-        savedPayment!.Status.Should().Be(PaymentStatus.Failed);
+        Assert.Equal(PaymentStatus.Failed, savedPayment!.Status);
     }
 
     [Fact]
@@ -161,8 +160,9 @@ public class PaymentServiceIntegrationTests
 
         // Assert
         var allPayments = await context.Payments.ToListAsync();
-        allPayments.Should().HaveCount(3);
-        allPayments.Select(p => p.Method).Should().OnlyHaveUniqueItems();
+        Assert.Equal(3, allPayments.Count);
+        var methods = allPayments.Select(p => p.Method).ToList();
+        Assert.Equal(methods.Count, methods.Distinct().Count());
     }
 
     [Fact]
@@ -197,6 +197,6 @@ public class PaymentServiceIntegrationTests
 
         // Assert
         var refundedPayment = await context.Payments.FindAsync(payment.Id);
-        refundedPayment!.Status.Should().Be(PaymentStatus.Refunded);
+        Assert.Equal(PaymentStatus.Refunded, refundedPayment!.Status);
     }
 }

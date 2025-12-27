@@ -1,4 +1,3 @@
-using FluentAssertions;
 using UrbanX.Services.Catalog.Models;
 
 namespace UrbanX.Services.Catalog.UnitTests;
@@ -22,11 +21,11 @@ public class ProductModelTests
         };
 
         // Assert
-        product.Should().NotBeNull();
-        product.Name.Should().Be("Test Product");
-        product.Price.Should().Be(99.99m);
-        product.StockQuantity.Should().Be(10);
-        product.IsActive.Should().BeTrue();
+        Assert.NotNull(product);
+        Assert.Equal("Test Product", product.Name);
+        Assert.Equal(99.99m, product.Price);
+        Assert.Equal(10, product.StockQuantity);
+        Assert.True(product.IsActive);
     }
 
     [Fact]
@@ -49,9 +48,9 @@ public class ProductModelTests
         };
 
         // Assert
-        product.Description.Should().Be("Test Description");
-        product.ImageUrl.Should().Be("https://example.com/image.jpg");
-        product.Category.Should().Be("Electronics");
+        Assert.Equal("Test Description", product.Description);
+        Assert.Equal("https://example.com/image.jpg", product.ImageUrl);
+        Assert.Equal("Electronics", product.Category);
     }
 
     [Fact]
@@ -74,9 +73,9 @@ public class ProductModelTests
         };
 
         // Assert
-        product.Description.Should().BeNull();
-        product.ImageUrl.Should().BeNull();
-        product.Category.Should().BeNull();
-        product.IsActive.Should().BeFalse();
+        Assert.Null(product.Description);
+        Assert.Null(product.ImageUrl);
+        Assert.Null(product.Category);
+        Assert.False(product.IsActive);
     }
 }

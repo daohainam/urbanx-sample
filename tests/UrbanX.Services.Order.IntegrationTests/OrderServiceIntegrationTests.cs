@@ -1,4 +1,3 @@
-using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using UrbanX.Services.Order.Data;
 using UrbanX.Services.Order.Models;
@@ -47,9 +46,9 @@ public class OrderServiceIntegrationTests
         var savedCart = await context.Carts
             .Include(c => c.Items)
             .FirstOrDefaultAsync(c => c.CustomerId == customerId);
-        savedCart.Should().NotBeNull();
-        savedCart!.Items.Should().HaveCount(1);
-        savedCart.Items.First().Quantity.Should().Be(2);
+        Assert.NotNull(savedCart);
+        Assert.Equal(1, savedCart!.Items.Count);
+        Assert.Equal(2, savedCart.Items.First().Quantity);
     }
 
     [Fact]
@@ -95,9 +94,9 @@ public class OrderServiceIntegrationTests
         var savedOrder = await context.Orders
             .Include(o => o.Items)
             .FirstOrDefaultAsync(o => o.Id == order.Id);
-        savedOrder.Should().NotBeNull();
-        savedOrder!.Items.Should().HaveCount(1);
-        savedOrder.TotalAmount.Should().Be(100.00m);
+        Assert.NotNull(savedOrder);
+        Assert.Equal(1, savedOrder!.Items.Count);
+        Assert.Equal(100.00m, savedOrder.TotalAmount);
     }
 
     [Fact]
@@ -147,7 +146,7 @@ public class OrderServiceIntegrationTests
             .ToListAsync();
 
         // Assert
-        customerOrders.Should().HaveCount(2);
-        customerOrders.First().OrderNumber.Should().Be("ORD-002");
+        Assert.Equal(2, customerOrders.Count);
+        Assert.Equal("ORD-002", customerOrders.First().OrderNumber);
     }
 }

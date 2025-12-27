@@ -1,4 +1,3 @@
-using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using UrbanX.Services.Merchant.Data;
 using UrbanX.Services.Merchant.Models;
@@ -22,9 +21,9 @@ public class MerchantDbContextTests
         var categoryEntityType = context.Model.FindEntityType(typeof(MerchantCategory));
 
         // Assert
-        merchantEntityType.Should().NotBeNull();
-        productEntityType.Should().NotBeNull();
-        categoryEntityType.Should().NotBeNull();
+        Assert.NotNull(merchantEntityType);
+        Assert.NotNull(productEntityType);
+        Assert.NotNull(categoryEntityType);
     }
 
     [Fact]
@@ -56,9 +55,9 @@ public class MerchantDbContextTests
         using (var context = new MerchantDbContext(options))
         {
             var savedMerchant = await context.Merchants.FindAsync(merchant.Id);
-            savedMerchant.Should().NotBeNull();
-            savedMerchant!.Name.Should().Be("Test Merchant");
-            savedMerchant.Email.Should().Be("test@merchant.com");
+            Assert.NotNull(savedMerchant);
+            Assert.Equal("Test Merchant", savedMerchant!.Name);
+            Assert.Equal("test@merchant.com", savedMerchant.Email);
         }
     }
 
@@ -93,9 +92,9 @@ public class MerchantDbContextTests
         using (var context = new MerchantDbContext(options))
         {
             var savedProduct = await context.Products.FindAsync(product.Id);
-            savedProduct.Should().NotBeNull();
-            savedProduct!.Name.Should().Be("Test Product");
-            savedProduct.Price.Should().Be(99.99m);
+            Assert.NotNull(savedProduct);
+            Assert.Equal("Test Product", savedProduct!.Name);
+            Assert.Equal(99.99m, savedProduct.Price);
         }
     }
 
@@ -128,8 +127,8 @@ public class MerchantDbContextTests
         using (var context = new MerchantDbContext(options))
         {
             var savedCategory = await context.Categories.FindAsync(category.Id);
-            savedCategory.Should().NotBeNull();
-            savedCategory!.Name.Should().Be("Electronics");
+            Assert.NotNull(savedCategory);
+            Assert.Equal("Electronics", savedCategory!.Name);
         }
     }
 
@@ -179,8 +178,8 @@ public class MerchantDbContextTests
             var merchantProducts = await context.Products
                 .Where(p => p.MerchantId == merchantId)
                 .ToListAsync();
-            merchantProducts.Should().HaveCount(1);
-            merchantProducts.First().Name.Should().Be("Product 1");
+            Assert.Equal(1, merchantProducts.Count);
+            Assert.Equal("Product 1", merchantProducts.First().Name);
         }
     }
 }

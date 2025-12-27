@@ -1,4 +1,3 @@
-using FluentAssertions;
 using UrbanX.Services.Merchant.Models;
 
 namespace UrbanX.Services.Merchant.UnitTests;
@@ -20,10 +19,10 @@ public class MerchantModelsTests
         };
 
         // Assert
-        merchant.Should().NotBeNull();
-        merchant.Name.Should().Be("Test Merchant");
-        merchant.Email.Should().Be("test@merchant.com");
-        merchant.IsActive.Should().BeTrue();
+        Assert.NotNull(merchant);
+        Assert.Equal("Test Merchant", merchant.Name);
+        Assert.Equal("test@merchant.com", merchant.Email);
+        Assert.True(merchant.IsActive);
     }
 
     [Fact]
@@ -44,9 +43,9 @@ public class MerchantModelsTests
         };
 
         // Assert
-        merchant.Description.Should().Be("A test merchant");
-        merchant.Phone.Should().Be("123-456-7890");
-        merchant.Address.Should().Be("123 Main St");
+        Assert.Equal("A test merchant", merchant.Description);
+        Assert.Equal("123-456-7890", merchant.Phone);
+        Assert.Equal("123 Main St", merchant.Address);
     }
 
     [Fact]
@@ -66,10 +65,10 @@ public class MerchantModelsTests
         };
 
         // Assert
-        product.Should().NotBeNull();
-        product.Name.Should().Be("Test Product");
-        product.Price.Should().Be(99.99m);
-        product.StockQuantity.Should().Be(10);
+        Assert.NotNull(product);
+        Assert.Equal("Test Product", product.Name);
+        Assert.Equal(99.99m, product.Price);
+        Assert.Equal(10, product.StockQuantity);
     }
 
     [Fact]
@@ -92,9 +91,9 @@ public class MerchantModelsTests
         };
 
         // Assert
-        product.Description.Should().Be("Product description");
-        product.ImageUrl.Should().Be("https://example.com/image.jpg");
-        product.Category.Should().Be("Electronics");
+        Assert.Equal("Product description", product.Description);
+        Assert.Equal("https://example.com/image.jpg", product.ImageUrl);
+        Assert.Equal("Electronics", product.Category);
     }
 
     [Fact]
@@ -112,9 +111,9 @@ public class MerchantModelsTests
         };
 
         // Assert
-        category.Should().NotBeNull();
-        category.Name.Should().Be("Electronics");
-        category.IsActive.Should().BeTrue();
+        Assert.NotNull(category);
+        Assert.Equal("Electronics", category.Name);
+        Assert.True(category.IsActive);
     }
 
     [Fact]
@@ -133,6 +132,6 @@ public class MerchantModelsTests
         };
 
         // Assert
-        category.Description.Should().Be("Electronic products");
+        Assert.Equal("Electronic products", category.Description);
     }
 }

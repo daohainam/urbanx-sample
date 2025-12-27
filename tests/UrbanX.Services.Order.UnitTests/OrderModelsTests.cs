@@ -1,4 +1,3 @@
-using FluentAssertions;
 using UrbanX.Services.Order.Models;
 
 namespace UrbanX.Services.Order.UnitTests;
@@ -18,8 +17,8 @@ public class OrderModelsTests
         };
 
         // Assert
-        cart.Items.Should().NotBeNull();
-        cart.Items.Should().BeEmpty();
+        cart.Assert.NotNull(Items);
+        Assert.Empty(cart.Items);
     }
 
     [Fact]
@@ -38,9 +37,9 @@ public class OrderModelsTests
         };
 
         // Assert
-        cartItem.ProductName.Should().Be("Test Product");
-        cartItem.Quantity.Should().Be(2);
-        cartItem.UnitPrice.Should().Be(25.00m);
+        Assert.Equal("Test Product", cartItem.ProductName);
+        Assert.Equal(2, cartItem.Quantity);
+        Assert.Equal(25.00m, cartItem.UnitPrice);
     }
 
     [Fact]
@@ -60,10 +59,10 @@ public class OrderModelsTests
         };
 
         // Assert
-        order.Items.Should().NotBeNull();
-        order.Items.Should().BeEmpty();
-        order.StatusHistory.Should().NotBeNull();
-        order.StatusHistory.Should().BeEmpty();
+        order.Assert.NotNull(Items);
+        Assert.Empty(order.Items);
+        order.Assert.NotNull(StatusHistory);
+        Assert.Empty(order.StatusHistory);
     }
 
     [Fact]
@@ -82,9 +81,9 @@ public class OrderModelsTests
         };
 
         // Assert
-        orderItem.ProductName.Should().Be("Test Product");
-        orderItem.Quantity.Should().Be(3);
-        orderItem.UnitPrice.Should().Be(50.00m);
+        Assert.Equal("Test Product", orderItem.ProductName);
+        Assert.Equal(3, orderItem.Quantity);
+        Assert.Equal(50.00m, orderItem.UnitPrice);
     }
 
     [Fact]
@@ -101,8 +100,8 @@ public class OrderModelsTests
         };
 
         // Assert
-        statusHistory.Status.Should().Be(OrderStatus.Confirmed);
-        statusHistory.Note.Should().BeNull();
+        Assert.Equal(OrderStatus.Confirmed, statusHistory.Status);
+        Assert.Null(statusHistory.Note);
     }
 
     [Theory]
@@ -117,7 +116,7 @@ public class OrderModelsTests
     public void OrderStatus_ShouldHaveAllDefinedValues(OrderStatus status)
     {
         // Assert
-        Enum.IsDefined(typeof(OrderStatus), status).Should().BeTrue();
+        Assert.True(Enum.IsDefined(typeof(OrderStatus), status));
     }
 
     [Fact]
@@ -151,8 +150,8 @@ public class OrderModelsTests
         order.Items.Add(item);
 
         // Assert
-        order.Items.Should().HaveCount(1);
-        order.Items.First().Should().Be(item);
+        Assert.Equal(1, order.Items.Count);
+        Assert.Equal(item, order.Items.First());
     }
 
     [Fact]
@@ -183,7 +182,7 @@ public class OrderModelsTests
         order.StatusHistory.Add(statusHistory);
 
         // Assert
-        order.StatusHistory.Should().HaveCount(1);
-        order.StatusHistory.First().Status.Should().Be(OrderStatus.Confirmed);
+        Assert.Equal(1, order.StatusHistory.Count);
+        Assert.Equal(OrderStatus.Confirmed, order.StatusHistory.First().Status);
     }
 }

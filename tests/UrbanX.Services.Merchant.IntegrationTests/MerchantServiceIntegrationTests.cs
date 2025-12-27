@@ -1,4 +1,3 @@
-using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using UrbanX.Services.Merchant.Data;
 using UrbanX.Services.Merchant.Models;
@@ -34,9 +33,9 @@ public class MerchantServiceIntegrationTests
 
         // Assert
         var savedMerchant = await context.Merchants.FindAsync(merchant.Id);
-        savedMerchant.Should().NotBeNull();
-        savedMerchant!.Name.Should().Be("Test Merchant");
-        savedMerchant.Email.Should().Be("test@merchant.com");
+        Assert.NotNull(savedMerchant);
+        Assert.Equal("Test Merchant", savedMerchant!.Name);
+        Assert.Equal("test@merchant.com", savedMerchant.Email);
     }
 
     [Fact]
@@ -86,8 +85,8 @@ public class MerchantServiceIntegrationTests
         var merchantProducts = await context.Products
             .Where(p => p.MerchantId == merchantId)
             .ToListAsync();
-        merchantProducts.Should().HaveCount(2);
-        merchantProducts.Should().OnlyContain(p => p.MerchantId == merchantId);
+        Assert.Equal(2, merchantProducts.Count);
+        Assert.All(merchantProducts, p => Assert.Equal(merchantId, p.MerchantId));
     }
 
     [Fact]
@@ -122,7 +121,7 @@ public class MerchantServiceIntegrationTests
 
         // Assert
         var updatedProduct = await context.Products.FindAsync(product.Id);
-        updatedProduct!.StockQuantity.Should().Be(5);
+        Assert.Equal(5, updatedProduct!.StockQuantity);
     }
 
     [Fact]
@@ -168,7 +167,7 @@ public class MerchantServiceIntegrationTests
         var merchantCategories = await context.Categories
             .Where(c => c.MerchantId == merchantId)
             .ToListAsync();
-        merchantCategories.Should().HaveCount(2);
+        Assert.Equal(2, merchantCategories.Count);
     }
 
     [Fact]
@@ -203,6 +202,6 @@ public class MerchantServiceIntegrationTests
 
         // Assert
         var updatedProduct = await context.Products.FindAsync(product.Id);
-        updatedProduct!.IsActive.Should().BeFalse();
+        Assert.False(updatedProduct!.IsActive);
     }
 }

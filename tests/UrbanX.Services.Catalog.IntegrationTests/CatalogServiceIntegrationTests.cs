@@ -1,4 +1,3 @@
-using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using UrbanX.Services.Catalog.Data;
 using UrbanX.Services.Catalog.Models;
@@ -68,8 +67,8 @@ public class CatalogServiceIntegrationTests
             .ToListAsync();
 
         // Assert
-        activeProducts.Should().HaveCount(2);
-        activeProducts.Should().OnlyContain(p => p.IsActive);
+        Assert.Equal(2, activeProducts.Count);
+        Assert.All(activeProducts, p => Assert.True(p.IsActive));
     }
 
     [Fact]
@@ -129,8 +128,8 @@ public class CatalogServiceIntegrationTests
             .ToListAsync();
 
         // Assert
-        searchResults.Should().HaveCount(2);
-        searchResults.Should().OnlyContain(p => p.Name.Contains("Laptop"));
+        Assert.Equal(2, searchResults.Count);
+        Assert.All(searchResults, p => Assert.True(p.Name.Contains("Laptop")));
     }
 
     [Fact]
@@ -181,8 +180,8 @@ public class CatalogServiceIntegrationTests
             .ToListAsync();
 
         // Assert
-        electronicsProducts.Should().HaveCount(1);
-        electronicsProducts.First().Name.Should().Be("Laptop");
+        Assert.Equal(1, electronicsProducts.Count);
+        Assert.Equal("Laptop", electronicsProducts.First().Name);
     }
 
     [Fact]
@@ -244,8 +243,8 @@ public class CatalogServiceIntegrationTests
             .ToListAsync();
 
         // Assert
-        merchant1Products.Should().HaveCount(2);
-        merchant1Products.Should().OnlyContain(p => p.MerchantId == merchant1Id);
+        Assert.Equal(2, merchant1Products.Count);
+        Assert.All(merchant1Products, p => Assert.Equal(merchant1Id, p.MerchantId));
     }
 
     [Fact]
@@ -285,6 +284,6 @@ public class CatalogServiceIntegrationTests
             .ToListAsync();
 
         // Assert
-        pagedProducts.Should().HaveCount(10);
+        Assert.Equal(10, pagedProducts.Count);
     }
 }

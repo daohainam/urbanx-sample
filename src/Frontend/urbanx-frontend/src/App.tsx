@@ -21,7 +21,11 @@ function App() {
         </Routes>
       </div>
     </Router>
-	<footer className="border-t border-slate-200 text-xs text-slate-500 py-4 text-center">© {new Date().getFullYear()} UrbanX</footer>
+	<footer className="border-t border-neutral-200 bg-white/80 backdrop-blur-sm text-xs text-neutral-500 py-6 text-center">
+      <div className="container mx-auto px-4">
+        <p>© {new Date().getFullYear()} <span className="font-semibold text-primary-600">UrbanX</span> - Elegant Commerce Platform</p>
+      </div>
+    </footer>
     </div>
   );
 }

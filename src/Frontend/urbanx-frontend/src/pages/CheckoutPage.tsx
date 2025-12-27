@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { CreditCard, MapPin, Check } from 'lucide-react';
 import { api } from '../lib/api';
 import type { Cart } from '../types';
 
@@ -76,77 +77,104 @@ export default function CheckoutPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold mb-8">Checkout</h1>
+    <div className="container mx-auto px-6 py-10 animate-fade-in">
+      <div className="mb-10">
+        <h1 className="text-5xl font-bold mb-3 gradient-text">Checkout</h1>
+        <p className="text-neutral-600 text-lg">Complete your order</p>
+      </div>
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2">
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 className="text-2xl font-bold mb-4">Shipping Information</h2>
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-2">Shipping Address</label>
+        <div className="lg:col-span-2 space-y-6">
+          <div className="rounded-2xl border border-neutral-200 bg-white shadow-md hover:shadow-lg transition-all duration-300 p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
+                <MapPin className="w-5 h-5 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-neutral-800">Shipping Information</h2>
+            </div>
+            <div>
+              <label className="block text-neutral-700 mb-2 font-medium">Shipping Address</label>
               <textarea
                 value={shippingAddress}
                 onChange={(e) => setShippingAddress(e.target.value)}
                 placeholder="Enter your complete shipping address"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-xl border border-neutral-300 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition-all duration-200 bg-white placeholder:text-neutral-400 shadow-sm"
                 rows={4}
                 required
               />
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-2xl font-bold mb-4">Payment Method</h2>
+          <div className="rounded-2xl border border-neutral-200 bg-white shadow-md hover:shadow-lg transition-all duration-300 p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center">
+                <CreditCard className="w-5 h-5 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-neutral-800">Payment Method</h2>
+            </div>
             <div className="mb-4">
-              <label className="flex items-center">
-                <input type="radio" name="payment" value="card" defaultChecked className="mr-2" />
-                <span>Credit/Debit Card</span>
+              <label className="flex items-center p-4 border-2 border-primary-300 bg-primary-50/50 rounded-xl cursor-pointer">
+                <input type="radio" name="payment" value="card" defaultChecked className="mr-3 w-4 h-4 text-primary-600" />
+                <span className="font-medium text-neutral-800">Credit/Debit Card</span>
               </label>
             </div>
-            <p className="text-sm text-gray-600">Payment will be processed securely</p>
+            <p className="text-sm text-neutral-500 flex items-center gap-2">
+              <Check className="w-4 h-4 text-primary-600" />
+              Payment will be processed securely
+            </p>
           </div>
         </div>
 
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg shadow-md p-6 sticky top-4">
-            <h2 className="text-2xl font-bold mb-4">Order Summary</h2>
+          <div className="rounded-2xl border border-neutral-200 bg-white shadow-md hover:shadow-lg transition-all duration-300 p-6 sticky top-24">
+            <h2 className="text-2xl font-bold mb-6 text-neutral-800">Order Summary</h2>
             {cart && cart.items.length > 0 ? (
               <>
-                <div className="mb-4">
+                <div className="mb-6 max-h-64 overflow-y-auto">
                   {cart.items.map((item) => (
-                    <div key={item.id} className="flex justify-between mb-2">
-                      <span className="text-gray-700">
-                        {item.productName} x {item.quantity}
+                    <div key={item.id} className="flex justify-between mb-3 pb-3 border-b border-neutral-200 last:border-0">
+                      <span className="text-neutral-700 flex-1">
+                        <span className="font-medium">{item.productName}</span>
+                        <span className="text-neutral-500 ml-2">x {item.quantity}</span>
                       </span>
-                      <span>${(item.unitPrice * item.quantity).toFixed(2)}</span>
+                      <span className="font-semibold text-neutral-800">${(item.unitPrice * item.quantity).toFixed(2)}</span>
                     </div>
                   ))}
                 </div>
-                <div className="border-t border-gray-200 pt-4 mb-4">
-                  <div className="flex justify-between mb-2">
+                <div className="space-y-3 mb-6">
+                  <div className="flex justify-between text-neutral-600">
                     <span>Subtotal:</span>
-                    <span>${calculateTotal().toFixed(2)}</span>
+                    <span className="font-semibold text-neutral-800">${calculateTotal().toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between mb-2">
+                  <div className="flex justify-between text-neutral-600">
                     <span>Shipping:</span>
-                    <span>Free</span>
+                    <span className="font-semibold text-primary-600">Free</span>
                   </div>
-                  <div className="flex justify-between font-bold text-xl border-t border-gray-200 pt-4">
-                    <span>Total:</span>
-                    <span className="text-blue-600">${calculateTotal().toFixed(2)}</span>
+                  <div className="border-t border-neutral-200 pt-3 flex justify-between">
+                    <span className="text-xl font-bold text-neutral-800">Total:</span>
+                    <span className="text-3xl font-bold gradient-text">${calculateTotal().toFixed(2)}</span>
                   </div>
                 </div>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-base font-semibold transition-all duration-300 bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:from-primary-600 hover:to-primary-700 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] border-0 w-full disabled:opacity-50 disabled:hover:scale-100"
                 >
-                  {loading ? 'Processing...' : 'Place Order'}
+                  {loading ? (
+                    <>
+                      <div className="spinner"></div>
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-5 h-5" />
+                      Place Order
+                    </>
+                  )}
                 </button>
               </>
             ) : (
-              <p className="text-gray-500">Your cart is empty</p>
+              <p className="text-neutral-500 text-center py-8">Your cart is empty</p>
             )}
           </div>
         </div>

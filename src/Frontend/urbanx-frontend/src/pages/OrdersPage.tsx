@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Package, Calendar, ChevronRight } from 'lucide-react';
 import { api } from '../lib/api';
 import type { Order } from '../types';
 
@@ -28,63 +29,99 @@ export default function OrdersPage() {
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      Pending: 'bg-yellow-500',
-      PaymentReceived: 'bg-blue-500',
-      Confirmed: 'bg-green-500',
-      Preparing: 'bg-purple-500',
-      ReadyForPickup: 'bg-indigo-500',
-      InTransit: 'bg-cyan-500',
-      Delivered: 'bg-green-600',
-      Cancelled: 'bg-red-500',
+      Pending: 'bg-gradient-to-r from-yellow-400 to-yellow-500',
+      PaymentReceived: 'bg-gradient-to-r from-blue-400 to-blue-500',
+      Confirmed: 'bg-gradient-to-r from-green-400 to-green-500',
+      Preparing: 'bg-gradient-to-r from-purple-400 to-purple-500',
+      ReadyForPickup: 'bg-gradient-to-r from-indigo-400 to-indigo-500',
+      InTransit: 'bg-gradient-to-r from-cyan-400 to-cyan-500',
+      Delivered: 'bg-gradient-to-r from-green-500 to-green-600',
+      Cancelled: 'bg-gradient-to-r from-red-400 to-red-500',
     };
-    return colors[status] || 'bg-gray-500';
+    return colors[status] || 'bg-gradient-to-r from-neutral-400 to-neutral-500';
   };
 
   if (loading) {
-    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+    return (
+      <div className="flex flex-col justify-center items-center h-screen">
+        <div className="spinner mb-4"></div>
+        <p className="text-neutral-600">Loading orders...</p>
+      </div>
+    );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold mb-8">My Orders</h1>
+    <div className="container mx-auto px-6 py-10 animate-fade-in">
+      <div className="mb-10">
+        <h1 className="text-5xl font-bold mb-3 gradient-text">My Orders</h1>
+        <p className="text-neutral-600 text-lg">Track and manage your orders</p>
+      </div>
 
       {orders.length > 0 ? (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 gap-5">
           {orders.map((order) => (
-            <div key={order.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition cursor-pointer"
-                 onClick={() => navigate(`/tracking/${order.id}`)}>
+            <div 
+              key={order.id} 
+              className="rounded-2xl border border-neutral-200 bg-white shadow-md hover:shadow-lg transition-all duration-300 p-6 cursor-pointer group"
+              onClick={() => navigate(`/tracking/${order.id}`)}
+            >
               <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h3 className="text-xl font-bold mb-2">{order.orderNumber}</h3>
-                  <p className="text-gray-600">Order Date: {new Date(order.createdAt).toLocaleDateString()}</p>
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h3 className="text-2xl font-bold text-neutral-800">{order.orderNumber}</h3>
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)} text-white shadow-sm`}>
+                      {order.status}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-neutral-600">
+                    <Calendar className="w-4 h-4" />
+                    <span>{new Date(order.createdAt).toLocaleDateString('en-US', { 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })}</span>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <span className={`inline-block px-3 py-1 rounded-full text-white text-sm ${getStatusColor(order.status)}`}>
-                    {order.status}
-                  </span>
-                  <p className="text-2xl font-bold text-blue-600 mt-2">${order.totalAmount.toFixed(2)}</p>
+                <div className="text-right flex items-start gap-4">
+                  <div>
+                    <p className="text-sm text-neutral-500 mb-1">Total Amount</p>
+                    <p className="text-3xl font-bold gradient-text">${order.totalAmount.toFixed(2)}</p>
+                  </div>
+                  <ChevronRight className="w-6 h-6 text-neutral-400 group-hover:text-primary-600 transition-colors mt-2" />
                 </div>
               </div>
-              <div className="border-t border-gray-200 pt-4">
-                <p className="text-gray-600 mb-2">Items:</p>
-                {order.items.slice(0, 3).map((item) => (
-                  <p key={item.id} className="text-gray-700">
-                    {item.productName} x {item.quantity}
-                  </p>
-                ))}
-                {order.items.length > 3 && (
-                  <p className="text-gray-500 text-sm mt-1">+{order.items.length - 3} more items</p>
-                )}
+              <div className="border-t border-neutral-200 pt-4">
+                <div className="flex items-start gap-3">
+                  <Package className="w-5 h-5 text-neutral-400 mt-1" />
+                  <div className="flex-1">
+                    <p className="text-neutral-600 font-medium mb-2">Items:</p>
+                    <div className="space-y-1">
+                      {order.items.slice(0, 3).map((item) => (
+                        <p key={item.id} className="text-neutral-700">
+                          <span className="font-medium">{item.productName}</span>
+                          <span className="text-neutral-500 ml-2">x {item.quantity}</span>
+                        </p>
+                      ))}
+                    </div>
+                    {order.items.length > 3 && (
+                      <p className="text-neutral-500 text-sm mt-2">+{order.items.length - 3} more items</p>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="text-center py-12">
-          <p className="text-gray-500 text-xl mb-4">No orders yet</p>
+        <div className="text-center py-20">
+          <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-neutral-100 to-neutral-200 mb-6">
+            <Package className="w-12 h-12 text-neutral-400" />
+          </div>
+          <p className="text-neutral-500 text-2xl font-semibold mb-3">No orders yet</p>
+          <p className="text-neutral-400 mb-6">Start shopping to create your first order</p>
           <button
             onClick={() => navigate('/')}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            className="inline-flex items-center justify-center gap-2 rounded-xl px-8 py-2.5 text-base font-medium transition-all duration-300 bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:from-primary-600 hover:to-primary-700 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] border-0"
           >
             Start Shopping
           </button>

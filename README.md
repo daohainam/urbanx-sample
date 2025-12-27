@@ -201,11 +201,36 @@ urbanx/
 │   │   └── Identity/         # Identity & authentication service
 │   ├── Gateway/              # API Gateway with YARP
 │   ├── Frontend/
-│   │   └── urbanx-frontend/  # React SPA
+│   │   ├── urbanx-frontend/  # Customer-facing React SPA
+│   │   └── merchant-app/     # Merchant portal React SPA
 │   └── Shared/               # Shared libraries
 ├── docker-compose.yml        # Infrastructure setup (for manual setup)
 └── UrbanX.sln               # Solution file
 ```
+
+## Merchant Portal
+
+The merchant portal is a separate React application for managing products, categories, and orders.
+
+### Starting the Merchant Portal
+
+```bash
+cd src/Frontend/merchant-app
+npm install
+npm run dev
+```
+
+The merchant portal will be available at http://localhost:5174
+
+**Test Credentials:**
+- Username: `merchant@test.com`
+- Password: `Password123!`
+
+### Merchant Portal Features
+- Dashboard with statistics overview
+- Category management (create, edit, delete)
+- Product management (create, delete, inventory tracking)
+- Order management (view orders, update status)
 
 ## .NET Aspire Features
 

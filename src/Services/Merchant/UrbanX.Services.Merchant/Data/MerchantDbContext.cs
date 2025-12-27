@@ -11,6 +11,7 @@ public class MerchantDbContext : DbContext
 
     public DbSet<Models.Merchant> Merchants => Set<Models.Merchant>();
     public DbSet<MerchantProduct> Products => Set<MerchantProduct>();
+    public DbSet<MerchantCategory> Categories => Set<MerchantCategory>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -29,6 +30,13 @@ public class MerchantDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Price).HasPrecision(18, 2);
+            entity.HasIndex(e => e.MerchantId);
+        });
+
+        modelBuilder.Entity<MerchantCategory>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
             entity.HasIndex(e => e.MerchantId);
         });
     }

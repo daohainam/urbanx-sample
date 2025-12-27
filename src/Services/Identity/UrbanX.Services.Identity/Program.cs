@@ -43,6 +43,19 @@ builder.Services.AddIdentityServer(options =>
         PostLogoutRedirectUris = { "http://localhost:5173", "https://localhost:5173" },
         AllowedCorsOrigins = { "http://localhost:5173", "https://localhost:5173" },
         RequireConsent = false
+    },
+    new Client
+    {
+        ClientId = "urbanx-merchant-spa",
+        ClientName = "UrbanX Merchant Portal",
+        AllowedGrantTypes = GrantTypes.Code,
+        RequirePkce = true,
+        RequireClientSecret = false,
+        AllowedScopes = { "openid", "profile", "email", "merchant.manage" },
+        RedirectUris = { "http://localhost:5174/callback", "https://localhost:5174/callback" },
+        PostLogoutRedirectUris = { "http://localhost:5174", "https://localhost:5174" },
+        AllowedCorsOrigins = { "http://localhost:5174", "https://localhost:5174" },
+        RequireConsent = false
     }
 })
 .AddTestUsers(new List<Duende.IdentityServer.Test.TestUser>

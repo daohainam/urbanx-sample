@@ -27,3 +27,14 @@ public class MerchantProduct
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }
+
+public class MerchantCategory
+{
+    public Guid Id { get; set; }
+    public Guid MerchantId { get; set; }
+    public required string Name { get; set; }
+    public string? Description { get; set; }
+    public bool IsActive { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+}

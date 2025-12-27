@@ -4,13 +4,17 @@ using UrbanX.Services.Payment.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add service defaults & Aspire components
+builder.AddServiceDefaults();
+
 // Add services to the container.
 builder.Services.AddOpenApi();
-builder.Services.AddDbContext<PaymentDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("PaymentDb") 
-        ?? "Host=localhost;Database=urbanx_payment;Username=postgres;Password=postgres"));
+builder.AddNpgsqlDbContext<PaymentDbContext>("paymentdb");
 
 var app = builder.Build();
+
+// Map default endpoints (health checks, etc.)
+app.MapDefaultEndpoints();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

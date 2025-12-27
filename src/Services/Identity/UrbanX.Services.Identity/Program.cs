@@ -2,6 +2,9 @@ using Duende.IdentityServer.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add service defaults & Aspire components
+builder.AddServiceDefaults();
+
 // Add services to the container.
 builder.Services.AddOpenApi();
 
@@ -71,6 +74,9 @@ builder.Services.AddIdentityServer(options =>
 });
 
 var app = builder.Build();
+
+// Map default endpoints (health checks, etc.)
+app.MapDefaultEndpoints();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

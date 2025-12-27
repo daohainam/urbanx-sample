@@ -6,6 +6,7 @@ A modern, on-demand multi-merchant commerce platform built with microservices ar
 
 ### Backend
 - **.NET 10** with **ASP.NET Minimal APIs**
+- **.NET Aspire** for orchestration, service discovery, and observability
 - **Microservices:**
   - **Catalog Service** (Port 5001) - Product search, browse
   - **Order Service** (Port 5002) - Cart, checkout, order tracking
@@ -46,12 +47,48 @@ A modern, on-demand multi-merchant commerce platform built with microservices ar
 
 ### Setup
 
+#### Option 1: Using .NET Aspire (Recommended)
+
+.NET Aspire provides orchestration, service discovery, and observability for all services.
+
+1. **Install .NET Aspire workload (if not already installed):**
+```bash
+dotnet workload install aspire
+```
+
+2. **Start all services using Aspire AppHost:**
+```bash
+cd src/AppHost/UrbanX.AppHost
+dotnet run
+```
+
+This will:
+- Start the Aspire dashboard at http://localhost:15260
+- Automatically provision PostgreSQL and Kafka containers
+- Launch all microservices with proper configuration
+- Enable service discovery, health checks, and distributed tracing
+- Provide real-time monitoring and logs
+
+3. **Start frontend:**
+```bash
+cd src/Frontend/urbanx-frontend
+npm install
+npm run dev
+```
+
+The application will be available at:
+- **Aspire Dashboard:** http://localhost:15260
+- **Frontend:** http://localhost:5173
+- **API Gateway:** Dynamically assigned (check Aspire Dashboard)
+
+#### Option 2: Manual Setup (Traditional)
+
 1. **Start infrastructure (PostgreSQL & Kafka):**
 ```bash
 docker-compose up -d
 ```
 
-2. **Start backend services:**
+2. **Start backend services manually:**
 
 ```bash
 # Catalog Service
@@ -129,12 +166,14 @@ The application will be available at:
 
 ### Backend
 - .NET 10
+- .NET Aspire (Orchestration, Service Discovery, Observability)
 - ASP.NET Core Minimal APIs
 - Entity Framework Core
 - PostgreSQL
 - Confluent Kafka
 - Duende IdentityServer
 - YARP (Yet Another Reverse Proxy)
+- OpenTelemetry (Distributed Tracing & Metrics)
 
 ### Frontend
 - React 18
@@ -150,6 +189,10 @@ The application will be available at:
 ```
 urbanx/
 ├── src/
+│   ├── AppHost/              # .NET Aspire orchestrator
+│   │   └── UrbanX.AppHost/   # Aspire AppHost project
+│   ├── ServiceDefaults/      # Shared Aspire configuration
+│   │   └── UrbanX.ServiceDefaults/
 │   ├── Services/
 │   │   ├── Catalog/          # Product catalog service
 │   │   ├── Order/            # Order management service
@@ -160,13 +203,40 @@ urbanx/
 │   ├── Frontend/
 │   │   └── urbanx-frontend/  # React SPA
 │   └── Shared/               # Shared libraries
-├── docker-compose.yml        # Infrastructure setup
+├── docker-compose.yml        # Infrastructure setup (for manual setup)
 └── UrbanX.sln               # Solution file
 ```
 
+## .NET Aspire Features
+
+The application uses .NET Aspire to provide:
+
+### Orchestration
+- **Unified Development Experience**: Single command to start all services
+- **Automatic Resource Provisioning**: PostgreSQL and Kafka containers are automatically created and configured
+- **Service Discovery**: Services can discover each other automatically without hardcoded URLs
+
+### Observability
+- **Distributed Tracing**: Track requests across all microservices using OpenTelemetry
+- **Structured Logging**: Centralized logs from all services in the Aspire Dashboard
+- **Metrics & Health Checks**: Real-time monitoring of service health and performance
+- **Dashboard**: Visual interface to monitor all services, resources, and logs
+
+### Developer Productivity
+- **ServiceDefaults**: Shared configuration for health checks, telemetry, and resilience
+- **Component Integration**: Seamless integration with PostgreSQL, Kafka, and other services
+- **Environment Configuration**: Automatic connection string and configuration management
+
 ## Development
 
-### Backend Development
+### Using Aspire for Development (Recommended)
+When developing with .NET Aspire:
+- Run `dotnet run` from the AppHost project to start all services
+- Access the Aspire Dashboard to monitor services, view logs, and traces
+- Services automatically discover each other via Aspire's service discovery
+- Hot reload works for individual services - just save your code changes
+
+### Backend Development (Manual)
 Each service can be run independently. They use in-memory or local PostgreSQL databases.
 
 ### Frontend Development

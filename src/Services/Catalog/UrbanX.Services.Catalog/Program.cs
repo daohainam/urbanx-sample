@@ -5,13 +5,17 @@ using UrbanX.Services.Catalog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add service defaults & Aspire components
+builder.AddServiceDefaults();
+
 // Add services to the container.
 builder.Services.AddOpenApi();
-builder.Services.AddDbContext<CatalogDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("CatalogDb") 
-        ?? "Host=localhost;Database=urbanx_catalog;Username=postgres;Password=postgres"));
+builder.AddNpgsqlDbContext<CatalogDbContext>("catalogdb");
 
 var app = builder.Build();
+
+// Map default endpoints (health checks, etc.)
+app.MapDefaultEndpoints();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

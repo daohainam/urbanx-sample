@@ -17,7 +17,7 @@ public static class DataSeeder
         var productsPath = Path.Combine(AppContext.BaseDirectory, "SeedData", "products.json");
         if (!File.Exists(productsPath))
         {
-            throw new FileNotFoundException($"Seed data file not found at {productsPath}");
+            throw new FileNotFoundException($"Seed data file not found at {productsPath}. Ensure the SeedData folder and products.json file are included in the project and copied to the output directory.");
         }
 
         var jsonContent = await File.ReadAllTextAsync(productsPath);

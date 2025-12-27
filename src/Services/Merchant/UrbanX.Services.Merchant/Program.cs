@@ -4,13 +4,17 @@ using UrbanX.Services.Merchant.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add service defaults & Aspire components
+builder.AddServiceDefaults();
+
 // Add services to the container.
 builder.Services.AddOpenApi();
-builder.Services.AddDbContext<MerchantDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("MerchantDb") 
-        ?? "Host=localhost;Database=urbanx_merchant;Username=postgres;Password=postgres"));
+builder.AddNpgsqlDbContext<MerchantDbContext>("merchantdb");
 
 var app = builder.Build();
+
+// Map default endpoints (health checks, etc.)
+app.MapDefaultEndpoints();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

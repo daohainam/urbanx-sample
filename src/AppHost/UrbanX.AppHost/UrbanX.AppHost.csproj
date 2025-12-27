@@ -1,0 +1,25 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.1.0">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Services\Catalog\UrbanX.Services.Catalog\UrbanX.Services.Catalog.csproj" />
+    <ProjectReference Include="..\..\Services\Order\UrbanX.Services.Order\UrbanX.Services.Order.csproj" />
+    <ProjectReference Include="..\..\Services\Merchant\UrbanX.Services.Merchant\UrbanX.Services.Merchant.csproj" />
+    <ProjectReference Include="..\..\Services\Payment\UrbanX.Services.Payment\UrbanX.Services.Payment.csproj" />
+    <ProjectReference Include="..\..\Services\Identity\UrbanX.Services.Identity\UrbanX.Services.Identity.csproj" />
+    <ProjectReference Include="..\..\Gateway\UrbanX.Gateway\UrbanX.Gateway.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.Kafka" Version="13.1.0" />
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="13.1.0" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UserSecretsId>74271198-6a94-4056-bdc5-aab9e2eb0891</UserSecretsId>
+  </PropertyGroup>
+
+</Project>

@@ -8,9 +8,10 @@ import OrdersPage from './pages/OrdersPage';
 
 function App() {
   return (
+  <div className="min-h-dvh flex flex-col">
     <Router>
-      <div className="min-h-screen bg-gray-50">
         <Header />
+      <div className="flex-1">
         <Routes>
           <Route path="/" element={<CatalogPage />} />
           <Route path="/cart" element={<CartPage />} />
@@ -20,6 +21,8 @@ function App() {
         </Routes>
       </div>
     </Router>
+	<footer className="border-t border-slate-200 text-xs text-slate-500 py-4 text-center">© {new Date().getFullYear()} UrbanX</footer>
+    </div>
   );
 }
 

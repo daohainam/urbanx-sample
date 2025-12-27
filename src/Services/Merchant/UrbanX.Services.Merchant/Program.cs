@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using UrbanX.Services.Merchant.Data;
 using UrbanX.Services.Merchant.Models;
+using UrbanX.Services.Merchant;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,11 +22,12 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     
-    // Ensure database is created
+    // Ensure database is created and seeded
     using (var scope = app.Services.CreateScope())
     {
         var context = scope.ServiceProvider.GetRequiredService<MerchantDbContext>();
         await context.Database.EnsureCreatedAsync();
+        await DataSeeder.SeedAsync(context);
     }
 }
 

@@ -72,12 +72,12 @@ export default function CatalogPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search for products..."
-              className="input pl-12 shadow-soft"
+              className="w-full rounded-xl border border-neutral-300 px-4 py-2.5 pl-12 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition-all duration-200 bg-white placeholder:text-neutral-400 shadow-sm"
             />
           </div>
           <button
             type="submit"
-            className="btn btn-primary px-8 font-semibold"
+            className="inline-flex items-center justify-center gap-2 rounded-xl px-8 py-2.5 text-sm font-semibold transition-all duration-300 bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:from-primary-600 hover:to-primary-700 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] border-0"
           >
             Search
           </button>
@@ -86,7 +86,7 @@ export default function CatalogPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {products.map((product) => (
-          <div key={product.id} className="card-elevated overflow-hidden group">
+          <div key={product.id} className="rounded-2xl border border-neutral-200 bg-white shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group">
             <div className="h-56 bg-gradient-to-br from-neutral-100 to-neutral-200 flex items-center justify-center overflow-hidden relative">
               {product.imageUrl ? (
                 <img 
@@ -98,7 +98,7 @@ export default function CatalogPage() {
                 <span className="text-neutral-400 font-medium">No image</span>
               )}
               {product.stockQuantity < 10 && product.stockQuantity > 0 && (
-                <div className="absolute top-3 right-3 badge bg-accent-500 text-white shadow-medium">
+                <div className="absolute top-3 right-3 inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-accent-500 text-white shadow-md">
                   Only {product.stockQuantity} left
                 </div>
               )}
@@ -113,7 +113,7 @@ export default function CatalogPage() {
               <button
                 onClick={() => handleAddToCart(product)}
                 disabled={product.stockQuantity === 0}
-                className="btn btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium transition-all duration-300 bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:from-primary-600 hover:to-primary-700 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] border-0 w-full disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
                 <ShoppingBag className="w-4 h-4" />
                 {product.stockQuantity > 0 ? 'Add to Cart' : 'Out of Stock'}

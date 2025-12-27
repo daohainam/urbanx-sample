@@ -62,14 +62,14 @@ export default function OrdersPage() {
           {orders.map((order) => (
             <div 
               key={order.id} 
-              className="card-elevated p-6 cursor-pointer group"
+              className="rounded-2xl border border-neutral-200 bg-white shadow-md hover:shadow-lg transition-all duration-300 p-6 cursor-pointer group"
               onClick={() => navigate(`/tracking/${order.id}`)}
             >
               <div className="flex justify-between items-start mb-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <h3 className="text-2xl font-bold text-neutral-800">{order.orderNumber}</h3>
-                    <span className={`badge ${getStatusColor(order.status)} text-white shadow-soft`}>
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)} text-white shadow-sm`}>
                       {order.status}
                     </span>
                   </div>
@@ -121,7 +121,7 @@ export default function OrdersPage() {
           <p className="text-neutral-400 mb-6">Start shopping to create your first order</p>
           <button
             onClick={() => navigate('/')}
-            className="btn btn-primary text-base px-8"
+            className="inline-flex items-center justify-center gap-2 rounded-xl px-8 py-2.5 text-base font-medium transition-all duration-300 bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:from-primary-600 hover:to-primary-700 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] border-0"
           >
             Start Shopping
           </button>

@@ -15,57 +15,13 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color: #262626;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #fafafa 0%, #ffffff 50%, #f5f3ff 100%);
 }
 
 :root { 
   color-scheme: light; 
-}
-
-body { 
-  @apply bg-gradient-to-br from-neutral-50 via-white to-primary-50/30 text-neutral-800 antialiased min-h-screen;
-}
-
-/* Button Styles */
-.btn { 
-  @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium 
-  shadow-soft transition-all duration-300 border border-neutral-200 bg-white hover:bg-neutral-50 
-  hover:shadow-medium hover:scale-[1.02] active:scale-[0.98];
-}
-
-.btn-primary { 
-  @apply bg-gradient-to-r from-primary-500 to-primary-600 text-white border-transparent 
-  hover:from-primary-600 hover:to-primary-700 shadow-medium hover:shadow-large;
-}
-
-.btn-accent { 
-  @apply bg-gradient-to-r from-accent-500 to-accent-600 text-white border-transparent 
-  hover:from-accent-600 hover:to-accent-700 shadow-medium hover:shadow-large;
-}
-
-.btn-outline {
-  @apply bg-white text-primary-600 border-primary-300 hover:bg-primary-50 hover:border-primary-400;
-}
-
-/* Card Styles */
-.card { 
-  @apply rounded-2xl border border-neutral-200 bg-white shadow-soft 
-  transition-all duration-300 hover:shadow-medium;
-}
-
-.card-elevated {
-  @apply card shadow-medium hover:shadow-large;
-}
-
-/* Input Styles */
-.input { 
-  @apply w-full rounded-xl border border-neutral-300 px-4 py-2.5 
-  focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:border-primary-400 
-  transition-all duration-200 bg-white placeholder:text-neutral-400;
-}
-
-/* Badge Styles */
-.badge {
-  @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
 }
 
 /* Animation Classes */
@@ -86,7 +42,10 @@ body {
 
 /* Gradient Text */
 .gradient-text {
-  @apply bg-gradient-to-r from-primary-600 to-accent-500 bg-clip-text text-transparent;
+  background: linear-gradient(90deg, #7c3aed 0%, #f43f5e 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 /* Loading Spinner */
@@ -95,6 +54,11 @@ body {
 }
 
 .spinner {
-  @apply inline-block w-5 h-5 border-2 border-neutral-300 border-t-primary-600 rounded-full;
+  display: inline-block;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid #d4d4d4;
+  border-top-color: #7c3aed;
+  border-radius: 50%;
   animation: spin 0.6s linear infinite;
 }

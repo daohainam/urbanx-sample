@@ -67,7 +67,7 @@ export default function CartPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-4">
             {cart.items.map((item) => (
-              <div key={item.id} className="card-elevated p-6 flex items-center gap-6 group">
+              <div key={item.id} className="rounded-2xl border border-neutral-200 bg-white shadow-md hover:shadow-lg transition-all duration-300 p-6 flex items-center gap-6 group">
                 <div className="flex-1">
                   <h3 className="text-xl font-semibold mb-2 text-neutral-800">{item.productName}</h3>
                   <div className="flex items-center gap-4 text-neutral-600">
@@ -79,7 +79,7 @@ export default function CartPage() {
                   <p className="text-3xl font-bold gradient-text mb-4">${(item.unitPrice * item.quantity).toFixed(2)}</p>
                   <button
                     onClick={() => handleRemoveItem(item.id)}
-                    className="btn btn-outline border-accent-300 text-accent-600 hover:bg-accent-50 hover:border-accent-400 group-hover:shadow-medium"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium transition-all duration-300 border border-accent-300 bg-white text-accent-600 hover:bg-accent-50 hover:border-accent-400 shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98] group-hover:shadow-md"
                   >
                     <Trash2 className="w-4 h-4" />
                     Remove
@@ -90,7 +90,7 @@ export default function CartPage() {
           </div>
 
           <div className="lg:col-span-1">
-            <div className="card-elevated p-6 sticky top-24">
+            <div className="rounded-2xl border border-neutral-200 bg-white shadow-md hover:shadow-lg transition-all duration-300 p-6 sticky top-24">
               <h2 className="text-2xl font-bold mb-6 text-neutral-800">Order Summary</h2>
               <div className="space-y-4 mb-6">
                 <div className="flex justify-between text-neutral-600">
@@ -108,7 +108,7 @@ export default function CartPage() {
               </div>
               <button
                 onClick={handleCheckout}
-                className="btn btn-primary w-full text-base font-semibold py-3"
+                className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-base font-semibold transition-all duration-300 bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:from-primary-600 hover:to-primary-700 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] border-0 w-full"
               >
                 Proceed to Checkout
                 <ArrowRight className="w-5 h-5" />
@@ -125,7 +125,7 @@ export default function CartPage() {
           <p className="text-neutral-400 mb-6">Discover amazing products to add to your cart</p>
           <button
             onClick={() => navigate('/')}
-            className="btn btn-primary text-base px-8"
+            className="inline-flex items-center justify-center gap-2 rounded-xl px-8 py-2.5 text-base font-medium transition-all duration-300 bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:from-primary-600 hover:to-primary-700 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] border-0"
           >
             Continue Shopping
           </button>

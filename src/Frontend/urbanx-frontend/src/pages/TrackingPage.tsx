@@ -70,7 +70,7 @@ export default function TrackingPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <div className="card-elevated p-6">
+        <div className="rounded-2xl border border-neutral-200 bg-white shadow-md hover:shadow-lg transition-all duration-300 p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
               <Package className="w-6 h-6 text-white" />
@@ -82,7 +82,7 @@ export default function TrackingPage() {
           </div>
         </div>
 
-        <div className="card-elevated p-6">
+        <div className="rounded-2xl border border-neutral-200 bg-white shadow-md hover:shadow-lg transition-all duration-300 p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center">
               <Calendar className="w-6 h-6 text-white" />
@@ -100,7 +100,7 @@ export default function TrackingPage() {
           </div>
         </div>
 
-        <div className="card-elevated p-6">
+        <div className="rounded-2xl border border-neutral-200 bg-white shadow-md hover:shadow-lg transition-all duration-300 p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${getStatusColor(order.status)} flex items-center justify-center`}>
               <CheckCircle2 className="w-6 h-6 text-white" />
@@ -115,7 +115,7 @@ export default function TrackingPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <div className="card-elevated p-6">
+          <div className="rounded-2xl border border-neutral-200 bg-white shadow-md hover:shadow-lg transition-all duration-300 p-6">
             <div className="flex items-center gap-3 mb-6">
               <MapPin className="w-6 h-6 text-primary-600" />
               <h2 className="text-2xl font-bold text-neutral-800">Shipping Address</h2>
@@ -125,7 +125,7 @@ export default function TrackingPage() {
             </p>
           </div>
 
-          <div className="card-elevated p-6">
+          <div className="rounded-2xl border border-neutral-200 bg-white shadow-md hover:shadow-lg transition-all duration-300 p-6">
             <div className="flex items-center gap-3 mb-6">
               <Clock className="w-6 h-6 text-primary-600" />
               <h2 className="text-2xl font-bold text-neutral-800">Status Timeline</h2>
@@ -165,7 +165,7 @@ export default function TrackingPage() {
         </div>
 
         <div className="lg:col-span-1">
-          <div className="card-elevated p-6 sticky top-24">
+          <div className="rounded-2xl border border-neutral-200 bg-white shadow-md hover:shadow-lg transition-all duration-300 p-6 sticky top-24">
             <h2 className="text-2xl font-bold mb-6 text-neutral-800">Order Summary</h2>
             <div className="space-y-4 mb-6">
               {order.items.map((item) => (

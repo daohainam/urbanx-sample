@@ -71,3 +71,6 @@ app.MapGet("/api/products/merchant/{merchantId:guid}", async (Guid merchantId, C
 });
 
 app.Run();
+
+// Make the implicit Program class public so integration tests can reference it
+public partial class Program { }

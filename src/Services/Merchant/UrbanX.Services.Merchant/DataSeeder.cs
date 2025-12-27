@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using UrbanX.Services.Merchant.Data;
 
@@ -12,35 +13,48 @@ public static class DataSeeder
             return; // Database already seeded
         }
 
-        var merchants = new List<Models.Merchant>
+        var seedDataPath = Path.Combine(AppContext.BaseDirectory, "SeedData", "merchants.json");
+        if (!File.Exists(seedDataPath))
         {
-            new Models.Merchant
-            {
-                Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-                Name = "Tech Hub Electronics",
-                Description = "Your one-stop shop for all electronics and tech accessories",
-                Email = "contact@techhub.com",
-                Phone = "+1-555-0100",
-                Address = "123 Tech Street, Silicon Valley, CA 94025",
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            },
-            new Models.Merchant
-            {
-                Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
-                Name = "Smart Gadgets Store",
-                Description = "Premium smart devices and wearables",
-                Email = "info@smartgadgets.com",
-                Phone = "+1-555-0200",
-                Address = "456 Innovation Ave, San Francisco, CA 94103",
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            }
-        };
+            throw new FileNotFoundException($"Seed data file not found at {seedDataPath}");
+        }
+
+        var jsonContent = await File.ReadAllTextAsync(seedDataPath);
+        var merchantsData = JsonSerializer.Deserialize<List<MerchantSeedData>>(jsonContent, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        if (merchantsData == null || merchantsData.Count == 0)
+        {
+            return;
+        }
+
+        var merchants = merchantsData.Select(m => new Models.Merchant
+        {
+            Id = m.Id,
+            Name = m.Name,
+            Description = m.Description,
+            Email = m.Email,
+            Phone = m.Phone,
+            Address = m.Address,
+            IsActive = m.IsActive,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        }).ToList();
 
         await context.Merchants.AddRangeAsync(merchants);
         await context.SaveChangesAsync();
+    }
+
+    private class MerchantSeedData
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public string Email { get; set; } = string.Empty;
+        public string? Phone { get; set; }
+        public string? Address { get; set; }
+        public bool IsActive { get; set; }
     }
 }

@@ -1,0 +1,56 @@
+[
+  {
+    "name": "Wireless Headphones",
+    "description": "High-quality wireless headphones with noise cancellation",
+    "price": 99.99,
+    "merchantId": "11111111-1111-1111-1111-111111111111",
+    "stockQuantity": 50,
+    "category": "Electronics",
+    "isActive": true
+  },
+  {
+    "name": "Laptop Stand",
+    "description": "Ergonomic aluminum laptop stand",
+    "price": 49.99,
+    "merchantId": "11111111-1111-1111-1111-111111111111",
+    "stockQuantity": 100,
+    "category": "Accessories",
+    "isActive": true
+  },
+  {
+    "name": "Smart Watch",
+    "description": "Fitness tracking smart watch with heart rate monitor",
+    "price": 199.99,
+    "merchantId": "22222222-2222-2222-2222-222222222222",
+    "stockQuantity": 30,
+    "category": "Electronics",
+    "isActive": true
+  },
+  {
+    "name": "USB-C Cable",
+    "description": "Fast charging USB-C cable 6ft",
+    "price": 14.99,
+    "merchantId": "22222222-2222-2222-2222-222222222222",
+    "stockQuantity": 200,
+    "category": "Accessories",
+    "isActive": true
+  },
+  {
+    "name": "Mechanical Keyboard",
+    "description": "RGB mechanical gaming keyboard",
+    "price": 129.99,
+    "merchantId": "11111111-1111-1111-1111-111111111111",
+    "stockQuantity": 25,
+    "category": "Electronics",
+    "isActive": true
+  },
+  {
+    "name": "Wireless Mouse",
+    "description": "Ergonomic wireless mouse with precision tracking",
+    "price": 39.99,
+    "merchantId": "22222222-2222-2222-2222-222222222222",
+    "stockQuantity": 75,
+    "category": "Electronics",
+    "isActive": true
+  }
+]

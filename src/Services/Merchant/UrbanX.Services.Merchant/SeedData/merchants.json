@@ -1,0 +1,20 @@
+[
+  {
+    "id": "11111111-1111-1111-1111-111111111111",
+    "name": "Tech Hub Electronics",
+    "description": "Your one-stop shop for all electronics and tech accessories",
+    "email": "contact@techhub.com",
+    "phone": "+1-555-0100",
+    "address": "123 Tech Street, Silicon Valley, CA 94025",
+    "isActive": true
+  },
+  {
+    "id": "22222222-2222-2222-2222-222222222222",
+    "name": "Smart Gadgets Store",
+    "description": "Premium smart devices and wearables",
+    "email": "info@smartgadgets.com",
+    "phone": "+1-555-0200",
+    "address": "456 Innovation Ave, San Francisco, CA 94103",
+    "isActive": true
+  }
+]

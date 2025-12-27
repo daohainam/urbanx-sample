@@ -22,4 +22,10 @@
     <ProjectReference Include="..\..\..\ServiceDefaults\UrbanX.ServiceDefaults\UrbanX.ServiceDefaults.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="SeedData\**\*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

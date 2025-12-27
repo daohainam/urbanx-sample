@@ -36,7 +36,7 @@ export interface Order {
   id: string;
   customerId: string;
   orderNumber: string;
-  status: OrderStatus;
+  status: string;
   totalAmount: number;
   items: OrderItem[];
   shippingAddress: string;
@@ -48,21 +48,23 @@ export interface Order {
 export interface OrderStatusHistory {
   id: string;
   orderId: string;
-  status: OrderStatus;
+  status: string;
   note?: string;
   createdAt: string;
 }
 
-export enum OrderStatus {
-  Pending = 'Pending',
-  PaymentReceived = 'PaymentReceived',
-  Confirmed = 'Confirmed',
-  Preparing = 'Preparing',
-  ReadyForPickup = 'ReadyForPickup',
-  InTransit = 'InTransit',
-  Delivered = 'Delivered',
-  Cancelled = 'Cancelled'
-}
+export const OrderStatus = {
+  Pending: 'Pending',
+  PaymentReceived: 'PaymentReceived',
+  Confirmed: 'Confirmed',
+  Preparing: 'Preparing',
+  ReadyForPickup: 'ReadyForPickup',
+  InTransit: 'InTransit',
+  Delivered: 'Delivered',
+  Cancelled: 'Cancelled'
+} as const;
+
+export type OrderStatusType = typeof OrderStatus[keyof typeof OrderStatus];
 
 export interface Merchant {
   id: string;

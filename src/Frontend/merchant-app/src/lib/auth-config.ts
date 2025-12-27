@@ -1,4 +1,4 @@
-import { AuthProviderProps } from 'react-oidc-context';
+import type { AuthProviderProps } from 'react-oidc-context';
 
 const IDENTITY_URL = import.meta.env.VITE_IDENTITY_URL || 'http://localhost:5005';
 

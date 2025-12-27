@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { Eye } from 'lucide-react';
 import { useAuth } from 'react-oidc-context';
 import { ApiClient } from '../lib/api';
-import { Order, OrderStatus } from '../types';
+import type { Order } from '../types';
+import { OrderStatus } from '../types';
 
 export default function OrdersPage() {
   const auth = useAuth();
@@ -29,7 +30,7 @@ export default function OrdersPage() {
     }
   };
 
-  const handleUpdateStatus = async (orderId: string, status: OrderStatus) => {
+  const handleUpdateStatus = async (orderId: string, status: string) => {
     try {
       await api.put(`/api/orders/${orderId}/status`, status);
       loadOrders();
@@ -43,8 +44,8 @@ export default function OrdersPage() {
     }
   };
 
-  const getStatusColor = (status: OrderStatus) => {
-    const colors: Record<OrderStatus, string> = {
+  const getStatusColor = (status: string) => {
+    const colors: Record<string, string> = {
       [OrderStatus.Pending]: 'bg-yellow-100 text-yellow-800',
       [OrderStatus.PaymentReceived]: 'bg-blue-100 text-blue-800',
       [OrderStatus.Confirmed]: 'bg-green-100 text-green-800',

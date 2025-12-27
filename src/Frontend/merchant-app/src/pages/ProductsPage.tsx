@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Save, X } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { useAuth } from 'react-oidc-context';
 import { ApiClient } from '../lib/api';
-import { Product } from '../types';
+import type { Product } from '../types';
 
 export default function ProductsPage() {
   const auth = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editingId, setEditingId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -56,20 +55,6 @@ export default function ProductsPage() {
     } catch (error) {
       console.error('Failed to add product:', error);
       alert('Failed to add product');
-    }
-  };
-
-  const handleUpdate = async (product: Product) => {
-    try {
-      await api.put(
-        `/api/merchants/${merchantId}/products/${product.id}`,
-        product
-      );
-      setEditingId(null);
-      loadProducts();
-    } catch (error) {
-      console.error('Failed to update product:', error);
-      alert('Failed to update product');
     }
   };
 
@@ -194,8 +179,7 @@ export default function ProductsPage() {
               onClick={handleAdd}
               className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
             >
-              <Save className="w-4 h-4" />
-              Save
+              Add Product
             </button>
             <button
               onClick={() => {
@@ -211,7 +195,6 @@ export default function ProductsPage() {
               }}
               className="flex items-center gap-2 px-4 py-2 bg-neutral-200 text-neutral-700 rounded-lg hover:bg-neutral-300 transition-colors"
             >
-              <X className="w-4 h-4" />
               Cancel
             </button>
           </div>
@@ -294,22 +277,13 @@ export default function ProductsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => setEditingId(product.id)}
-                          className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
-                          title="Edit"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(product.id)}
-                          className="p-2 text-accent-600 hover:bg-accent-50 rounded-lg transition-colors"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+                      <button
+                        onClick={() => handleDelete(product.id)}
+                        className="p-2 text-accent-600 hover:bg-accent-50 rounded-lg transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </td>
                   </tr>
                 ))

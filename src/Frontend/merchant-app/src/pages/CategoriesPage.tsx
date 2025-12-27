@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Save, X } from 'lucide-react';
 import { useAuth } from 'react-oidc-context';
 import { ApiClient } from '../lib/api';
-import { Category } from '../types';
+import type { Category } from '../types';
 
 export default function CategoriesPage() {
   const auth = useAuth();

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using UrbanX.Services.Catalog.Data;
 using UrbanX.Services.Catalog.Models;
+using UrbanX.Services.Catalog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,14 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    
+    // Ensure database is created and seeded
+    using (var scope = app.Services.CreateScope())
+    {
+        var context = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
+        await context.Database.EnsureCreatedAsync();
+        await DataSeeder.SeedAsync(context);
+    }
 }
 
 // Product search and browse

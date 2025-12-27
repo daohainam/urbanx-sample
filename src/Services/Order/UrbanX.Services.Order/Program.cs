@@ -16,6 +16,13 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    
+    // Ensure database is created
+    using (var scope = app.Services.CreateScope())
+    {
+        var context = scope.ServiceProvider.GetRequiredService<OrderDbContext>();
+        await context.Database.EnsureCreatedAsync();
+    }
 }
 
 // Cart endpoints

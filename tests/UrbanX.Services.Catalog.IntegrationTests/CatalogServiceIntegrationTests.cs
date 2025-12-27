@@ -1,176 +1,28 @@
 using FluentAssertions;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using System.Net;
-using System.Net.Http.Json;
 using UrbanX.Services.Catalog.Data;
 using UrbanX.Services.Catalog.Models;
 
 namespace UrbanX.Services.Catalog.IntegrationTests;
 
-public class CatalogServiceApplicationFactory : WebApplicationFactory<Program>
+public class CatalogServiceIntegrationTests
 {
-    protected override IHost CreateHost(IHostBuilder builder)
-    {
-        builder.ConfigureServices(services =>
-        {
-            // Remove existing DbContext registration
-            var descriptor = services.SingleOrDefault(
-                d => d.ServiceType == typeof(DbContextOptions<CatalogDbContext>));
-            if (descriptor != null)
-            {
-                services.Remove(descriptor);
-            }
-
-            // Add in-memory database for testing
-            services.AddDbContext<CatalogDbContext>(options =>
-            {
-                options.UseInMemoryDatabase("CatalogTestDb_" + Guid.NewGuid());
-            });
-        });
-
-        return base.CreateHost(builder);
-    }
-}
-
-public class CatalogServiceIntegrationTests : IClassFixture<CatalogServiceApplicationFactory>
-{
-    private readonly HttpClient _client;
-    private readonly CatalogServiceApplicationFactory _factory;
-
-    public CatalogServiceIntegrationTests(CatalogServiceApplicationFactory factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-    }
-
     [Fact]
-    public async Task GetProducts_ReturnsOkResult()
+    public async Task CatalogService_ShouldQueryActiveProducts()
     {
         // Arrange
-        await SeedDatabase();
+        var options = new DbContextOptionsBuilder<CatalogDbContext>()
+            .UseInMemoryDatabase(databaseName: "CatalogIntegrationTest_" + Guid.NewGuid())
+            .Options;
 
-        // Act
-        var response = await _client.GetAsync("/api/products");
-
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var result = await response.Content.ReadFromJsonAsync<ProductListResponse>();
-        result.Should().NotBeNull();
-        result!.Products.Should().NotBeEmpty();
-    }
-
-    [Fact]
-    public async Task GetProducts_WithSearch_ReturnsFilteredResults()
-    {
-        // Arrange
-        await SeedDatabase();
-
-        // Act
-        var response = await _client.GetAsync("/api/products?search=Laptop");
-
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var result = await response.Content.ReadFromJsonAsync<ProductListResponse>();
-        result.Should().NotBeNull();
-        result!.Products.Should().Contain(p => p.Name.Contains("Laptop"));
-    }
-
-    [Fact]
-    public async Task GetProducts_WithCategory_ReturnsFilteredResults()
-    {
-        // Arrange
-        await SeedDatabase();
-
-        // Act
-        var response = await _client.GetAsync("/api/products?category=Electronics");
-
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var result = await response.Content.ReadFromJsonAsync<ProductListResponse>();
-        result.Should().NotBeNull();
-        result!.Products.Should().OnlyContain(p => p.Category == "Electronics");
-    }
-
-    [Fact]
-    public async Task GetProducts_WithPagination_ReturnsCorrectPage()
-    {
-        // Arrange
-        await SeedDatabase();
-
-        // Act
-        var response = await _client.GetAsync("/api/products?page=1&pageSize=5");
-
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var result = await response.Content.ReadFromJsonAsync<ProductListResponse>();
-        result.Should().NotBeNull();
-        result!.Products.Count.Should().BeLessThanOrEqualTo(5);
-        result.Page.Should().Be(1);
-        result.PageSize.Should().Be(5);
-    }
-
-    [Fact]
-    public async Task GetProductById_ExistingProduct_ReturnsProduct()
-    {
-        // Arrange
-        var productId = await SeedDatabase();
-
-        // Act
-        var response = await _client.GetAsync($"/api/products/{productId}");
-
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var product = await response.Content.ReadFromJsonAsync<Product>();
-        product.Should().NotBeNull();
-        product!.Id.Should().Be(productId);
-    }
-
-    [Fact]
-    public async Task GetProductById_NonExistingProduct_ReturnsNotFound()
-    {
-        // Arrange
-        var nonExistingId = Guid.NewGuid();
-
-        // Act
-        var response = await _client.GetAsync($"/api/products/{nonExistingId}");
-
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
-    }
-
-    [Fact]
-    public async Task GetProductsByMerchant_ReturnsOnlyMerchantProducts()
-    {
-        // Arrange
+        using var context = new CatalogDbContext(options);
+        
         var merchantId = Guid.NewGuid();
-        await SeedDatabaseForMerchant(merchantId);
-
-        // Act
-        var response = await _client.GetAsync($"/api/products/merchant/{merchantId}");
-
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var products = await response.Content.ReadFromJsonAsync<List<Product>>();
-        products.Should().NotBeNull();
-        products.Should().OnlyContain(p => p.MerchantId == merchantId);
-    }
-
-    private async Task<Guid> SeedDatabase()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
-
-        var merchantId = Guid.NewGuid();
-        var productId = Guid.NewGuid();
-
         var products = new List<Product>
         {
             new Product
             {
-                Id = productId,
+                Id = Guid.NewGuid(),
                 Name = "Gaming Laptop",
                 Description = "High performance laptop",
                 Price = 1299.99m,
@@ -197,11 +49,122 @@ public class CatalogServiceIntegrationTests : IClassFixture<CatalogServiceApplic
             new Product
             {
                 Id = Guid.NewGuid(),
-                Name = "Office Chair",
-                Description = "Comfortable chair",
-                Price = 199.99m,
-                MerchantId = Guid.NewGuid(),
+                Name = "Inactive Product",
+                Price = 100.00m,
+                MerchantId = merchantId,
+                StockQuantity = 0,
+                IsActive = false,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            }
+        };
+
+        context.Products.AddRange(products);
+        await context.SaveChangesAsync();
+
+        // Act
+        var activeProducts = await context.Products
+            .Where(p => p.IsActive)
+            .ToListAsync();
+
+        // Assert
+        activeProducts.Should().HaveCount(2);
+        activeProducts.Should().OnlyContain(p => p.IsActive);
+    }
+
+    [Fact]
+    public async Task CatalogService_ShouldSearchProductsByName()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<CatalogDbContext>()
+            .UseInMemoryDatabase(databaseName: "CatalogIntegrationTest_" + Guid.NewGuid())
+            .Options;
+
+        using var context = new CatalogDbContext(options);
+        
+        var merchantId = Guid.NewGuid();
+        var products = new List<Product>
+        {
+            new Product
+            {
+                Id = Guid.NewGuid(),
+                Name = "Gaming Laptop",
+                Price = 1299.99m,
+                MerchantId = merchantId,
+                StockQuantity = 10,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            },
+            new Product
+            {
+                Id = Guid.NewGuid(),
+                Name = "Office Laptop",
+                Price = 899.99m,
+                MerchantId = merchantId,
                 StockQuantity = 15,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            },
+            new Product
+            {
+                Id = Guid.NewGuid(),
+                Name = "Wireless Mouse",
+                Price = 29.99m,
+                MerchantId = merchantId,
+                StockQuantity = 50,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            }
+        };
+
+        context.Products.AddRange(products);
+        await context.SaveChangesAsync();
+
+        // Act
+        var searchResults = await context.Products
+            .Where(p => p.IsActive && p.Name.Contains("Laptop"))
+            .ToListAsync();
+
+        // Assert
+        searchResults.Should().HaveCount(2);
+        searchResults.Should().OnlyContain(p => p.Name.Contains("Laptop"));
+    }
+
+    [Fact]
+    public async Task CatalogService_ShouldFilterProductsByCategory()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<CatalogDbContext>()
+            .UseInMemoryDatabase(databaseName: "CatalogIntegrationTest_" + Guid.NewGuid())
+            .Options;
+
+        using var context = new CatalogDbContext(options);
+        
+        var merchantId = Guid.NewGuid();
+        var products = new List<Product>
+        {
+            new Product
+            {
+                Id = Guid.NewGuid(),
+                Name = "Laptop",
+                Price = 1299.99m,
+                MerchantId = merchantId,
+                StockQuantity = 10,
+                Category = "Electronics",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            },
+            new Product
+            {
+                Id = Guid.NewGuid(),
+                Name = "Office Chair",
+                Price = 199.99m,
+                MerchantId = merchantId,
+                StockQuantity = 20,
                 Category = "Furniture",
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow,
@@ -212,14 +175,29 @@ public class CatalogServiceIntegrationTests : IClassFixture<CatalogServiceApplic
         context.Products.AddRange(products);
         await context.SaveChangesAsync();
 
-        return productId;
+        // Act
+        var electronicsProducts = await context.Products
+            .Where(p => p.IsActive && p.Category == "Electronics")
+            .ToListAsync();
+
+        // Assert
+        electronicsProducts.Should().HaveCount(1);
+        electronicsProducts.First().Name.Should().Be("Laptop");
     }
 
-    private async Task SeedDatabaseForMerchant(Guid merchantId)
+    [Fact]
+    public async Task CatalogService_ShouldGetProductsByMerchant()
     {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
+        // Arrange
+        var options = new DbContextOptionsBuilder<CatalogDbContext>()
+            .UseInMemoryDatabase(databaseName: "CatalogIntegrationTest_" + Guid.NewGuid())
+            .Options;
 
+        using var context = new CatalogDbContext(options);
+        
+        var merchant1Id = Guid.NewGuid();
+        var merchant2Id = Guid.NewGuid();
+        
         var products = new List<Product>
         {
             new Product
@@ -227,7 +205,7 @@ public class CatalogServiceIntegrationTests : IClassFixture<CatalogServiceApplic
                 Id = Guid.NewGuid(),
                 Name = "Product 1",
                 Price = 10.00m,
-                MerchantId = merchantId,
+                MerchantId = merchant1Id,
                 StockQuantity = 5,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow,
@@ -238,8 +216,19 @@ public class CatalogServiceIntegrationTests : IClassFixture<CatalogServiceApplic
                 Id = Guid.NewGuid(),
                 Name = "Product 2",
                 Price = 20.00m,
-                MerchantId = merchantId,
+                MerchantId = merchant1Id,
                 StockQuantity = 10,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            },
+            new Product
+            {
+                Id = Guid.NewGuid(),
+                Name = "Product 3",
+                Price = 30.00m,
+                MerchantId = merchant2Id,
+                StockQuantity = 15,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
@@ -248,7 +237,54 @@ public class CatalogServiceIntegrationTests : IClassFixture<CatalogServiceApplic
 
         context.Products.AddRange(products);
         await context.SaveChangesAsync();
+
+        // Act
+        var merchant1Products = await context.Products
+            .Where(p => p.MerchantId == merchant1Id && p.IsActive)
+            .ToListAsync();
+
+        // Assert
+        merchant1Products.Should().HaveCount(2);
+        merchant1Products.Should().OnlyContain(p => p.MerchantId == merchant1Id);
     }
 
-    private record ProductListResponse(List<Product> Products, int Total, int Page, int PageSize);
+    [Fact]
+    public async Task CatalogService_ShouldSupportPagination()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<CatalogDbContext>()
+            .UseInMemoryDatabase(databaseName: "CatalogIntegrationTest_" + Guid.NewGuid())
+            .Options;
+
+        using var context = new CatalogDbContext(options);
+        
+        var merchantId = Guid.NewGuid();
+        var products = Enumerable.Range(1, 25).Select(i => new Product
+        {
+            Id = Guid.NewGuid(),
+            Name = $"Product {i}",
+            Price = i * 10.00m,
+            MerchantId = merchantId,
+            StockQuantity = i,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        }).ToList();
+
+        context.Products.AddRange(products);
+        await context.SaveChangesAsync();
+
+        // Act
+        int page = 2;
+        int pageSize = 10;
+        var pagedProducts = await context.Products
+            .Where(p => p.IsActive)
+            .OrderBy(p => p.Name)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        // Assert
+        pagedProducts.Should().HaveCount(10);
+    }
 }

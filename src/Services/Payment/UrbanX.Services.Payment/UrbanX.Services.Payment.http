@@ -1,0 +1,6 @@
+@UrbanX.Services.Payment_HostAddress = http://localhost:5126
+
+GET {{UrbanX.Services.Payment_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

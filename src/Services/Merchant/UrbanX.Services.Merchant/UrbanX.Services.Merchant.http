@@ -1,0 +1,6 @@
+@UrbanX.Services.Merchant_HostAddress = http://localhost:5105
+
+GET {{UrbanX.Services.Merchant_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

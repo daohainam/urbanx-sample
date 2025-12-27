@@ -1,0 +1,6 @@
+@UrbanX.Services.Catalog_HostAddress = http://localhost:5157
+
+GET {{UrbanX.Services.Catalog_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

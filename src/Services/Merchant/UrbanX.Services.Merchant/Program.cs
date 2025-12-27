@@ -110,4 +110,51 @@ app.MapGet("/api/merchants/{merchantId:guid}/orders", async (Guid merchantId, Me
     return Results.Ok(new List<object>());
 });
 
+// Category management for merchants
+app.MapGet("/api/merchants/{merchantId:guid}/categories", async (Guid merchantId, MerchantDbContext db) =>
+{
+    var categories = await db.Categories
+        .Where(c => c.MerchantId == merchantId)
+        .ToListAsync();
+    return Results.Ok(categories);
+});
+
+app.MapPost("/api/merchants/{merchantId:guid}/categories", async (Guid merchantId, MerchantCategory category, MerchantDbContext db) =>
+{
+    category.Id = Guid.NewGuid();
+    category.MerchantId = merchantId;
+    category.CreatedAt = DateTime.UtcNow;
+    category.UpdatedAt = DateTime.UtcNow;
+    category.IsActive = true;
+    
+    db.Categories.Add(category);
+    await db.SaveChangesAsync();
+    
+    return Results.Created($"/api/merchants/{merchantId}/categories/{category.Id}", category);
+});
+
+app.MapPut("/api/merchants/{merchantId:guid}/categories/{categoryId:guid}", async (Guid merchantId, Guid categoryId, MerchantCategory updatedCategory, MerchantDbContext db) =>
+{
+    var category = await db.Categories.FirstOrDefaultAsync(c => c.Id == categoryId && c.MerchantId == merchantId);
+    if (category == null) return Results.NotFound();
+    
+    category.Name = updatedCategory.Name;
+    category.Description = updatedCategory.Description;
+    category.IsActive = updatedCategory.IsActive;
+    category.UpdatedAt = DateTime.UtcNow;
+    
+    await db.SaveChangesAsync();
+    return Results.Ok(category);
+});
+
+app.MapDelete("/api/merchants/{merchantId:guid}/categories/{categoryId:guid}", async (Guid merchantId, Guid categoryId, MerchantDbContext db) =>
+{
+    var category = await db.Categories.FirstOrDefaultAsync(c => c.Id == categoryId && c.MerchantId == merchantId);
+    if (category == null) return Results.NotFound();
+    
+    db.Categories.Remove(category);
+    await db.SaveChangesAsync();
+    return Results.NoContent();
+});
+
 app.Run();

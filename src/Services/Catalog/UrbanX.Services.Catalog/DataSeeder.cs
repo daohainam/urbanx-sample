@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using UrbanX.Services.Catalog.Data;
 using UrbanX.Services.Catalog.Models;
@@ -13,92 +14,49 @@ public static class DataSeeder
             return; // Database already seeded
         }
 
-        var merchantId1 = Guid.Parse("11111111-1111-1111-1111-111111111111");
-        var merchantId2 = Guid.Parse("22222222-2222-2222-2222-222222222222");
-
-        var products = new List<Product>
+        var productsPath = Path.Combine(AppContext.BaseDirectory, "SeedData", "products.json");
+        if (!File.Exists(productsPath))
         {
-            new Product
-            {
-                Id = Guid.NewGuid(),
-                Name = "Wireless Headphones",
-                Description = "High-quality wireless headphones with noise cancellation",
-                Price = 99.99m,
-                MerchantId = merchantId1,
-                StockQuantity = 50,
-                Category = "Electronics",
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            },
-            new Product
-            {
-                Id = Guid.NewGuid(),
-                Name = "Laptop Stand",
-                Description = "Ergonomic aluminum laptop stand",
-                Price = 49.99m,
-                MerchantId = merchantId1,
-                StockQuantity = 100,
-                Category = "Accessories",
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            },
-            new Product
-            {
-                Id = Guid.NewGuid(),
-                Name = "Smart Watch",
-                Description = "Fitness tracking smart watch with heart rate monitor",
-                Price = 199.99m,
-                MerchantId = merchantId2,
-                StockQuantity = 30,
-                Category = "Electronics",
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            },
-            new Product
-            {
-                Id = Guid.NewGuid(),
-                Name = "USB-C Cable",
-                Description = "Fast charging USB-C cable 6ft",
-                Price = 14.99m,
-                MerchantId = merchantId2,
-                StockQuantity = 200,
-                Category = "Accessories",
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            },
-            new Product
-            {
-                Id = Guid.NewGuid(),
-                Name = "Mechanical Keyboard",
-                Description = "RGB mechanical gaming keyboard",
-                Price = 129.99m,
-                MerchantId = merchantId1,
-                StockQuantity = 25,
-                Category = "Electronics",
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            },
-            new Product
-            {
-                Id = Guid.NewGuid(),
-                Name = "Wireless Mouse",
-                Description = "Ergonomic wireless mouse with precision tracking",
-                Price = 39.99m,
-                MerchantId = merchantId2,
-                StockQuantity = 75,
-                Category = "Electronics",
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            }
-        };
+            throw new FileNotFoundException($"Seed data file not found at {productsPath}. Ensure the SeedData folder and products.json file are included in the project and copied to the output directory.");
+        }
+
+        var jsonContent = await File.ReadAllTextAsync(productsPath);
+        var productsData = JsonSerializer.Deserialize<List<ProductSeedData>>(jsonContent, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        if (productsData == null || productsData.Count == 0)
+        {
+            return;
+        }
+
+        var products = productsData.Select(p => new Product
+        {
+            Id = Guid.NewGuid(),
+            Name = p.Name,
+            Description = p.Description,
+            Price = p.Price,
+            MerchantId = p.MerchantId,
+            StockQuantity = p.StockQuantity,
+            Category = p.Category,
+            IsActive = p.IsActive,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        }).ToList();
 
         await context.Products.AddRangeAsync(products);
         await context.SaveChangesAsync();
+    }
+
+    private class ProductSeedData
+    {
+        public string Name { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public decimal Price { get; set; }
+        public Guid MerchantId { get; set; }
+        public int StockQuantity { get; set; }
+        public string? Category { get; set; }
+        public bool IsActive { get; set; }
     }
 }

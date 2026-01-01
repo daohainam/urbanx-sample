@@ -60,3 +60,6 @@ app.MapGet("/api/payments/order/{orderId:guid}", async (Guid orderId, PaymentDbC
 });
 
 app.Run();
+
+// Make the implicit Program class public so integration tests can reference it
+public partial class Program { }

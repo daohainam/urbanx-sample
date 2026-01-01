@@ -1,0 +1,33 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@inject NavigationManager Navigation
+@inject SignOutSessionStateManager SignOutManager
+
+<AuthorizeView>
+    <Authorized>
+        <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8">
+            <FluentLabel>Hello, @context.User.Identity?.Name!</FluentLabel>
+            <FluentButton Appearance="Appearance.Lightweight" OnClick="BeginLogout">
+                Log out
+            </FluentButton>
+        </FluentStack>
+    </Authorized>
+    <NotAuthorized>
+        <FluentButton Appearance="Appearance.Accent" OnClick="BeginLogin">
+            Log in
+        </FluentButton>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private void BeginLogin()
+    {
+        Navigation.NavigateToLogin("authentication/login");
+    }
+
+    private async Task BeginLogout()
+    {
+        await SignOutManager.SetSignOutState();
+        Navigation.NavigateToLogout("authentication/logout");
+    }
+}

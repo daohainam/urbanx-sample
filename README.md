@@ -16,12 +16,13 @@ A modern, on-demand multi-merchant commerce platform built with microservices ar
   - **API Gateway** (Port 5000) - BFF using YARP
 - **EF Core** with **PostgreSQL** per service
 - **Kafka** for event messaging
+- **Keycloak** (Port 8080) - Identity and Access Management
 
 ### Frontend
-- **React** + **Vite** + **TypeScript**
-- **Tailwind CSS** for styling
-- **OIDC** authentication (Authorization Code + PKCE)
-- **React Router** for navigation
+- **Blazor WebAssembly** with **.NET 10**
+- **FluentUI** components for styling
+- **OIDC** authentication with Keycloak (Authorization Code + PKCE)
+- Server-side hosting with interactive WebAssembly rendering
 
 ## Features
 
@@ -222,9 +223,49 @@ npm run dev
 
 The merchant portal will be available at http://localhost:5174
 
-**Test Credentials:**
-- Username: `merchant@test.com`
-- Password: `Password123!`
+## Authentication with Keycloak
+
+The application uses Keycloak for authentication and authorization.
+
+**Keycloak Admin Console:**
+- URL: http://localhost:8080
+- Username: `admin`
+- Password: `admin`
+
+### Test User Accounts
+
+#### Admin User
+- **Username:** `admin@urbanx.com`
+- **Password:** `Admin123!`
+- **Roles:** admin
+
+#### Merchant Users
+- **Merchant 1 (Full Access):**
+  - Username: `merchant1@urbanx.com`
+  - Password: `Merchant123!`
+  - Roles: merchant-editor, merchant-order-manager
+
+- **Merchant 2 (Editor Only):**
+  - Username: `merchant2@urbanx.com`
+  - Password: `Merchant123!`
+  - Roles: merchant-editor
+
+#### Buyer/Customer Users
+- **Buyer 1:**
+  - Username: `buyer1@urbanx.com`
+  - Password: `Buyer123!`
+  - Roles: buyer
+
+- **Buyer 2:**
+  - Username: `buyer2@urbanx.com`
+  - Password: `Buyer123!`
+  - Roles: buyer
+
+### Available Roles
+- **admin** - Full system administration access
+- **merchant-editor** - Can edit products and categories
+- **merchant-order-manager** - Can manage orders
+- **buyer** - Can browse and purchase products
 
 ### Merchant Portal Features
 - Dashboard with statistics overview

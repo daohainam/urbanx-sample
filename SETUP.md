@@ -14,6 +14,7 @@ docker-compose up -d
 
 This will start:
 - PostgreSQL on port 5432
+- Keycloak on port 8080
 - Kafka on port 9092
 - Zookeeper on port 2181
 
@@ -75,15 +76,35 @@ npm run dev
 - **Frontend:** http://localhost:5173
 - **API Gateway:** http://localhost:5000
 - **Identity Server:** http://localhost:5005
+- **Keycloak Admin Console:** http://localhost:8080 (admin/admin)
 
 ## Test Users
-- **Customer:** 
-  - Email: customer@test.com
-  - Password: Password123!
+### Admin
+- **Email:** admin@urbanx.com
+- **Password:** Admin123!
+- **Roles:** admin
   
-- **Merchant:**
-  - Email: merchant@test.com
-  - Password: Password123!
+### Merchants
+- **Merchant 1:**
+  - Email: merchant1@urbanx.com
+  - Password: Merchant123!
+  - Roles: merchant-editor, merchant-order-manager
+  
+- **Merchant 2:**
+  - Email: merchant2@urbanx.com
+  - Password: Merchant123!
+  - Roles: merchant-editor
+
+### Buyers/Customers
+- **Buyer 1:**
+  - Email: buyer1@urbanx.com
+  - Password: Buyer123!
+  - Roles: buyer
+  
+- **Buyer 2:**
+  - Email: buyer2@urbanx.com
+  - Password: Buyer123!
+  - Roles: buyer
 
 ## Architecture Overview
 

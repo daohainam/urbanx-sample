@@ -1,0 +1,12 @@
+@page "/orders"
+@inject NavigationManager Navigation
+
+<PageTitle>My Orders - UrbanX Shop</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
+    <FluentLabel Typo="Typography.H2">My Orders</FluentLabel>
+
+    <FluentMessageBar Intent="MessageIntent.Info">
+        You haven't placed any orders yet. <a href="/products">Start shopping</a>
+    </FluentMessageBar>
+</FluentStack>

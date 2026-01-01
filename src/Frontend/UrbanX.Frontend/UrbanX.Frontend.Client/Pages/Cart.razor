@@ -1,0 +1,12 @@
+@page "/cart"
+@inject NavigationManager Navigation
+
+<PageTitle>Shopping Cart - UrbanX Shop</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
+    <FluentLabel Typo="Typography.H2">Shopping Cart</FluentLabel>
+
+    <FluentMessageBar Intent="MessageIntent.Info">
+        Your cart is empty. <a href="/products">Browse products</a>
+    </FluentMessageBar>
+</FluentStack>

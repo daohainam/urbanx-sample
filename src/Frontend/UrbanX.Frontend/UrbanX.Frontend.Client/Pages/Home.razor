@@ -1,0 +1,87 @@
+﻿@page "/"
+@inject HttpClient Http
+
+<PageTitle>Home - UrbanX Shop</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
+    <FluentLabel Typo="Typography.H2">Welcome to UrbanX Shop</FluentLabel>
+    <FluentLabel Typo="Typography.Body">Browse our collection of products from multiple merchants</FluentLabel>
+    
+    <FluentDivider />
+    
+    <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8">
+        <FluentTextField @bind-Value="searchQuery" Placeholder="Search products..." Style="width: 300px;" />
+        <FluentButton Appearance="Appearance.Accent" OnClick="SearchProducts">Search</FluentButton>
+    </FluentStack>
+    
+    @if (isLoading)
+    {
+        <FluentProgressRing>Loading products...</FluentProgressRing>
+    }
+    else if (products != null && products.Any())
+    {
+        <FluentGrid Spacing="3">
+            @foreach (var product in products)
+            {
+                <FluentGridItem xs="12" sm="6" md="4" lg="3">
+                    <FluentCard Style="height: 100%; cursor: pointer;">
+                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
+                            <div style="width: 100%; height: 200px; background-color: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+                                <FluentLabel>No Image</FluentLabel>
+                            </div>
+                            <FluentLabel Typo="Typography.Body" Weight="FontWeight.Bold">@product.Name</FluentLabel>
+                            <FluentLabel Typo="Typography.Body">@product.Price.ToString("C")</FluentLabel>
+                            @if (!string.IsNullOrEmpty(product.Category))
+                            {
+                                <FluentBadge Appearance="Appearance.Accent">@product.Category</FluentBadge>
+                            }
+                            @if (product.StockQuantity > 0)
+                            {
+                                <FluentLabel Typo="Typography.Subject" Color="Color.Success">In Stock</FluentLabel>
+                            }
+                            else
+                            {
+                                <FluentLabel Typo="Typography.Subject" Color="Color.Error">Out of Stock</FluentLabel>
+                            }
+                        </FluentStack>
+                    </FluentCard>
+                </FluentGridItem>
+            }
+        </FluentGrid>
+    }
+    else
+    {
+        <FluentLabel Typo="Typography.Body">No products available</FluentLabel>
+    }
+</FluentStack>
+
+@code {
+    private List<Product> products = new();
+    private string searchQuery = string.Empty;
+    private bool isLoading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Demo mode - create sample products
+        products = GenerateSampleProducts();
+    }
+
+    private Task SearchProducts()
+    {
+        // Demo search - filter existing products
+        return Task.CompletedTask;
+    }
+
+    private List<Product> GenerateSampleProducts()
+    {
+        return new List<Product>
+        {
+            new Product { Id = Guid.NewGuid(), Name = "Laptop", Price = 999.99m, Category = "Electronics", StockQuantity = 10, IsActive = true, CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, MerchantId = Guid.NewGuid() },
+            new Product { Id = Guid.NewGuid(), Name = "Coffee Maker", Price = 79.99m, Category = "Appliances", StockQuantity = 25, IsActive = true, CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, MerchantId = Guid.NewGuid() },
+            new Product { Id = Guid.NewGuid(), Name = "Running Shoes", Price = 129.99m, Category = "Sports", StockQuantity = 50, IsActive = true, CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, MerchantId = Guid.NewGuid() },
+            new Product { Id = Guid.NewGuid(), Name = "Wireless Mouse", Price = 29.99m, Category = "Electronics", StockQuantity = 100, IsActive = true, CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, MerchantId = Guid.NewGuid() },
+            new Product { Id = Guid.NewGuid(), Name = "Desk Lamp", Price = 45.99m, Category = "Home", StockQuantity = 30, IsActive = true, CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, MerchantId = Guid.NewGuid() },
+            new Product { Id = Guid.NewGuid(), Name = "Water Bottle", Price = 19.99m, Category = "Sports", StockQuantity = 75, IsActive = true, CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, MerchantId = Guid.NewGuid() }
+        };
+    }
+}

@@ -1,0 +1,27 @@
+﻿@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+
+<FluentLayout>
+    <FluentHeader>
+        <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.Left" VerticalGap="8">
+            <FluentLabel Typo="Typography.H3" Style="color: var(--accent-fill-rest);">
+                UrbanX Shop
+            </FluentLabel>
+        </FluentStack>
+        <FluentSpacer />
+        <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.Right" VerticalGap="8">
+            <FluentButton Appearance="Appearance.Lightweight" OnClick="@(() => Navigation.NavigateTo("/cart"))">
+                Cart
+            </FluentButton>
+            <FluentButton Appearance="Appearance.Accent" OnClick="@(() => Navigation.NavigateTo("/login"))">Login</FluentButton>
+        </FluentStack>
+    </FluentHeader>
+
+    <FluentStack Orientation="Orientation.Horizontal" Style="height: 100%; width: 100%;">
+        <NavMenu />
+        
+        <FluentStack Orientation="Orientation.Vertical" Style="width: 100%; padding: 20px;">
+            @Body
+        </FluentStack>
+    </FluentStack>
+</FluentLayout>

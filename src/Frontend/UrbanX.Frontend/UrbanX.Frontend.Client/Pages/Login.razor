@@ -1,0 +1,33 @@
+@page "/login"
+@inject NavigationManager Navigation
+
+<PageTitle>Login - UrbanX Shop</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="16" Style="max-width: 400px; margin: 0 auto;">
+    <FluentLabel Typo="Typography.H2">Login</FluentLabel>
+
+    <FluentCard>
+        <FluentStack Orientation="Orientation.Vertical" VerticalGap="12">
+            <FluentTextField @bind-Value="username" Placeholder="Username" Style="width: 100%;" />
+            <FluentTextField @bind-Value="password" Placeholder="Password" TextFieldType="TextFieldType.Password" Style="width: 100%;" />
+
+            <FluentButton Appearance="Appearance.Accent" OnClick="HandleLogin" Style="width: 100%;">
+                Login
+            </FluentButton>
+
+            <FluentLabel Typo="Typography.Body">
+                Demo: Use any username and password
+            </FluentLabel>
+        </FluentStack>
+    </FluentCard>
+</FluentStack>
+
+@code {
+    private string username = "";
+    private string password = "";
+
+    private void HandleLogin()
+    {
+        Navigation.NavigateTo("/", true);
+    }
+}

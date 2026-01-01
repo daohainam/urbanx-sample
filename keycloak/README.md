@@ -2,6 +2,18 @@
 
 This directory contains the Keycloak realm configuration for the UrbanX application.
 
+## ⚠️ SECURITY WARNING
+
+**The realm-export.json file contains hard-coded passwords for development/testing purposes only.**
+
+- **DO NOT** use this configuration in production environments
+- **DO NOT** commit production passwords to source control
+- For production deployments:
+  - Use temporary passwords with "temporary": true flag
+  - Force users to change passwords on first login
+  - Use environment variables or secure vaults for sensitive data
+  - Consider using Keycloak's user federation with external identity providers
+
 ## Overview
 
 Keycloak is integrated as the authentication and authorization provider for UrbanX, replacing the previous Duende IdentityServer setup.

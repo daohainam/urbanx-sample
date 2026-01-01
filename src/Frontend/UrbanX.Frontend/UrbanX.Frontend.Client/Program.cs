@@ -7,9 +7,10 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 // Add authentication services for Keycloak
 builder.Services.AddOidcAuthentication(options =>
 {
-    // Configure the authority (Keycloak server)
-    options.ProviderOptions.Authority = "http://localhost:8080/realms/urbanx";
-    options.ProviderOptions.ClientId = "urbanx-spa";
+    // Read configuration from appsettings.json
+    builder.Configuration.Bind("Oidc", options.ProviderOptions);
+    
+    // Configure response type for Authorization Code Flow with PKCE
     options.ProviderOptions.ResponseType = "code";
     
     // Configure scopes
@@ -21,7 +22,7 @@ builder.Services.AddOidcAuthentication(options =>
     // Post logout redirect
     options.ProviderOptions.PostLogoutRedirectUri = "/";
     
-    // Additional configuration
+    // Map roles claim for authorization
     options.UserOptions.RoleClaim = "realm_access.roles";
 });
 

@@ -45,7 +45,7 @@ builder.Services.AddIdentityServer(options =>
     },
     new() {
         ClientId = "urbanx-merchant-spa",
-        ClientName = "UrbanX Merchant Portal",
+        ClientName = "UrbanX Merchant Portal (React)",
         AllowedGrantTypes = GrantTypes.Code,
         RequirePkce = true,
         RequireClientSecret = false,
@@ -53,6 +53,24 @@ builder.Services.AddIdentityServer(options =>
         RedirectUris = { "http://localhost:5174/callback", "https://localhost:5174/callback" },
         PostLogoutRedirectUris = { "http://localhost:5174", "https://localhost:5174" },
         AllowedCorsOrigins = { "http://localhost:5174", "https://localhost:5174" },
+        RequireConsent = false
+    },
+    new() {
+        ClientId = "urbanx-merchant-blazor",
+        ClientName = "UrbanX Merchant Admin (Blazor)",
+        AllowedGrantTypes = GrantTypes.Code,
+        RequirePkce = true,
+        RequireClientSecret = false,
+        AllowedScopes = { "openid", "profile", "email", "merchant.manage" },
+        RedirectUris = { 
+            "http://localhost:5175/authentication/login-callback", 
+            "https://localhost:5175/authentication/login-callback" 
+        },
+        PostLogoutRedirectUris = { 
+            "http://localhost:5175/authentication/logout-callback", 
+            "https://localhost:5175/authentication/logout-callback" 
+        },
+        AllowedCorsOrigins = { "http://localhost:5175", "https://localhost:5175" },
         RequireConsent = false
     }
 })

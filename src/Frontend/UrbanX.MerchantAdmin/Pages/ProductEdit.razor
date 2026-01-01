@@ -1,0 +1,240 @@
+@page "/products/new"
+@page "/products/edit/{ProductId:guid}"
+@attribute [Authorize]
+
+<PageTitle>@(IsNew ? "New Product" : "Edit Product") - UrbanX Merchant Admin</PageTitle>
+
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="products">Products</a></li>
+        <li class="breadcrumb-item active">@(IsNew ? "New Product" : "Edit Product")</li>
+    </ol>
+</nav>
+
+<h1 class="mb-4">
+    <i class="bi bi-@(IsNew ? "plus-circle" : "pencil") me-2"></i>@(IsNew ? "New Product" : "Edit Product")
+</h1>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>@errorMessage
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(successMessage))
+{
+    <div class="alert alert-success" role="alert">
+        <i class="bi bi-check-circle me-2"></i>@successMessage
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <EditForm Model="@product" OnValidSubmit="HandleSubmit">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary class="text-danger" />
+
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Product Name <span class="text-danger">*</span></label>
+                        <InputText id="name" class="form-control" @bind-Value="product.Name" />
+                        <ValidationMessage For="@(() => product.Name)" class="text-danger" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <InputTextArea id="description" class="form-control" rows="3" @bind-Value="product.Description" />
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="price" class="form-label">Price <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <InputNumber id="price" class="form-control" @bind-Value="product.Price" />
+                            </div>
+                            <ValidationMessage For="@(() => product.Price)" class="text-danger" />
+                        </div>
+                        <div class="col-md-6">
+                            <label for="stock" class="form-label">Stock Quantity</label>
+                            <InputNumber id="stock" class="form-control" @bind-Value="product.StockQuantity" />
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="category" class="form-label">Category</label>
+                            <InputSelect id="category" class="form-select" @bind-Value="product.Category">
+                                <option value="">Select a category</option>
+                                @foreach (var category in categories)
+                                {
+                                    <option value="@category.Name">@category.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="imageUrl" class="form-label">Image URL</label>
+                            <InputText id="imageUrl" class="form-control" @bind-Value="product.ImageUrl" />
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <InputCheckbox id="isActive" class="form-check-input" @bind-Value="product.IsActive" />
+                            <label class="form-check-label" for="isActive">Active (visible to customers)</label>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary" disabled="@isSaving">
+                            @if (isSaving)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            }
+                            <i class="bi bi-check-lg me-1"></i>@(IsNew ? "Create Product" : "Save Changes")
+                        </button>
+                        <a href="products" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-lg me-1"></i>Cancel
+                        </a>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-image me-2"></i>Preview</h5>
+            </div>
+            <div class="card-body text-center">
+                @if (!string.IsNullOrEmpty(product.ImageUrl))
+                {
+                    <img src="@product.ImageUrl" alt="@product.Name" class="img-fluid rounded mb-3" style="max-height: 200px;">
+                }
+                else
+                {
+                    <div class="bg-light rounded d-flex align-items-center justify-content-center mb-3" style="height: 200px;">
+                        <i class="bi bi-image text-muted display-1"></i>
+                    </div>
+                }
+                <h5>@(string.IsNullOrEmpty(product.Name) ? "Product Name" : product.Name)</h5>
+                <p class="text-primary fw-bold">@product.Price.ToString("C")</p>
+                @if (product.IsActive)
+                {
+                    <span class="badge bg-success">Active</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary">Inactive</span>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public Guid? ProductId { get; set; }
+
+    private MerchantProduct product = new() { Name = string.Empty, IsActive = true };
+    private List<MerchantCategory> categories = new();
+    private bool isSaving = false;
+    private string? errorMessage;
+    private string? successMessage;
+
+    private bool IsNew => ProductId == null;
+
+    // Demo merchant ID - in production, this would come from authentication claims
+    private static readonly Guid DemoMerchantId = new("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
+
+    [Inject]
+    private MerchantApiService? ApiService { get; set; }
+
+    [Inject]
+    private NavigationManager? NavigationManager { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCategories();
+        
+        if (!IsNew && ApiService != null)
+        {
+            await LoadProduct();
+        }
+    }
+
+    private async Task LoadCategories()
+    {
+        try
+        {
+            if (ApiService != null)
+            {
+                categories = await ApiService.GetCategoriesAsync(DemoMerchantId);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading categories: {ex.Message}");
+        }
+    }
+
+    private async Task LoadProduct()
+    {
+        try
+        {
+            if (ApiService != null && ProductId.HasValue)
+            {
+                var products = await ApiService.GetProductsAsync(DemoMerchantId);
+                var existingProduct = products.FirstOrDefault(p => p.Id == ProductId.Value);
+                if (existingProduct != null)
+                {
+                    product = existingProduct;
+                }
+                else
+                {
+                    errorMessage = "Product not found.";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading product: {ex.Message}";
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (ApiService == null) return;
+
+        isSaving = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            if (IsNew)
+            {
+                await ApiService.CreateProductAsync(DemoMerchantId, product);
+                successMessage = "Product created successfully!";
+                await Task.Delay(1000);
+                NavigationManager?.NavigateTo("products");
+            }
+            else if (ProductId.HasValue)
+            {
+                await ApiService.UpdateProductAsync(DemoMerchantId, ProductId.Value, product);
+                successMessage = "Product updated successfully!";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error saving product: {ex.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+}

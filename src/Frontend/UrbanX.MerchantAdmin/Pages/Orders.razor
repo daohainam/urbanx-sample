@@ -1,0 +1,331 @@
+@page "/orders"
+@attribute [Authorize]
+
+<PageTitle>Orders - UrbanX Merchant Admin</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="bi bi-receipt me-2"></i>Orders
+    </h1>
+    <div class="btn-group">
+        <button class="btn @(selectedStatus == null ? "btn-primary" : "btn-outline-primary")" @onclick="() => FilterByStatus(null)">
+            All
+        </button>
+        <button class="btn @(selectedStatus == "pending" ? "btn-primary" : "btn-outline-primary")" @onclick='() => FilterByStatus("pending")'>
+            Pending
+        </button>
+        <button class="btn @(selectedStatus == "processing" ? "btn-primary" : "btn-outline-primary")" @onclick='() => FilterByStatus("processing")'>
+            Processing
+        </button>
+        <button class="btn @(selectedStatus == "completed" ? "btn-primary" : "btn-outline-primary")" @onclick='() => FilterByStatus("completed")'>
+            Completed
+        </button>
+    </div>
+</div>
+
+@if (isLoading)
+{
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-warning" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>@errorMessage
+    </div>
+}
+else if (filteredOrders.Count == 0)
+{
+    <div class="alert alert-info" role="alert">
+        <i class="bi bi-info-circle me-2"></i>
+        @if (selectedStatus != null)
+        {
+            <span>No @selectedStatus orders found.</span>
+        }
+        else
+        {
+            <span>No orders found. Orders will appear here once customers start purchasing.</span>
+        }
+    </div>
+}
+else
+{
+    <div class="row row-cols-1 g-4">
+        @foreach (var order in filteredOrders)
+        {
+            <div class="col">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="fw-bold">Order #@order.OrderNumber</span>
+                            <span class="text-muted ms-2">@order.CreatedAt.ToString("MMM dd, yyyy HH:mm")</span>
+                        </div>
+                        <span class="badge @GetStatusBadgeClass(order.Status)">@order.Status</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-muted mb-2">Customer</h6>
+                                <p class="mb-0">@order.CustomerName</p>
+                                <small class="text-muted">@order.CustomerEmail</small>
+                            </div>
+                            <div class="col-md-3">
+                                <h6 class="text-muted mb-2">Items</h6>
+                                <p class="mb-0">@order.ItemCount item(s)</p>
+                            </div>
+                            <div class="col-md-3 text-end">
+                                <h6 class="text-muted mb-2">Total</h6>
+                                <p class="mb-0 fw-bold text-primary">@order.Total.ToString("C")</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="btn-group btn-group-sm">
+                                @if (order.Status == "Pending")
+                                {
+                                    <button class="btn btn-success" @onclick="() => UpdateOrderStatus(order, ProcessingStatus)">
+                                        <i class="bi bi-check me-1"></i>Accept
+                                    </button>
+                                    <button class="btn btn-danger" @onclick="() => UpdateOrderStatus(order, CancelledStatus)">
+                                        <i class="bi bi-x me-1"></i>Reject
+                                    </button>
+                                }
+                                else if (order.Status == "Processing")
+                                {
+                                    <button class="btn btn-primary" @onclick="() => UpdateOrderStatus(order, CompletedStatus)">
+                                        <i class="bi bi-check-circle me-1"></i>Complete
+                                    </button>
+                                }
+                            </div>
+                            <button class="btn btn-outline-secondary btn-sm" @onclick="() => ViewOrderDetails(order)">
+                                <i class="bi bi-eye me-1"></i>View Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@* Order Details Modal *@
+@if (showDetailsModal && selectedOrder != null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Order #@selectedOrder.OrderNumber Details</h5>
+                    <button type="button" class="btn-close" @onclick="CloseDetailsModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Customer Information</h6>
+                            <p class="mb-1"><strong>@selectedOrder.CustomerName</strong></p>
+                            <p class="mb-1">@selectedOrder.CustomerEmail</p>
+                            <p class="mb-0 text-muted">@selectedOrder.ShippingAddress</p>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <h6 class="text-muted">Order Information</h6>
+                            <p class="mb-1">Status: <span class="badge @GetStatusBadgeClass(selectedOrder.Status)">@selectedOrder.Status</span></p>
+                            <p class="mb-1">Date: @selectedOrder.CreatedAt.ToString("f")</p>
+                            <p class="mb-0 fw-bold text-primary">Total: @selectedOrder.Total.ToString("C")</p>
+                        </div>
+                    </div>
+                    
+                    <h6 class="text-muted mb-3">Order Items</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th class="text-center">Quantity</th>
+                                    <th class="text-end">Price</th>
+                                    <th class="text-end">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in selectedOrder.Items)
+                                {
+                                    <tr>
+                                        <td>@item.ProductName</td>
+                                        <td class="text-center">@item.Quantity</td>
+                                        <td class="text-end">@item.Price.ToString("C")</td>
+                                        <td class="text-end">@((item.Price * item.Quantity).ToString("C"))</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-light">
+                                    <th colspan="3" class="text-end">Total:</th>
+                                    <th class="text-end">@selectedOrder.Total.ToString("C")</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseDetailsModal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<OrderViewModel> orders = new();
+    private List<OrderViewModel> filteredOrders = new();
+    private bool isLoading = true;
+    private string? errorMessage;
+    private string? selectedStatus;
+
+    // Status constants
+    private const string ProcessingStatus = "Processing";
+    private const string CancelledStatus = "Cancelled";
+    private const string CompletedStatus = "Completed";
+    private bool showDetailsModal = false;
+    private OrderViewModel? selectedOrder;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadOrders();
+    }
+
+    private Task LoadOrders()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        // Demo orders - in production, this would call the Order service API
+        orders = new List<OrderViewModel>
+        {
+            new OrderViewModel
+            {
+                Id = Guid.NewGuid(),
+                OrderNumber = "ORD-001",
+                CustomerName = "John Doe",
+                CustomerEmail = "john@example.com",
+                ShippingAddress = "123 Main St, City, State 12345",
+                Status = "Pending",
+                Total = 45.99m,
+                ItemCount = 2,
+                CreatedAt = DateTime.Now.AddHours(-2),
+                Items = new List<OrderItemViewModel>
+                {
+                    new() { ProductName = "Premium Coffee Beans", Quantity = 2, Price = 15.99m },
+                    new() { ProductName = "Coffee Grinder", Quantity = 1, Price = 14.01m }
+                }
+            },
+            new OrderViewModel
+            {
+                Id = Guid.NewGuid(),
+                OrderNumber = "ORD-002",
+                CustomerName = "Jane Smith",
+                CustomerEmail = "jane@example.com",
+                ShippingAddress = "456 Oak Ave, Town, State 67890",
+                Status = "Processing",
+                Total = 89.50m,
+                ItemCount = 3,
+                CreatedAt = DateTime.Now.AddHours(-5),
+                Items = new List<OrderItemViewModel>
+                {
+                    new() { ProductName = "Espresso Machine", Quantity = 1, Price = 75.00m },
+                    new() { ProductName = "Milk Frother", Quantity = 1, Price = 14.50m }
+                }
+            },
+            new OrderViewModel
+            {
+                Id = Guid.NewGuid(),
+                OrderNumber = "ORD-003",
+                CustomerName = "Bob Wilson",
+                CustomerEmail = "bob@example.com",
+                ShippingAddress = "789 Pine Rd, Village, State 11223",
+                Status = "Completed",
+                Total = 25.00m,
+                ItemCount = 1,
+                CreatedAt = DateTime.Now.AddDays(-1),
+                Items = new List<OrderItemViewModel>
+                {
+                    new() { ProductName = "Tea Collection Set", Quantity = 1, Price = 25.00m }
+                }
+            }
+        };
+
+        FilterOrders();
+        isLoading = false;
+
+        return Task.CompletedTask;
+    }
+
+    private void FilterByStatus(string? status)
+    {
+        selectedStatus = status;
+        FilterOrders();
+    }
+
+    private void FilterOrders()
+    {
+        if (string.IsNullOrEmpty(selectedStatus))
+        {
+            filteredOrders = orders.ToList();
+        }
+        else
+        {
+            filteredOrders = orders.Where(o => o.Status.Equals(selectedStatus, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+    }
+
+    private void UpdateOrderStatus(OrderViewModel order, string newStatus)
+    {
+        order.Status = newStatus;
+        FilterOrders();
+    }
+
+    private void ViewOrderDetails(OrderViewModel order)
+    {
+        selectedOrder = order;
+        showDetailsModal = true;
+    }
+
+    private void CloseDetailsModal()
+    {
+        selectedOrder = null;
+        showDetailsModal = false;
+    }
+
+    private string GetStatusBadgeClass(string status) => status.ToLower() switch
+    {
+        "pending" => "bg-warning text-dark",
+        "processing" => "bg-info",
+        "completed" => "bg-success",
+        "cancelled" => "bg-danger",
+        _ => "bg-secondary"
+    };
+
+    // View models for orders
+    public class OrderViewModel
+    {
+        public Guid Id { get; set; }
+        public string OrderNumber { get; set; } = string.Empty;
+        public string CustomerName { get; set; } = string.Empty;
+        public string CustomerEmail { get; set; } = string.Empty;
+        public string ShippingAddress { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public decimal Total { get; set; }
+        public int ItemCount { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public List<OrderItemViewModel> Items { get; set; } = new();
+    }
+
+    public class OrderItemViewModel
+    {
+        public string ProductName { get; set; } = string.Empty;
+        public int Quantity { get; set; }
+        public decimal Price { get; set; }
+    }
+}

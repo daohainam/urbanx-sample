@@ -1,0 +1,294 @@
+@page "/categories"
+@attribute [Authorize]
+
+<PageTitle>Categories - UrbanX Merchant Admin</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="bi bi-tags me-2"></i>Categories
+    </h1>
+    <button class="btn btn-primary" @onclick="ShowAddModal">
+        <i class="bi bi-plus-circle me-2"></i>Add Category
+    </button>
+</div>
+
+@if (isLoading)
+{
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-warning" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>@errorMessage
+    </div>
+}
+else if (categories.Count == 0)
+{
+    <div class="alert alert-info" role="alert">
+        <i class="bi bi-info-circle me-2"></i>No categories found. Create your first category to organize your products!
+    </div>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        @foreach (var category in categories)
+        {
+            <div class="col">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-tag me-2 text-primary"></i>@category.Name
+                            </h5>
+                            @if (category.IsActive)
+                            {
+                                <span class="badge bg-success">Active</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Inactive</span>
+                            }
+                        </div>
+                        <p class="card-text text-muted">
+                            @(string.IsNullOrEmpty(category.Description) ? "No description" : category.Description)
+                        </p>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <div class="btn-group btn-group-sm w-100">
+                            <button class="btn btn-outline-primary" @onclick="() => ShowEditModal(category)">
+                                <i class="bi bi-pencil me-1"></i>Edit
+                            </button>
+                            <button class="btn btn-outline-danger" @onclick="() => ShowDeleteModal(category)">
+                                <i class="bi bi-trash me-1"></i>Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@* Add/Edit Modal *@
+@if (showEditModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@(isNewCategory ? "Add Category" : "Edit Category")</h5>
+                    <button type="button" class="btn-close" @onclick="CloseEditModal"></button>
+                </div>
+                <EditForm Model="@editCategory" OnValidSubmit="SaveCategory">
+                    <div class="modal-body">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary class="text-danger" />
+
+                        <div class="mb-3">
+                            <label for="categoryName" class="form-label">Name <span class="text-danger">*</span></label>
+                            <InputText id="categoryName" class="form-control" @bind-Value="editCategory.Name" />
+                            <ValidationMessage For="@(() => editCategory.Name)" class="text-danger" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="categoryDescription" class="form-label">Description</label>
+                            <InputTextArea id="categoryDescription" class="form-control" rows="3" @bind-Value="editCategory.Description" />
+                        </div>
+
+                        <div class="form-check">
+                            <InputCheckbox id="categoryActive" class="form-check-input" @bind-Value="editCategory.IsActive" />
+                            <label class="form-check-label" for="categoryActive">Active</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="CloseEditModal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" disabled="@isSaving">
+                            @if (isSaving)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            }
+                            <i class="bi bi-check-lg me-1"></i>Save
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@* Delete Confirmation Modal *@
+@if (showDeleteModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="btn-close" @onclick="CloseDeleteModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete "<strong>@categoryToDelete?.Name</strong>"?</p>
+                    <p class="text-muted small">This action cannot be undone. Products in this category will become uncategorized.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseDeleteModal">Cancel</button>
+                    <button type="button" class="btn btn-danger" @onclick="ConfirmDelete">
+                        <i class="bi bi-trash me-1"></i>Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<MerchantCategory> categories = new();
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    // Edit modal state
+    private bool showEditModal = false;
+    private bool isNewCategory = true;
+    private bool isSaving = false;
+    private MerchantCategory editCategory = new() { Name = string.Empty, IsActive = true };
+
+    // Delete modal state
+    private bool showDeleteModal = false;
+    private MerchantCategory? categoryToDelete;
+
+    // Demo merchant ID - in production, this would come from authentication claims
+    private static readonly Guid DemoMerchantId = new("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
+
+    [Inject]
+    private MerchantApiService? ApiService { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCategories();
+    }
+
+    private async Task LoadCategories()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            if (ApiService != null)
+            {
+                categories = await ApiService.GetCategoriesAsync(DemoMerchantId);
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Unable to load categories. The API may be unavailable.";
+            Console.WriteLine($"Error loading categories: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void ShowAddModal()
+    {
+        editCategory = new MerchantCategory { Name = string.Empty, IsActive = true };
+        isNewCategory = true;
+        showEditModal = true;
+    }
+
+    private void ShowEditModal(MerchantCategory category)
+    {
+        editCategory = new MerchantCategory
+        {
+            Id = category.Id,
+            MerchantId = category.MerchantId,
+            Name = category.Name,
+            Description = category.Description,
+            IsActive = category.IsActive,
+            CreatedAt = category.CreatedAt,
+            UpdatedAt = category.UpdatedAt
+        };
+        isNewCategory = false;
+        showEditModal = true;
+    }
+
+    private void CloseEditModal()
+    {
+        showEditModal = false;
+    }
+
+    private async Task SaveCategory()
+    {
+        if (ApiService == null) return;
+
+        isSaving = true;
+
+        try
+        {
+            if (isNewCategory)
+            {
+                var created = await ApiService.CreateCategoryAsync(DemoMerchantId, editCategory);
+                if (created != null)
+                {
+                    categories.Add(created);
+                }
+            }
+            else
+            {
+                var updated = await ApiService.UpdateCategoryAsync(DemoMerchantId, editCategory.Id, editCategory);
+                if (updated != null)
+                {
+                    var index = categories.FindIndex(c => c.Id == editCategory.Id);
+                    if (index >= 0)
+                    {
+                        categories[index] = updated;
+                    }
+                }
+            }
+            CloseEditModal();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error saving category: {ex.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void ShowDeleteModal(MerchantCategory category)
+    {
+        categoryToDelete = category;
+        showDeleteModal = true;
+    }
+
+    private void CloseDeleteModal()
+    {
+        categoryToDelete = null;
+        showDeleteModal = false;
+    }
+
+    private async Task ConfirmDelete()
+    {
+        if (categoryToDelete != null && ApiService != null)
+        {
+            try
+            {
+                await ApiService.DeleteCategoryAsync(DemoMerchantId, categoryToDelete.Id);
+                categories.Remove(categoryToDelete);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Failed to delete category: {ex.Message}";
+            }
+        }
+        
+        CloseDeleteModal();
+    }
+}

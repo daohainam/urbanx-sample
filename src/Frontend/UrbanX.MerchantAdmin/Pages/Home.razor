@@ -1,0 +1,141 @@
+﻿@page "/"
+@attribute [Authorize]
+
+<PageTitle>Dashboard - UrbanX Merchant Admin</PageTitle>
+
+<h1 class="mb-4">
+    <i class="bi bi-speedometer2 me-2"></i>Dashboard
+</h1>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2">Total Products</h6>
+                        <h2 class="card-title mb-0">@stats.TotalProducts</h2>
+                    </div>
+                    <i class="bi bi-box-seam display-4 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2">Active Products</h6>
+                        <h2 class="card-title mb-0">@stats.ActiveProducts</h2>
+                    </div>
+                    <i class="bi bi-check-circle display-4 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2">Categories</h6>
+                        <h2 class="card-title mb-0">@stats.TotalCategories</h2>
+                    </div>
+                    <i class="bi bi-tags display-4 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2">Pending Orders</h6>
+                        <h2 class="card-title mb-0">@stats.PendingOrders</h2>
+                    </div>
+                    <i class="bi bi-clock display-4 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="products/new" class="btn btn-outline-primary">
+                        <i class="bi bi-plus-circle me-2"></i>Add New Product
+                    </a>
+                    <a href="categories/new" class="btn btn-outline-secondary">
+                        <i class="bi bi-plus-circle me-2"></i>Add New Category
+                    </a>
+                    <a href="orders" class="btn btn-outline-info">
+                        <i class="bi bi-list-ul me-2"></i>View All Orders
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Getting Started</h5>
+            </div>
+            <div class="card-body">
+                <p>Welcome to the UrbanX Merchant Admin Portal!</p>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i>Manage your products and inventory</li>
+                    <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i>Create and organize categories</li>
+                    <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i>Track and fulfill customer orders</li>
+                    <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i>Monitor your business performance</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-warning mt-4" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>@errorMessage
+    </div>
+}
+
+@code {
+    private DashboardStats stats = new();
+    private string? errorMessage;
+
+    // Demo merchant ID - in production, this would come from authentication claims
+    private static readonly Guid DemoMerchantId = new("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
+
+    [Inject]
+    private MerchantApiService? ApiService { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDashboardStats();
+    }
+
+    private async Task LoadDashboardStats()
+    {
+        try
+        {
+            if (ApiService != null)
+            {
+                stats = await ApiService.GetDashboardStatsAsync(DemoMerchantId);
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Unable to load dashboard statistics. The API may be unavailable.";
+            Console.WriteLine($"Error loading dashboard stats: {ex.Message}");
+        }
+    }
+}

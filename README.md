@@ -202,7 +202,8 @@ urbanx/
 │   ├── Gateway/              # API Gateway with YARP
 │   ├── Frontend/
 │   │   ├── urbanx-frontend/  # Customer-facing React SPA
-│   │   └── merchant-app/     # Merchant portal React SPA
+│   │   ├── merchant-app/     # Merchant portal React SPA
+│   │   └── UrbanX.MerchantAdmin/ # Merchant admin Blazor WASM
 │   └── Shared/               # Shared libraries
 ├── docker-compose.yml        # Infrastructure setup (for manual setup)
 └── UrbanX.sln               # Solution file
@@ -231,6 +232,31 @@ The merchant portal will be available at http://localhost:5174
 - Category management (create, edit, delete)
 - Product management (create, delete, inventory tracking)
 - Order management (view orders, update status)
+
+## Merchant Admin (Blazor WebAssembly)
+
+The Merchant Admin is a Blazor WebAssembly application providing an alternative admin interface for merchants.
+
+### Starting the Merchant Admin
+
+```bash
+cd src/Frontend/UrbanX.MerchantAdmin
+dotnet run
+```
+
+The merchant admin will be available at http://localhost:5175
+
+**Test Credentials:**
+- Username: `merchant@test.com`
+- Password: `Password123!`
+
+### Merchant Admin Features
+- Dashboard with statistics cards
+- Product management (list, create, edit, delete)
+- Category management (CRUD operations)
+- Order management with status filtering and updates
+- OIDC authentication integration
+- Responsive Bootstrap UI
 
 ## .NET Aspire Features
 

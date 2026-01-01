@@ -15,10 +15,14 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "https://localhost:5173", "http://localhost:5174", "https://localhost:5174")
-              .AllowAnyMethod()
-              .AllowAnyHeader()
-              .AllowCredentials();
+        policy.WithOrigins(
+            "http://localhost:5173", "https://localhost:5173",  // Customer SPA
+            "http://localhost:5174", "https://localhost:5174",  // Merchant Portal (React)
+            "http://localhost:5175", "https://localhost:5175"   // Merchant Admin (Blazor)
+        )
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials();
     });
 });
 

@@ -131,10 +131,10 @@
                         <FluentButton Appearance="Appearance.Accent" OnClick="@(() => AdjustInventory(_inventoryAdjustment))">
                             Apply Adjustment
                         </FluentButton>
-                        <FluentButton Appearance="Appearance.Lightweight" OnClick="@(() => { _inventoryAdjustment = 10; AdjustInventory(10); })">
+                        <FluentButton Appearance="Appearance.Lightweight" OnClick="@(() => QuickAddInventory(10))">
                             Quick Add +10
                         </FluentButton>
-                        <FluentButton Appearance="Appearance.Lightweight" OnClick="@(() => { _inventoryAdjustment = 50; AdjustInventory(50); })">
+                        <FluentButton Appearance="Appearance.Lightweight" OnClick="@(() => QuickAddInventory(50))">
                             Quick Add +50
                         </FluentButton>
                     </FluentStack>
@@ -393,6 +393,12 @@
             _inventoryNote = string.Empty;
             StateHasChanged();
         }
+    }
+
+    private void QuickAddInventory(int amount)
+    {
+        _inventoryAdjustment = amount;
+        AdjustInventory(amount);
     }
 
     private void CloseInventoryDialog()

@@ -1,3 +1,5 @@
+import type { OrderData } from '../types';
+
 const API_BASE_URL = '/api';
 
 async function handleResponse<T>(response: Response): Promise<T> {
@@ -37,7 +39,7 @@ export const orderService = {
         }));
     },
 
-    async placeOrder(orderData: any) {
+    async placeOrder(orderData: OrderData) {
         return handleResponse(await fetch(`${API_BASE_URL}/orders`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

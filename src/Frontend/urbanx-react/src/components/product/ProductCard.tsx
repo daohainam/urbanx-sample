@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import type { Product } from '../../types';
-import { useCart } from '../../context/CartContext';
+import { useCart } from '../../context/useCart';
 
 interface ProductCardProps {
     product: Product;

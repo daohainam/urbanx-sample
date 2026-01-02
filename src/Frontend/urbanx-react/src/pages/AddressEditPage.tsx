@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save } from 'lucide-react';
 
@@ -7,21 +7,11 @@ const AddressEditPage = () => {
     const { id } = useParams();
     const isEditing = Boolean(id);
 
-    const [formData, setFormData] = useState({
-        type: 'Home',
-        name: 'John Doe',
-        street: '',
-        city: '',
-        zip: '',
-        country: 'USA',
-        isDefault: false
-    });
-
-    useEffect(() => {
+    const [formData, setFormData] = useState(() => {
         if (isEditing) {
             // Mock fetch data if editing
             if (id === '1') {
-                setFormData({
+                return {
                     type: 'Home',
                     name: 'John Doe',
                     street: '123 Luxury St',
@@ -29,9 +19,9 @@ const AddressEditPage = () => {
                     zip: '10001',
                     country: 'USA',
                     isDefault: true
-                });
+                };
             } else if (id === '2') {
-                setFormData({
+                return {
                     type: 'Office',
                     name: 'John Doe',
                     street: '456 Business Blvd',
@@ -39,10 +29,19 @@ const AddressEditPage = () => {
                     zip: '94105',
                     country: 'USA',
                     isDefault: false
-                });
+                };
             }
         }
-    }, [id, isEditing]);
+        return {
+            type: 'Home',
+            name: 'John Doe',
+            street: '',
+            city: '',
+            zip: '',
+            country: 'USA',
+            isDefault: false
+        };
+    });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;

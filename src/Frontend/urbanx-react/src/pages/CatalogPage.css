@@ -1,0 +1,132 @@
+.catalog-page {
+    min-height: 80vh;
+}
+
+.catalog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: var(--spacing-xl);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: var(--spacing-lg);
+}
+
+.catalog-header h1 {
+    margin-bottom: var(--spacing-xs);
+}
+
+.catalog-header p {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+}
+
+.search-box {
+    display: flex;
+    align-items: center;
+    background-color: var(--color-bg-alt);
+    border: 1px solid var(--color-border);
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    gap: var(--spacing-sm);
+    width: 300px;
+}
+
+.search-box input {
+    border: none;
+    background: none;
+    outline: none;
+    font-size: 0.875rem;
+    width: 100%;
+}
+
+.catalog-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: var(--spacing-xl);
+}
+
+.catalog-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+}
+
+.filter-section h3 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.category-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.category-btn {
+    text-align: left;
+    padding: 8px 0;
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    transition: var(--transition-fast);
+    position: relative;
+}
+
+.category-btn:hover {
+    color: var(--color-primary);
+    padding-left: 8px;
+}
+
+.category-btn.active {
+    color: var(--color-secondary);
+    font-weight: 600;
+}
+
+.clear-filters-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin-top: var(--spacing-md);
+}
+
+.clear-filters-btn:hover {
+    color: var(--color-error);
+}
+
+.loading-state,
+.error-state,
+.empty-state {
+    padding: var(--spacing-xl);
+    text-align: center;
+    color: var(--color-text-muted);
+    background-color: var(--color-bg-alt);
+    border-radius: var(--radius-md);
+}
+
+@media (max-width: 768px) {
+    .catalog-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .catalog-sidebar {
+        display: none;
+        /* In a real app, this would be a drawer or modal */
+    }
+
+    .catalog-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-md);
+    }
+
+    .search-box {
+        width: 100%;
+    }
+}

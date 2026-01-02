@@ -1,0 +1,109 @@
+@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+
+<FluentLayout>
+    <FluentHeader>
+        <div class="header-content">
+            <div class="header-left">
+                <FluentLabel Typo="Typography.H3">UrbanX Admin</FluentLabel>
+            </div>
+            <div class="header-right">
+                <AuthorizeView>
+                    <Authorized>
+                        <FluentPersona Name="@context.User.Identity?.Name" />
+                        <FluentButton Appearance="Appearance.Lightweight" 
+                                      OnClick="@Logout">
+                            Logout
+                        </FluentButton>
+                    </Authorized>
+                    <NotAuthorized>
+                        <FluentButton Appearance="Appearance.Accent" 
+                                      OnClick="@Login">
+                            Login
+                        </FluentButton>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </div>
+        </div>
+    </FluentHeader>
+
+    <FluentStack Orientation="Orientation.Horizontal" Class="main-container">
+        <FluentNavMenu Style="width: 250px;">
+            <AuthorizeView Roles="admin">
+                <FluentNavLink Href="/" IconColor="Color.Accent">
+                    Dashboard
+                </FluentNavLink>
+                <FluentNavGroup Title="Management">
+                    <FluentNavLink Href="/tenants">
+                        Tenants
+                    </FluentNavLink>
+                    <FluentNavLink Href="/customers">
+                        Customers
+                    </FluentNavLink>
+                    <FluentNavLink Href="/categories">
+                        Categories
+                    </FluentNavLink>
+                    <FluentNavLink Href="/products">
+                        Products
+                    </FluentNavLink>
+                    <FluentNavLink Href="/shipping-methods">
+                        Shipping Methods
+                    </FluentNavLink>
+                    <FluentNavLink Href="/payment-methods">
+                        Payment Methods
+                    </FluentNavLink>
+                </FluentNavGroup>
+                <FluentNavLink Href="/orders">
+                    Orders
+                </FluentNavLink>
+                <FluentNavLink Href="/messages">
+                    Messages
+                </FluentNavLink>
+            </AuthorizeView>
+        </FluentNavMenu>
+
+        <FluentMainLayout>
+            <FluentBodyContent>
+                @Body
+            </FluentBodyContent>
+        </FluentMainLayout>
+    </FluentStack>
+</FluentLayout>
+
+@code {
+    private void Login()
+    {
+        Navigation.NavigateTo("authentication/login");
+    }
+
+    private void Logout()
+    {
+        Navigation.NavigateTo("authentication/logout");
+    }
+}
+
+<style>
+    .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        padding: 0 1rem;
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .header-right {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .main-container {
+        height: calc(100vh - 60px);
+    }
+</style>

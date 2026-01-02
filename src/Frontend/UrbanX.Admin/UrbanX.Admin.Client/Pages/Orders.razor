@@ -1,0 +1,79 @@
+@page "/orders"
+@attribute [Authorize(Roles = "admin")]
+
+<PageTitle>Orders - UrbanX Admin</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
+    <FluentLabel Typo="Typography.H2">Orders</FluentLabel>
+
+    <FluentCard>
+        <FluentStack Orientation="Orientation.Horizontal" VerticalGap="8">
+            <FluentSearch @bind-Value="_searchTerm" Placeholder="Search orders..." @oninput="OnSearchInput" Style="width: 300px;" />
+            <FluentSelect TOption="string" @bind-Value="_filterStatus" Label="Status">
+                <FluentOption Value="">All</FluentOption>
+                <FluentOption Value="Pending">Pending</FluentOption>
+                <FluentOption Value="Confirmed">Confirmed</FluentOption>
+                <FluentOption Value="Delivered">Delivered</FluentOption>
+                <FluentOption Value="Cancelled">Cancelled</FluentOption>
+            </FluentSelect>
+        </FluentStack>
+    </FluentCard>
+
+    <FluentDataGrid Items="@FilteredOrders" Pagination="@_pagination" Style="width: 100%;">
+        <PropertyColumn Property="@(o => o.OrderNumber)" Title="Order #" Sortable="true" />
+        <PropertyColumn Property="@(o => o.CustomerName)" Title="Customer" Sortable="true" />
+        <PropertyColumn Property="@(o => o.TenantName)" Title="Tenant" />
+        <PropertyColumn Property="@(o => o.TotalAmount)" Title="Amount" Format="C" Sortable="true" />
+        <PropertyColumn Property="@(o => o.Status)" Title="Status" Sortable="true" />
+        <PropertyColumn Property="@(o => o.CreatedAt)" Title="Date" Format="yyyy-MM-dd HH:mm" Sortable="true" />
+        <TemplateColumn Title="Actions">
+            <FluentButton Appearance="Appearance.Lightweight" OnClick="@(() => ViewOrder(context))">View</FluentButton>
+        </TemplateColumn>
+    </FluentDataGrid>
+
+    <FluentPaginator State="@_pagination" />
+</FluentStack>
+
+@code {
+    private List<OrderModel> _orders = new();
+    private string _searchTerm = string.Empty;
+    private string _filterStatus = string.Empty;
+    private readonly PaginationState _pagination = new() { ItemsPerPage = 10 };
+
+    protected override async Task OnInitializedAsync()
+    {
+        _orders = new List<OrderModel>
+        {
+            new() { OrderNumber = "ORD-2026-001", CustomerName = "John Doe", TenantName = "Tech Store", TotalAmount = 599.99m, Status = "Pending", CreatedAt = DateTime.Now.AddHours(-2) },
+            new() { OrderNumber = "ORD-2026-002", CustomerName = "Jane Smith", TenantName = "Fashion Hub", TotalAmount = 125.50m, Status = "Confirmed", CreatedAt = DateTime.Now.AddHours(-5) },
+            new() { OrderNumber = "ORD-2026-003", CustomerName = "Bob Johnson", TenantName = "Book Corner", TotalAmount = 45.99m, Status = "Delivered", CreatedAt = DateTime.Now.AddDays(-1) },
+        };
+        await Task.CompletedTask;
+    }
+
+    private IQueryable<OrderModel> FilteredOrders
+    {
+        get
+        {
+            var filtered = _orders.AsQueryable();
+            if (!string.IsNullOrWhiteSpace(_searchTerm))
+                filtered = filtered.Where(o => o.OrderNumber.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase) || o.CustomerName.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase));
+            if (!string.IsNullOrWhiteSpace(_filterStatus))
+                filtered = filtered.Where(o => o.Status == _filterStatus);
+            return filtered;
+        }
+    }
+
+    private void OnSearchInput(ChangeEventArgs e) => _searchTerm = e.Value?.ToString() ?? string.Empty;
+    private void ViewOrder(OrderModel order) { /* TODO */ }
+
+    public class OrderModel
+    {
+        public string OrderNumber { get; set; } = string.Empty;
+        public string CustomerName { get; set; } = string.Empty;
+        public string TenantName { get; set; } = string.Empty;
+        public decimal TotalAmount { get; set; }
+        public string Status { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
+    }
+}

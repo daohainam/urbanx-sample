@@ -1,0 +1,51 @@
+@page "/messages"
+@attribute [Authorize(Roles = "admin")]
+
+<PageTitle>Messages - UrbanX Admin</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
+    <FluentStack Orientation="Orientation.Horizontal">
+        <FluentLabel Typo="Typography.H2">Messages to Tenants</FluentLabel>
+        <FluentSpacer />
+        <FluentButton Appearance="Appearance.Accent" OnClick="@ShowComposeDialog">Compose Message</FluentButton>
+    </FluentStack>
+
+    <FluentDataGrid Items="@_messages.AsQueryable()" Pagination="@_pagination" Style="width: 100%;">
+        <PropertyColumn Property="@(m => m.Subject)" Title="Subject" Sortable="true" />
+        <PropertyColumn Property="@(m => m.RecipientName)" Title="To" Sortable="true" />
+        <PropertyColumn Property="@(m => m.SentAt)" Title="Sent" Format="yyyy-MM-dd HH:mm" Sortable="true" />
+        <PropertyColumn Property="@(m => m.Status)" Title="Status" />
+        <TemplateColumn Title="Actions">
+            <FluentButton Appearance="Appearance.Lightweight" OnClick="@(() => ViewMessage(context))">View</FluentButton>
+        </TemplateColumn>
+    </FluentDataGrid>
+
+    <FluentPaginator State="@_pagination" />
+</FluentStack>
+
+@code {
+    private List<MessageModel> _messages = new();
+    private readonly PaginationState _pagination = new() { ItemsPerPage = 10 };
+
+    protected override async Task OnInitializedAsync()
+    {
+        _messages = new List<MessageModel>
+        {
+            new() { Subject = "Account verification required", RecipientName = "Tech Store", SentAt = DateTime.Now.AddHours(-1), Status = "Sent" },
+            new() { Subject = "Product approval update", RecipientName = "Fashion Hub", SentAt = DateTime.Now.AddHours(-3), Status = "Read" },
+            new() { Subject = "Monthly report", RecipientName = "All Tenants", SentAt = DateTime.Now.AddDays(-1), Status = "Sent" },
+        };
+        await Task.CompletedTask;
+    }
+
+    private void ShowComposeDialog() { /* TODO */ }
+    private void ViewMessage(MessageModel message) { /* TODO */ }
+
+    public class MessageModel
+    {
+        public string Subject { get; set; } = string.Empty;
+        public string RecipientName { get; set; } = string.Empty;
+        public DateTime SentAt { get; set; }
+        public string Status { get; set; } = string.Empty;
+    }
+}

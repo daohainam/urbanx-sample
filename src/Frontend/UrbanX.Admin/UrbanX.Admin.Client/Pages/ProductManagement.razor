@@ -1,0 +1,425 @@
+@page "/product-management"
+@attribute [Authorize(Roles = "admin")]
+
+<PageTitle>Product Management - UrbanX Admin</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
+    <FluentStack Orientation="Orientation.Horizontal" VerticalGap="8">
+        <FluentLabel Typo="Typography.H2">Product Management</FluentLabel>
+        <FluentButton Appearance="Appearance.Accent" OnClick="@ShowCreateDialog">
+            Create Product
+        </FluentButton>
+    </FluentStack>
+
+    <FluentCard>
+        <FluentStack Orientation="Orientation.Horizontal" VerticalGap="8">
+            <FluentSearch @bind-Value="_searchTerm" 
+                          Placeholder="Search products..." 
+                          @oninput="OnSearchInput"
+                          Style="width: 300px;" />
+            <FluentSelect TOption="string" @bind-Value="_filterTenant" Label="Filter by Tenant">
+                <FluentOption Value="">All Tenants</FluentOption>
+                <FluentOption Value="Tech Store">Tech Store</FluentOption>
+                <FluentOption Value="Fashion Hub">Fashion Hub</FluentOption>
+                <FluentOption Value="Book Corner">Book Corner</FluentOption>
+                <FluentOption Value="Sports World">Sports World</FluentOption>
+            </FluentSelect>
+            <FluentSelect TOption="string" @bind-Value="_filterVisibility" Label="Visibility">
+                <FluentOption Value="">All</FluentOption>
+                <FluentOption Value="Visible">Visible</FluentOption>
+                <FluentOption Value="Hidden">Hidden</FluentOption>
+            </FluentSelect>
+        </FluentStack>
+    </FluentCard>
+
+    <FluentDataGrid Items="@FilteredProducts" Pagination="@_pagination" Style="width: 100%;">
+        <PropertyColumn Property="@(p => p.Name)" Title="Product" Sortable="true" />
+        <PropertyColumn Property="@(p => p.TenantName)" Title="Tenant" Sortable="true" />
+        <PropertyColumn Property="@(p => p.Category)" Title="Category" />
+        <PropertyColumn Property="@(p => p.Price)" Title="Price" Format="C" Sortable="true" />
+        <PropertyColumn Property="@(p => p.StockQuantity)" Title="Stock" Sortable="true" />
+        <TemplateColumn Title="Status">
+            @if (context.IsVisible)
+            {
+                <FluentBadge Fill="somevalue" BackgroundColor="var(--success)" Color="var(--neutral-foreground-on-accent)">Visible</FluentBadge>
+            }
+            else
+            {
+                <FluentBadge Fill="somevalue" BackgroundColor="var(--neutral)" Color="var(--neutral-foreground-on-accent)">Hidden</FluentBadge>
+            }
+        </TemplateColumn>
+        <TemplateColumn Title="Actions">
+            <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8">
+                <FluentButton Appearance="Appearance.Lightweight" OnClick="@(() => ShowEditDialog(context))">
+                    Edit
+                </FluentButton>
+                @if (context.IsVisible)
+                {
+                    <FluentButton Appearance="Appearance.Lightweight" OnClick="@(() => HideProduct(context))">
+                        Hide
+                    </FluentButton>
+                }
+                else
+                {
+                    <FluentButton Appearance="Appearance.Lightweight" OnClick="@(() => ShowProduct(context))">
+                        Show
+                    </FluentButton>
+                }
+                <FluentButton Appearance="Appearance.Lightweight" OnClick="@(() => ManageInventory(context))">
+                    Inventory
+                </FluentButton>
+            </FluentStack>
+        </TemplateColumn>
+    </FluentDataGrid>
+
+    <FluentPaginator State="@_pagination" />
+</FluentStack>
+
+@* Create/Edit Product Dialog *@
+<FluentDialog @bind-Hidden="@_productDialogHidden" Modal="true" TrapFocus="true" Style="min-width: 500px;">
+    <FluentDialogHeader>
+        <FluentLabel Typo="Typography.H4">@(_isEditMode ? "Edit Product" : "Create Product")</FluentLabel>
+    </FluentDialogHeader>
+    <FluentDialogBody>
+        <FluentStack Orientation="Orientation.Vertical" VerticalGap="12">
+            <FluentTextField @bind-Value="_editingProduct.Name" Label="Product Name" Required Style="width: 100%;" />
+            <FluentTextField @bind-Value="_editingProduct.Description" Label="Description" Style="width: 100%;" />
+            <FluentSelect TOption="string" @bind-Value="_editingProduct.TenantName" Label="Tenant" Style="width: 100%;">
+                <FluentOption Value="Tech Store">Tech Store</FluentOption>
+                <FluentOption Value="Fashion Hub">Fashion Hub</FluentOption>
+                <FluentOption Value="Book Corner">Book Corner</FluentOption>
+                <FluentOption Value="Sports World">Sports World</FluentOption>
+            </FluentSelect>
+            <FluentTextField @bind-Value="_editingProduct.Category" Label="Category" Style="width: 100%;" />
+            <FluentNumberField @bind-Value="_editingProduct.Price" Label="Price" Min="0" Step="0.01" Style="width: 100%;" />
+            <FluentNumberField @bind-Value="_editingProduct.StockQuantity" Label="Initial Stock" Min="0" Style="width: 100%;" />
+            <FluentCheckbox @bind-Value="_editingProduct.IsVisible" Label="Visible to customers" />
+        </FluentStack>
+    </FluentDialogBody>
+    <FluentDialogFooter>
+        <FluentButton Appearance="Appearance.Accent" OnClick="@SaveProduct">Save</FluentButton>
+        <FluentButton Appearance="Appearance.Lightweight" OnClick="@CloseProductDialog">Cancel</FluentButton>
+    </FluentDialogFooter>
+</FluentDialog>
+
+@* Inventory Management Dialog *@
+<FluentDialog @bind-Hidden="@_inventoryDialogHidden" Modal="true" TrapFocus="true" Style="min-width: 600px;">
+    <FluentDialogHeader>
+        <FluentLabel Typo="Typography.H4">Inventory Management - @_selectedProduct?.Name</FluentLabel>
+    </FluentDialogHeader>
+    <FluentDialogBody>
+        <FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
+            <FluentCard>
+                <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
+                    <FluentLabel Typo="Typography.H6">Current Stock</FluentLabel>
+                    <FluentLabel Typo="Typography.H3">@_selectedProduct?.StockQuantity units</FluentLabel>
+                </FluentStack>
+            </FluentCard>
+
+            <FluentCard>
+                <FluentStack Orientation="Orientation.Vertical" VerticalGap="12">
+                    <FluentLabel Typo="Typography.H6">Adjust Inventory</FluentLabel>
+                    <FluentNumberField @bind-Value="_inventoryAdjustment" 
+                                       Label="Quantity (positive to add, negative to remove)" 
+                                       Step="1" 
+                                       Style="width: 100%;" />
+                    <FluentTextField @bind-Value="_inventoryNote" 
+                                     Label="Note" 
+                                     Placeholder="Reason for adjustment..." 
+                                     Style="width: 100%;" />
+                    <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8">
+                        <FluentButton Appearance="Appearance.Accent" OnClick="@(() => AdjustInventory(_inventoryAdjustment))">
+                            Apply Adjustment
+                        </FluentButton>
+                        <FluentButton Appearance="Appearance.Lightweight" OnClick="@(() => { _inventoryAdjustment = 10; AdjustInventory(10); })">
+                            Quick Add +10
+                        </FluentButton>
+                        <FluentButton Appearance="Appearance.Lightweight" OnClick="@(() => { _inventoryAdjustment = 50; AdjustInventory(50); })">
+                            Quick Add +50
+                        </FluentButton>
+                    </FluentStack>
+                </FluentStack>
+            </FluentCard>
+
+            <FluentCard>
+                <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
+                    <FluentLabel Typo="Typography.H6">Recent Inventory Transactions</FluentLabel>
+                    <FluentDataGrid Items="@_selectedProduct?.InventoryHistory.AsQueryable()" 
+                                    GridTemplateColumns="2fr 1fr 2fr 1fr">
+                        <PropertyColumn Property="@(h => h.Date)" Title="Date" Format="yyyy-MM-dd HH:mm" />
+                        <PropertyColumn Property="@(h => h.Adjustment)" Title="Change" />
+                        <PropertyColumn Property="@(h => h.Note)" Title="Note" />
+                        <PropertyColumn Property="@(h => h.NewQuantity)" Title="New Stock" />
+                    </FluentDataGrid>
+                </FluentStack>
+            </FluentCard>
+        </FluentStack>
+    </FluentDialogBody>
+    <FluentDialogFooter>
+        <FluentButton Appearance="Appearance.Lightweight" OnClick="@CloseInventoryDialog">Close</FluentButton>
+    </FluentDialogFooter>
+</FluentDialog>
+
+@code {
+    private List<ProductModel> _products = new();
+    private string _searchTerm = string.Empty;
+    private string _filterTenant = string.Empty;
+    private string _filterVisibility = string.Empty;
+    private readonly PaginationState _pagination = new() { ItemsPerPage = 10 };
+    
+    private bool _productDialogHidden = true;
+    private bool _inventoryDialogHidden = true;
+    private bool _isEditMode = false;
+    private ProductModel _editingProduct = new();
+    private ProductModel? _selectedProduct;
+    private int _inventoryAdjustment = 0;
+    private string _inventoryNote = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProducts();
+    }
+
+    private async Task LoadProducts()
+    {
+        _products = new List<ProductModel>
+        {
+            new() 
+            { 
+                Id = Guid.NewGuid(), 
+                Name = "Smartphone X", 
+                Description = "Latest flagship smartphone with advanced features",
+                TenantName = "Tech Store", 
+                Category = "Electronics", 
+                Price = 599.99m, 
+                StockQuantity = 45,
+                IsVisible = true,
+                CreatedAt = DateTime.Now.AddDays(-30),
+                InventoryHistory = new List<InventoryHistoryModel>
+                {
+                    new() { Date = DateTime.Now.AddDays(-30), Adjustment = 50, NewQuantity = 50, Note = "Initial stock" },
+                    new() { Date = DateTime.Now.AddDays(-10), Adjustment = -5, NewQuantity = 45, Note = "Sold items" }
+                }
+            },
+            new() 
+            { 
+                Id = Guid.NewGuid(), 
+                Name = "Running Shoes", 
+                Description = "Comfortable running shoes for all terrains",
+                TenantName = "Sports World", 
+                Category = "Sports", 
+                Price = 89.99m, 
+                StockQuantity = 120,
+                IsVisible = true,
+                CreatedAt = DateTime.Now.AddDays(-45),
+                InventoryHistory = new List<InventoryHistoryModel>
+                {
+                    new() { Date = DateTime.Now.AddDays(-45), Adjustment = 100, NewQuantity = 100, Note = "Initial stock" },
+                    new() { Date = DateTime.Now.AddDays(-20), Adjustment = 20, NewQuantity = 120, Note = "Restocked" }
+                }
+            },
+            new() 
+            { 
+                Id = Guid.NewGuid(), 
+                Name = "Summer Dress", 
+                Description = "Light and elegant summer dress",
+                TenantName = "Fashion Hub", 
+                Category = "Clothing", 
+                Price = 45.50m, 
+                StockQuantity = 0,
+                IsVisible = false,
+                CreatedAt = DateTime.Now.AddDays(-15),
+                InventoryHistory = new List<InventoryHistoryModel>
+                {
+                    new() { Date = DateTime.Now.AddDays(-15), Adjustment = 30, NewQuantity = 30, Note = "Initial stock" },
+                    new() { Date = DateTime.Now.AddDays(-2), Adjustment = -30, NewQuantity = 0, Note = "All sold - out of stock" }
+                }
+            },
+            new() 
+            { 
+                Id = Guid.NewGuid(), 
+                Name = "Fiction Novel", 
+                Description = "Bestselling fiction novel",
+                TenantName = "Book Corner", 
+                Category = "Books", 
+                Price = 15.99m, 
+                StockQuantity = 200,
+                IsVisible = true,
+                CreatedAt = DateTime.Now.AddDays(-60),
+                InventoryHistory = new List<InventoryHistoryModel>
+                {
+                    new() { Date = DateTime.Now.AddDays(-60), Adjustment = 150, NewQuantity = 150, Note = "Initial stock" },
+                    new() { Date = DateTime.Now.AddDays(-30), Adjustment = 50, NewQuantity = 200, Note = "Restocked for demand" }
+                }
+            },
+        };
+        await Task.CompletedTask;
+    }
+
+    private IQueryable<ProductModel> FilteredProducts
+    {
+        get
+        {
+            var filtered = _products.AsQueryable();
+            if (!string.IsNullOrWhiteSpace(_searchTerm))
+            {
+                filtered = filtered.Where(p => 
+                    p.Name.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    p.TenantName.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase));
+            }
+            if (!string.IsNullOrWhiteSpace(_filterTenant))
+            {
+                filtered = filtered.Where(p => p.TenantName == _filterTenant);
+            }
+            if (!string.IsNullOrWhiteSpace(_filterVisibility))
+            {
+                var isVisible = _filterVisibility == "Visible";
+                filtered = filtered.Where(p => p.IsVisible == isVisible);
+            }
+            return filtered;
+        }
+    }
+
+    private void OnSearchInput(ChangeEventArgs e)
+    {
+        _searchTerm = e.Value?.ToString() ?? string.Empty;
+    }
+
+    private void ShowCreateDialog()
+    {
+        _isEditMode = false;
+        _editingProduct = new ProductModel { IsVisible = true, StockQuantity = 0 };
+        _productDialogHidden = false;
+    }
+
+    private void ShowEditDialog(ProductModel product)
+    {
+        _isEditMode = true;
+        _editingProduct = new ProductModel
+        {
+            Id = product.Id,
+            Name = product.Name,
+            Description = product.Description,
+            TenantName = product.TenantName,
+            Category = product.Category,
+            Price = product.Price,
+            StockQuantity = product.StockQuantity,
+            IsVisible = product.IsVisible
+        };
+        _productDialogHidden = false;
+    }
+
+    private void SaveProduct()
+    {
+        if (_isEditMode)
+        {
+            var existing = _products.FirstOrDefault(p => p.Id == _editingProduct.Id);
+            if (existing != null)
+            {
+                existing.Name = _editingProduct.Name;
+                existing.Description = _editingProduct.Description;
+                existing.TenantName = _editingProduct.TenantName;
+                existing.Category = _editingProduct.Category;
+                existing.Price = _editingProduct.Price;
+                existing.IsVisible = _editingProduct.IsVisible;
+            }
+        }
+        else
+        {
+            _editingProduct.Id = Guid.NewGuid();
+            _editingProduct.CreatedAt = DateTime.Now;
+            _editingProduct.InventoryHistory = new List<InventoryHistoryModel>
+            {
+                new() 
+                { 
+                    Date = DateTime.Now, 
+                    Adjustment = _editingProduct.StockQuantity, 
+                    NewQuantity = _editingProduct.StockQuantity, 
+                    Note = "Initial stock" 
+                }
+            };
+            _products.Add(_editingProduct);
+        }
+        CloseProductDialog();
+    }
+
+    private void CloseProductDialog()
+    {
+        _productDialogHidden = true;
+        _editingProduct = new();
+    }
+
+    private void HideProduct(ProductModel product)
+    {
+        product.IsVisible = false;
+    }
+
+    private void ShowProduct(ProductModel product)
+    {
+        product.IsVisible = true;
+    }
+
+    private void ManageInventory(ProductModel product)
+    {
+        _selectedProduct = product;
+        _inventoryAdjustment = 0;
+        _inventoryNote = string.Empty;
+        _inventoryDialogHidden = false;
+    }
+
+    private void AdjustInventory(int adjustment)
+    {
+        if (_selectedProduct != null)
+        {
+            var newQuantity = _selectedProduct.StockQuantity + adjustment;
+            if (newQuantity < 0)
+            {
+                // Don't allow negative stock
+                return;
+            }
+
+            _selectedProduct.StockQuantity = newQuantity;
+            _selectedProduct.InventoryHistory.Add(new InventoryHistoryModel
+            {
+                Date = DateTime.Now,
+                Adjustment = adjustment,
+                NewQuantity = newQuantity,
+                Note = string.IsNullOrWhiteSpace(_inventoryNote) ? 
+                    (adjustment > 0 ? "Stock added" : "Stock removed") : 
+                    _inventoryNote
+            });
+
+            _inventoryAdjustment = 0;
+            _inventoryNote = string.Empty;
+            StateHasChanged();
+        }
+    }
+
+    private void CloseInventoryDialog()
+    {
+        _inventoryDialogHidden = true;
+        _selectedProduct = null;
+    }
+
+    public class ProductModel
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string TenantName { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
+        public decimal Price { get; set; }
+        public int StockQuantity { get; set; }
+        public bool IsVisible { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public List<InventoryHistoryModel> InventoryHistory { get; set; } = new();
+    }
+
+    public class InventoryHistoryModel
+    {
+        public DateTime Date { get; set; }
+        public int Adjustment { get; set; }
+        public int NewQuantity { get; set; }
+        public string Note { get; set; } = string.Empty;
+    }
+}

@@ -106,6 +106,46 @@
         "offline_access",
         "microprofile-jwt"
       ]
+    },
+    {
+      "clientId": "urbanx-admin",
+      "name": "UrbanX Admin Portal",
+      "enabled": true,
+      "publicClient": true,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "authorizationServicesEnabled": false,
+      "fullScopeAllowed": true,
+      "redirectUris": [
+        "http://localhost:5174/*",
+        "https://localhost:5174/*",
+        "http://localhost:7003/*",
+        "https://localhost:7004/*"
+      ],
+      "webOrigins": [
+        "http://localhost:5174",
+        "https://localhost:5174",
+        "http://localhost:7003",
+        "https://localhost:7004"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      },
+      "defaultClientScopes": [
+        "web-origins",
+        "profile",
+        "roles",
+        "email"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "offline_access",
+        "microprofile-jwt"
+      ]
     }
   ],
   "users": [
@@ -147,7 +187,9 @@
         "merchant-order-manager"
       ],
       "attributes": {
-        "merchantId": ["merchant-001"]
+        "merchantId": [
+          "merchant-001"
+        ]
       }
     },
     {
@@ -168,7 +210,9 @@
         "merchant-editor"
       ],
       "attributes": {
-        "merchantId": ["merchant-002"]
+        "merchantId": [
+          "merchant-002"
+        ]
       }
     },
     {

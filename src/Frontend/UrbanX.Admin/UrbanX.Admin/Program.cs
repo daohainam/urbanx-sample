@@ -22,9 +22,6 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
-// Add authentication state
-builder.Services.AddCascadingAuthenticationState();
-
 var app = builder.Build();
 
 // Map default endpoints (health checks, etc.)

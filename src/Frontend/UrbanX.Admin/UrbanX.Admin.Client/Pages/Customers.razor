@@ -1,0 +1,161 @@
+@page "/customers"
+@attribute [Authorize(Roles = "admin")]
+
+<PageTitle>Customers - UrbanX Admin</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
+    <FluentStack Orientation="Orientation.Horizontal">
+        <FluentLabel Typo="Typography.H2">Customers Management</FluentLabel>
+        <FluentSpacer />
+    </FluentStack>
+
+    <FluentCard>
+        <FluentStack Orientation="Orientation.Horizontal" VerticalGap="8">
+            <FluentSearch @bind-Value="_searchTerm" 
+                          Placeholder="Search customers..." 
+                          @oninput="OnSearchInput"
+                          Style="width: 300px;" />
+            <FluentSelect TOption="string" @bind-Value="_filterStatus" Label="Filter by Status">
+                <FluentOption Value="">All Status</FluentOption>
+                <FluentOption Value="Active">Active</FluentOption>
+                <FluentOption Value="Locked">Locked</FluentOption>
+            </FluentSelect>
+        </FluentStack>
+    </FluentCard>
+
+    <FluentDataGrid Items="@FilteredCustomers" Pagination="@_pagination" Style="width: 100%;">
+        <PropertyColumn Property="@(c => c.Name)" Title="Name" Sortable="true" />
+        <PropertyColumn Property="@(c => c.Email)" Title="Email" Sortable="true" />
+        <PropertyColumn Property="@(c => c.Phone)" Title="Phone" />
+        <PropertyColumn Property="@(c => c.TotalOrders)" Title="Orders" Sortable="true" />
+        <PropertyColumn Property="@(c => c.TotalSpent)" Title="Total Spent" Format="C" Sortable="true" />
+        <TemplateColumn Title="Status">
+            @if (context.IsActive)
+            {
+                <FluentBadge Fill="somevalue" BackgroundColor="var(--success)" Color="var(--neutral-foreground-on-accent)">Active</FluentBadge>
+            }
+            else
+            {
+                <FluentBadge Fill="somevalue" BackgroundColor="var(--error)" Color="var(--neutral-foreground-on-accent)">Locked</FluentBadge>
+            }
+        </TemplateColumn>
+        <PropertyColumn Property="@(c => c.CreatedAt)" Title="Joined" Format="yyyy-MM-dd" Sortable="true" />
+        <TemplateColumn Title="Actions">
+            <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8">
+                <FluentButton Appearance="Appearance.Lightweight" 
+
+                              OnClick="@(() => EditCustomer(context))">
+                    Edit
+                </FluentButton>
+                @if (context.IsActive)
+                {
+                    <FluentButton Appearance="Appearance.Lightweight" 
+
+                                  OnClick="@(() => ToggleCustomerLock(context))">
+                        Lock
+                    </FluentButton>
+                }
+                else
+                {
+                    <FluentButton Appearance="Appearance.Lightweight" 
+
+                                  OnClick="@(() => ToggleCustomerLock(context))">
+                        Unlock
+                    </FluentButton>
+                }
+                <FluentButton Appearance="Appearance.Lightweight" 
+
+                              OnClick="@(() => DeleteCustomer(context))">
+                    Delete
+                </FluentButton>
+            </FluentStack>
+        </TemplateColumn>
+    </FluentDataGrid>
+
+    <FluentPaginator State="@_pagination" />
+</FluentStack>
+
+@code {
+    private List<CustomerModel> _customers = new();
+    private string _searchTerm = string.Empty;
+    private string _filterStatus = string.Empty;
+    private readonly PaginationState _pagination = new() { ItemsPerPage = 10 };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCustomers();
+    }
+
+    private async Task LoadCustomers()
+    {
+        // TODO: Load from API
+        _customers = new List<CustomerModel>
+        {
+            new() { Id = Guid.NewGuid(), Name = "John Doe", Email = "john@example.com", Phone = "555-1000", TotalOrders = 15, TotalSpent = 1250.50m, IsActive = true, CreatedAt = DateTime.Now.AddMonths(-8) },
+            new() { Id = Guid.NewGuid(), Name = "Jane Smith", Email = "jane@example.com", Phone = "555-1001", TotalOrders = 8, TotalSpent = 680.25m, IsActive = true, CreatedAt = DateTime.Now.AddMonths(-6) },
+            new() { Id = Guid.NewGuid(), Name = "Bob Johnson", Email = "bob@example.com", Phone = "555-1002", TotalOrders = 3, TotalSpent = 125.99m, IsActive = false, CreatedAt = DateTime.Now.AddMonths(-3) },
+            new() { Id = Guid.NewGuid(), Name = "Alice Williams", Email = "alice@example.com", Phone = "555-1003", TotalOrders = 22, TotalSpent = 2340.75m, IsActive = true, CreatedAt = DateTime.Now.AddMonths(-12) },
+            new() { Id = Guid.NewGuid(), Name = "Charlie Brown", Email = "charlie@example.com", Phone = "555-1004", TotalOrders = 5, TotalSpent = 450.00m, IsActive = true, CreatedAt = DateTime.Now.AddMonths(-4) },
+        };
+        await Task.CompletedTask;
+    }
+
+    private IQueryable<CustomerModel> FilteredCustomers
+    {
+        get
+        {
+            var filtered = _customers.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(_searchTerm))
+            {
+                filtered = filtered.Where(c => 
+                    c.Name.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    c.Email.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrWhiteSpace(_filterStatus))
+            {
+                var isActive = _filterStatus == "Active";
+                filtered = filtered.Where(c => c.IsActive == isActive);
+            }
+
+            return filtered;
+        }
+    }
+
+    private void OnSearchInput(ChangeEventArgs e)
+    {
+        _searchTerm = e.Value?.ToString() ?? string.Empty;
+    }
+
+    private void EditCustomer(CustomerModel customer)
+    {
+        // TODO: Navigate to edit page or show edit dialog
+    }
+
+    private async Task ToggleCustomerLock(CustomerModel customer)
+    {
+        customer.IsActive = !customer.IsActive;
+        // TODO: Call API to update customer status
+        await Task.CompletedTask;
+    }
+
+    private async Task DeleteCustomer(CustomerModel customer)
+    {
+        // TODO: Show confirmation dialog and delete
+        _customers.Remove(customer);
+        await Task.CompletedTask;
+    }
+
+    public class CustomerModel
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
+        public int TotalOrders { get; set; }
+        public decimal TotalSpent { get; set; }
+        public bool IsActive { get; set; }
+        public DateTime CreatedAt { get; set; }
+    }
+}

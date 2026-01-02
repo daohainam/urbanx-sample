@@ -42,4 +42,9 @@ var frontend = builder.AddProject<Projects.UrbanX_Frontend>("frontend")
     .WithReference(gateway)
     .WithExternalHttpEndpoints();
 
+// Add Admin Frontend
+var admin = builder.AddProject<Projects.UrbanX_Admin>("admin")
+    .WithReference(gateway)
+    .WithExternalHttpEndpoints();
+
 builder.Build().Run();

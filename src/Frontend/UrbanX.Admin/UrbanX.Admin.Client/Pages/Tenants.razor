@@ -1,0 +1,170 @@
+@page "/tenants"
+@attribute [Authorize(Roles = "admin")]
+
+<PageTitle>Tenants - UrbanX Admin</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
+    <FluentStack Orientation="Orientation.Horizontal">
+        <FluentLabel Typo="Typography.H2">Tenants Management</FluentLabel>
+        <FluentSpacer />
+        <FluentButton Appearance="Appearance.Accent" 
+
+                      OnClick="@(() => ShowAddDialog())">
+            Add Tenant
+        </FluentButton>
+    </FluentStack>
+
+    <FluentCard>
+        <FluentStack Orientation="Orientation.Horizontal" VerticalGap="8">
+            <FluentSearch @bind-Value="_searchTerm" 
+                          Placeholder="Search tenants..." 
+                          @oninput="OnSearchInput"
+                          Style="width: 300px;" />
+            <FluentSelect TOption="string" @bind-Value="_filterLevel" Label="Filter by Level">
+                <FluentOption Value="">All Levels</FluentOption>
+                <FluentOption Value="Basic">Basic</FluentOption>
+                <FluentOption Value="Pro">Pro</FluentOption>
+                <FluentOption Value="Business">Business</FluentOption>
+            </FluentSelect>
+            <FluentSelect TOption="string" @bind-Value="_filterStatus" Label="Filter by Status">
+                <FluentOption Value="">All Status</FluentOption>
+                <FluentOption Value="Active">Active</FluentOption>
+                <FluentOption Value="Locked">Locked</FluentOption>
+            </FluentSelect>
+        </FluentStack>
+    </FluentCard>
+
+    <FluentDataGrid Items="@FilteredTenants" Pagination="@_pagination" Style="width: 100%;">
+        <PropertyColumn Property="@(t => t.Name)" Title="Name" Sortable="true" />
+        <PropertyColumn Property="@(t => t.Email)" Title="Email" Sortable="true" />
+        <PropertyColumn Property="@(t => t.Phone)" Title="Phone" />
+        <PropertyColumn Property="@(t => t.RegistrationLevel)" Title="Level" Sortable="true" />
+        <TemplateColumn Title="Status">
+            @if (context.IsActive)
+            {
+                <FluentBadge Fill="somevalue" BackgroundColor="var(--success)" Color="var(--neutral-foreground-on-accent)">Active</FluentBadge>
+            }
+            else
+            {
+                <FluentBadge Fill="somevalue" BackgroundColor="var(--error)" Color="var(--neutral-foreground-on-accent)">Locked</FluentBadge>
+            }
+        </TemplateColumn>
+        <PropertyColumn Property="@(t => t.CreatedAt)" Title="Created" Format="yyyy-MM-dd" Sortable="true" />
+        <TemplateColumn Title="Actions">
+            <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8">
+                <FluentButton Appearance="Appearance.Lightweight" 
+
+                              OnClick="@(() => EditTenant(context))">
+                    Edit
+                </FluentButton>
+                @if (context.IsActive)
+                {
+                    <FluentButton Appearance="Appearance.Lightweight" 
+
+                                  OnClick="@(() => ToggleTenantLock(context))">
+                        Lock
+                    </FluentButton>
+                }
+                else
+                {
+                    <FluentButton Appearance="Appearance.Lightweight" 
+
+                                  OnClick="@(() => ToggleTenantLock(context))">
+                        Unlock
+                    </FluentButton>
+                }
+            </FluentStack>
+        </TemplateColumn>
+    </FluentDataGrid>
+
+    <FluentPaginator State="@_pagination" />
+</FluentStack>
+
+@code {
+    private List<TenantModel> _tenants = new();
+    private string _searchTerm = string.Empty;
+    private string _filterLevel = string.Empty;
+    private string _filterStatus = string.Empty;
+    private readonly PaginationState _pagination = new() { ItemsPerPage = 10 };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTenants();
+    }
+
+    private async Task LoadTenants()
+    {
+        // TODO: Load from API
+        _tenants = new List<TenantModel>
+        {
+            new() { Id = Guid.NewGuid(), Name = "Tech Store", Email = "contact@techstore.com", Phone = "555-0100", Address = "123 Tech St", RegistrationLevel = "Business", IsActive = true, CreatedAt = DateTime.Now.AddMonths(-6) },
+            new() { Id = Guid.NewGuid(), Name = "Fashion Hub", Email = "info@fashionhub.com", Phone = "555-0101", Address = "456 Fashion Ave", RegistrationLevel = "Pro", IsActive = true, CreatedAt = DateTime.Now.AddMonths(-4) },
+            new() { Id = Guid.NewGuid(), Name = "Book Corner", Email = "hello@bookcorner.com", Phone = "555-0102", Address = "789 Reading Rd", RegistrationLevel = "Basic", IsActive = false, CreatedAt = DateTime.Now.AddMonths(-2) },
+            new() { Id = Guid.NewGuid(), Name = "Sports World", Email = "contact@sportsworld.com", Phone = "555-0103", Address = "321 Sports Blvd", RegistrationLevel = "Pro", IsActive = true, CreatedAt = DateTime.Now.AddMonths(-3) },
+            new() { Id = Guid.NewGuid(), Name = "Home Decor", Email = "info@homedecor.com", Phone = "555-0104", Address = "654 Home Way", RegistrationLevel = "Business", IsActive = true, CreatedAt = DateTime.Now.AddMonths(-5) },
+        };
+        await Task.CompletedTask;
+    }
+
+    private IQueryable<TenantModel> FilteredTenants
+    {
+        get
+        {
+            var filtered = _tenants.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(_searchTerm))
+            {
+                filtered = filtered.Where(t => 
+                    t.Name.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    t.Email.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrWhiteSpace(_filterLevel))
+            {
+                filtered = filtered.Where(t => t.RegistrationLevel == _filterLevel);
+            }
+
+            if (!string.IsNullOrWhiteSpace(_filterStatus))
+            {
+                var isActive = _filterStatus == "Active";
+                filtered = filtered.Where(t => t.IsActive == isActive);
+            }
+
+            return filtered;
+        }
+    }
+
+    private void OnSearchInput(ChangeEventArgs e)
+    {
+        _searchTerm = e.Value?.ToString() ?? string.Empty;
+    }
+
+    private void ShowAddDialog()
+    {
+        // TODO: Show add tenant dialog
+    }
+
+    private void EditTenant(TenantModel tenant)
+    {
+        // TODO: Navigate to edit page or show edit dialog
+    }
+
+    private async Task ToggleTenantLock(TenantModel tenant)
+    {
+        tenant.IsActive = !tenant.IsActive;
+        // TODO: Call API to update tenant status
+        await Task.CompletedTask;
+    }
+
+    public class TenantModel
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
+        public string Address { get; set; } = string.Empty;
+        public string RegistrationLevel { get; set; } = "Basic";
+        public bool IsActive { get; set; }
+        public DateTime CreatedAt { get; set; }
+    }
+}

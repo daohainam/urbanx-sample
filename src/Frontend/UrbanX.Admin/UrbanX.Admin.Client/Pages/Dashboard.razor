@@ -1,0 +1,140 @@
+@page "/"
+@attribute [Authorize(Roles = "admin")]
+
+<PageTitle>Dashboard - UrbanX Admin</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
+    <FluentLabel Typo="Typography.H2">Dashboard</FluentLabel>
+    
+    <FluentGrid Spacing="3">
+        <FluentGridItem xs="12" sm="6" md="3">
+            <FluentCard>
+                <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
+                    <FluentIcon Value="@(new Icons.Regular.Size24.Building())" Color="Color.Accent" />
+                    <FluentLabel Typo="Typography.H4">@_stats.TotalTenants</FluentLabel>
+                    <FluentLabel>Total Tenants</FluentLabel>
+                    <FluentLabel Typo="Typography.Body">@_stats.ActiveTenants Active</FluentLabel>
+                </FluentStack>
+            </FluentCard>
+        </FluentGridItem>
+
+        <FluentGridItem xs="12" sm="6" md="3">
+            <FluentCard>
+                <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
+                    <FluentIcon Value="@(new Icons.Regular.Size24.People())" Color="Color.Info" />
+                    <FluentLabel Typo="Typography.H4">@_stats.TotalCustomers</FluentLabel>
+                    <FluentLabel>Total Customers</FluentLabel>
+                    <FluentLabel Typo="Typography.Body">@_stats.ActiveCustomers Active</FluentLabel>
+                </FluentStack>
+            </FluentCard>
+        </FluentGridItem>
+
+        <FluentGridItem xs="12" sm="6" md="3">
+            <FluentCard>
+                <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
+                    <FluentIcon Value="@(new Icons.Regular.Size24.ShoppingBag())" Color="Color.Success" />
+                    <FluentLabel Typo="Typography.H4">@_stats.TotalOrders</FluentLabel>
+                    <FluentLabel>Total Orders</FluentLabel>
+                    <FluentLabel Typo="Typography.Body">@_stats.PendingOrders Pending</FluentLabel>
+                </FluentStack>
+            </FluentCard>
+        </FluentGridItem>
+
+        <FluentGridItem xs="12" sm="6" md="3">
+            <FluentCard>
+                <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
+                    <FluentIcon Value="@(new Icons.Regular.Size24.Money())" Color="Color.Warning" />
+                    <FluentLabel Typo="Typography.H4">$@_stats.TotalRevenue.ToString("N0")</FluentLabel>
+                    <FluentLabel>Total Revenue</FluentLabel>
+                    <FluentLabel Typo="Typography.Body">This month: $@_stats.MonthlyRevenue.ToString("N0")</FluentLabel>
+                </FluentStack>
+            </FluentCard>
+        </FluentGridItem>
+    </FluentGrid>
+
+    <FluentGrid Spacing="3">
+        <FluentGridItem xs="12" md="6">
+            <FluentCard>
+                <FluentLabel Typo="Typography.H5">Recent Tenants</FluentLabel>
+                <FluentDataGrid Items="@_recentTenants" GridTemplateColumns="1fr 1fr 1fr">
+                    <PropertyColumn Property="@(t => t.Name)" Title="Name" />
+                    <PropertyColumn Property="@(t => t.RegistrationLevel)" Title="Level" />
+                    <PropertyColumn Property="@(t => t.CreatedAt)" Title="Created" Format="yyyy-MM-dd" />
+                </FluentDataGrid>
+            </FluentCard>
+        </FluentGridItem>
+
+        <FluentGridItem xs="12" md="6">
+            <FluentCard>
+                <FluentLabel Typo="Typography.H5">Recent Orders</FluentLabel>
+                <FluentDataGrid Items="@_recentOrders" GridTemplateColumns="1fr 1fr 1fr">
+                    <PropertyColumn Property="@(o => o.OrderNumber)" Title="Order #" />
+                    <PropertyColumn Property="@(o => o.Status)" Title="Status" />
+                    <PropertyColumn Property="@(o => o.TotalAmount)" Title="Amount" Format="C" />
+                </FluentDataGrid>
+            </FluentCard>
+        </FluentGridItem>
+    </FluentGrid>
+</FluentStack>
+
+@code {
+    private DashboardStats _stats = new();
+    private IQueryable<TenantSummary> _recentTenants = Enumerable.Empty<TenantSummary>().AsQueryable();
+    private IQueryable<OrderSummary> _recentOrders = Enumerable.Empty<OrderSummary>().AsQueryable();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // TODO: Load actual data from API
+        _stats = new DashboardStats
+        {
+            TotalTenants = 45,
+            ActiveTenants = 42,
+            TotalCustomers = 1250,
+            ActiveCustomers = 1180,
+            TotalOrders = 3450,
+            PendingOrders = 23,
+            TotalRevenue = 125000,
+            MonthlyRevenue = 15000
+        };
+
+        _recentTenants = new List<TenantSummary>
+        {
+            new() { Name = "Tech Store", RegistrationLevel = "Business", CreatedAt = DateTime.Now.AddDays(-2) },
+            new() { Name = "Fashion Hub", RegistrationLevel = "Pro", CreatedAt = DateTime.Now.AddDays(-5) },
+            new() { Name = "Book Corner", RegistrationLevel = "Basic", CreatedAt = DateTime.Now.AddDays(-7) }
+        }.AsQueryable();
+
+        _recentOrders = new List<OrderSummary>
+        {
+            new() { OrderNumber = "ORD-2026-001", Status = "Pending", TotalAmount = 125.50m },
+            new() { OrderNumber = "ORD-2026-002", Status = "Confirmed", TotalAmount = 89.99m },
+            new() { OrderNumber = "ORD-2026-003", Status = "Delivered", TotalAmount = 250.00m }
+        }.AsQueryable();
+    }
+
+    public class DashboardStats
+    {
+        public int TotalTenants { get; set; }
+        public int ActiveTenants { get; set; }
+        public int TotalCustomers { get; set; }
+        public int ActiveCustomers { get; set; }
+        public int TotalOrders { get; set; }
+        public int PendingOrders { get; set; }
+        public decimal TotalRevenue { get; set; }
+        public decimal MonthlyRevenue { get; set; }
+    }
+
+    public class TenantSummary
+    {
+        public string Name { get; set; } = string.Empty;
+        public string RegistrationLevel { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
+    }
+
+    public class OrderSummary
+    {
+        public string OrderNumber { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public decimal TotalAmount { get; set; }
+    }
+}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../context/useCart';
 import { Check, ChevronRight, CreditCard, Truck, Tag, ShoppingBag } from 'lucide-react';
 
 const shippingMethods = [
@@ -29,6 +29,7 @@ const CheckoutPage = () => {
     const [coupons, setCoupons] = useState<string[]>([]);
     const [couponInput, setCouponInput] = useState('');
     const [isOrderPlaced, setIsOrderPlaced] = useState(false);
+    const [orderNumber] = useState(() => Math.floor(Math.random() * 1000000));
 
     const checkoutItems = items.filter(item => selectedItems.has(item.id));
     const shippingCost = shippingMethod.price;
@@ -61,7 +62,7 @@ const CheckoutPage = () => {
                 <h1 className="text-3xl font-serif font-bold text-gray-900 mb-4">Thank you for your order!</h1>
                 <p className="text-gray-600 mb-8">Your order has been placed successfully and is being processed.</p>
                 <div className="inline-block bg-gray-100 px-4 py-2 rounded-md font-mono text-sm text-gray-700 mb-8 border border-gray-200">
-                    Order #URB-{Math.floor(Math.random() * 1000000)}
+                    Order #URB-{orderNumber}
                 </div>
                 <div>
                     <button

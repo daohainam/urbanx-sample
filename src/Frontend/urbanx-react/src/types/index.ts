@@ -33,6 +33,16 @@ export interface OrderItem {
     price: number;
 }
 
+export interface OrderData {
+    customerId: string;
+    items: OrderItem[];
+    totalAmount: number;
+    shippingAddress: string;
+    shippingMethod: string;
+    paymentMethod: string;
+    couponsApplied: string[];
+}
+
 export type OrderStatus = 'Pending' | 'Confirmed' | 'Shipped' | 'Delivered' | 'Cancelled';
 
 export interface Category {

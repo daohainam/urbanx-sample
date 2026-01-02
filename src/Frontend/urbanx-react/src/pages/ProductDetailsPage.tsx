@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { catalogService } from '../services/api';
 import type { Product } from '../types';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../context/useCart';
 import { Star, Truck, Shield, RefreshCcw, ShoppingBag, ArrowLeft, Plus, Minus } from 'lucide-react';
 
 const ProductDetailsPage = () => {

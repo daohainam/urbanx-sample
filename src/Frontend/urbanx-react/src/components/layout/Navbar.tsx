@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, User, ShoppingBag, Menu, X } from 'lucide-react';
-import { useCart } from '../../context/CartContext';
+import { useCart } from '../../context/useCart';
 
 const Navbar = () => {
     const { totalItems } = useCart();

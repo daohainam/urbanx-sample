@@ -37,8 +37,7 @@ var gateway = builder.AddProject<Projects.UrbanX_Gateway>("gateway")
     .WithReference(paymentService)
     .WithReference(identityService);
 
-// Add Blazor Frontend
-var frontend = builder.AddProject<Projects.UrbanX_Frontend>("frontend")
+var frontend = builder.AddViteApp("frontend", "../../frontend/urbanx-react")
     .WithReference(gateway)
     .WithExternalHttpEndpoints();
 

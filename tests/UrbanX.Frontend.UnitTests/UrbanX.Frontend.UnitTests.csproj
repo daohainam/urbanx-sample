@@ -20,8 +20,4 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Frontend\UrbanX.Frontend\UrbanX.Frontend\UrbanX.Frontend.csproj" />
-  </ItemGroup>
-
 </Project>

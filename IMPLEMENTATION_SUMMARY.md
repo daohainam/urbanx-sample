@@ -1,4 +1,6 @@
-# Keycloak Integration - Implementation Summary
+# Keycloak Integration - Implementation Summary (DEPRECATED)
+
+> **⚠️ DEPRECATED**: This document describes a Keycloak integration that has been removed from the project. This file is kept for historical reference only.
 
 ## Overview
 

@@ -1,4 +1,6 @@
-# Admin Web Application - Implementation Complete
+# Admin Web Application - Implementation Complete (UPDATED)
+
+> **⚠️ NOTE**: Authentication features mentioned in this document have been removed from the implementation.
 
 ## Summary
 

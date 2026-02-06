@@ -2,40 +2,6 @@
 
 <Router AppAssembly="typeof(Program).Assembly">
     <Found Context="routeData">
-        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
-            <NotAuthorized>
-                @if (context.User.Identity?.IsAuthenticated == true)
-                {
-                    <div class="unauthorized-container">
-                        <FluentCard>
-                            <h1>Access Denied</h1>
-                            <p>You don't have permission to access this page.</p>
-                            <p>Please contact your administrator if you believe this is an error.</p>
-                        </FluentCard>
-                    </div>
-                }
-                else
-                {
-                    <RedirectToLogin />
-                }
-            </NotAuthorized>
-            <Authorizing>
-                <div class="authorizing-container">
-                    <FluentProgressRing />
-                    <p>Verifying access...</p>
-                </div>
-            </Authorizing>
-        </AuthorizeRouteView>
+        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
     </Found>
 </Router>
-
-<style>
-    .unauthorized-container, .authorizing-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-        gap: 1rem;
-    }
-</style>

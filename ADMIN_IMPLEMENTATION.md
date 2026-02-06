@@ -1,4 +1,6 @@
-# Admin Web Application Implementation Summary
+# Admin Web Application Implementation Summary (UPDATED)
+
+> **⚠️ NOTE**: This document describes the admin application implementation. Authentication features mentioned in this document have been removed.
 
 ## Overview
 
@@ -12,13 +14,15 @@ Created two new projects:
 - **UrbanX.Admin** (Server): Blazor WebAssembly host with service defaults
 - **UrbanX.Admin.Client** (Client): Blazor WebAssembly client application
 
-### 2. Authentication & Authorization
+### 2. Authentication & Authorization (REMOVED)
 
-- OpenID Connect (OIDC) integration with Keycloak
-- Authorization Code Flow with PKCE
-- Role-based access control (requires `admin` role)
-- Login/logout functionality
-- Protected routes and components
+- ~~OpenID Connect (OIDC) integration with Keycloak~~
+- ~~Authorization Code Flow with PKCE~~
+- ~~Role-based access control (requires `admin` role)~~
+- ~~Login/logout functionality~~
+- ~~Protected routes and components~~
+
+**Note**: Authentication features have been removed from the application.
 
 ### 3. Dashboard
 

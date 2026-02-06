@@ -11,7 +11,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="10.0.1" />
     <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.10.2" />
   </ItemGroup>
 

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.1.11312.151 d18.0
+VisualStudioVersion = 18.1.11312.151
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
 EndProject
@@ -72,6 +72,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UrbanX.Admin", "src\Frontend\UrbanX.Admin\UrbanX.Admin\UrbanX.Admin.csproj", "{3D46CF2B-5FCF-4A54-A9CB-AA280E007F52}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UrbanX.Admin.Client", "src\Frontend\UrbanX.Admin\UrbanX.Admin.Client\UrbanX.Admin.Client.csproj", "{C7671E92-EE23-4392-94C9-0E08128847C7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UrbanX.Shared.Security", "src\Shared\UrbanX.Shared.Security\UrbanX.Shared.Security.csproj", "{7D7E7743-7D67-47D3-AFB2-28CF1BCA9344}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -335,6 +337,18 @@ Global
 		{C7671E92-EE23-4392-94C9-0E08128847C7}.Release|x64.Build.0 = Release|Any CPU
 		{C7671E92-EE23-4392-94C9-0E08128847C7}.Release|x86.ActiveCfg = Release|Any CPU
 		{C7671E92-EE23-4392-94C9-0E08128847C7}.Release|x86.Build.0 = Release|Any CPU
+		{7D7E7743-7D67-47D3-AFB2-28CF1BCA9344}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D7E7743-7D67-47D3-AFB2-28CF1BCA9344}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D7E7743-7D67-47D3-AFB2-28CF1BCA9344}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7D7E7743-7D67-47D3-AFB2-28CF1BCA9344}.Debug|x64.Build.0 = Debug|Any CPU
+		{7D7E7743-7D67-47D3-AFB2-28CF1BCA9344}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7D7E7743-7D67-47D3-AFB2-28CF1BCA9344}.Debug|x86.Build.0 = Debug|Any CPU
+		{7D7E7743-7D67-47D3-AFB2-28CF1BCA9344}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D7E7743-7D67-47D3-AFB2-28CF1BCA9344}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D7E7743-7D67-47D3-AFB2-28CF1BCA9344}.Release|x64.ActiveCfg = Release|Any CPU
+		{7D7E7743-7D67-47D3-AFB2-28CF1BCA9344}.Release|x64.Build.0 = Release|Any CPU
+		{7D7E7743-7D67-47D3-AFB2-28CF1BCA9344}.Release|x86.ActiveCfg = Release|Any CPU
+		{7D7E7743-7D67-47D3-AFB2-28CF1BCA9344}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -373,5 +387,6 @@ Global
 		{115FC2B5-3B4D-99CF-EBA6-ED09E85DF8F0} = {42299874-777B-F2D0-9D08-D24097ABCE7E}
 		{3D46CF2B-5FCF-4A54-A9CB-AA280E007F52} = {115FC2B5-3B4D-99CF-EBA6-ED09E85DF8F0}
 		{C7671E92-EE23-4392-94C9-0E08128847C7} = {115FC2B5-3B4D-99CF-EBA6-ED09E85DF8F0}
+		{7D7E7743-7D67-47D3-AFB2-28CF1BCA9344} = {C8E42992-5E42-0C2B-DBFE-AA848D06431C}
 	EndGlobalSection
 EndGlobal

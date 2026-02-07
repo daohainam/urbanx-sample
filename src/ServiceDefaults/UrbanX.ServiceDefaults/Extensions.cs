@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -139,10 +140,10 @@ public static class Extensions
         // Add security headers
         app.Use(async (context, next) =>
         {
-            context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
-            context.Response.Headers.Append("X-Frame-Options", "DENY");
-            context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
-            context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
+            context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+            context.Response.Headers["X-Frame-Options"] = "DENY";
+            context.Response.Headers["X-XSS-Protection"] = "1; mode=block";
+            context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
             await next();
         });
 

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Text.Json;
@@ -53,9 +54,9 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
 
     private static bool IsProduction(HttpContext context)
     {
-        var env = context.RequestServices.GetService(typeof(Microsoft.Extensions.Hosting.IHostEnvironment))
-            as Microsoft.Extensions.Hosting.IHostEnvironment;
-        return env?.IsProduction() ?? true;
+        var env = context.RequestServices.GetService(typeof(IHostEnvironment))
+            as IHostEnvironment;
+        return env?.EnvironmentName == "Production";
     }
 }
 

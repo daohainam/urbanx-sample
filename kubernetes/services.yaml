@@ -1,0 +1,397 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: identity-service
+  namespace: urbanx
+  labels:
+    app: identity-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: identity-service
+  template:
+    metadata:
+      labels:
+        app: identity-service
+    spec:
+      containers:
+      - name: identity-service
+        image: ghcr.io/daohainam/urbanx-sample/urbanx-identity:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+        envFrom:
+        - configMapRef:
+            name: urbanx-config
+        env:
+        - name: ASPNETCORE_URLS
+          value: "http://+:8080"
+        livenessProbe:
+          httpGet:
+            path: /alive
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: identity-service
+  namespace: urbanx
+spec:
+  selector:
+    app: identity-service
+  ports:
+  - port: 80
+    targetPort: 8080
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: catalog-service
+  namespace: urbanx
+  labels:
+    app: catalog-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: catalog-service
+  template:
+    metadata:
+      labels:
+        app: catalog-service
+    spec:
+      containers:
+      - name: catalog-service
+        image: ghcr.io/daohainam/urbanx-sample/urbanx-catalog:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+        envFrom:
+        - configMapRef:
+            name: urbanx-config
+        env:
+        - name: ASPNETCORE_URLS
+          value: "http://+:8080"
+        - name: DATABASE_CONNECTION_STRING
+          valueFrom:
+            secretKeyRef:
+              name: urbanx-secrets
+              key: DATABASE_CONNECTION_STRING
+        livenessProbe:
+          httpGet:
+            path: /alive
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: catalog-service
+  namespace: urbanx
+spec:
+  selector:
+    app: catalog-service
+  ports:
+  - port: 80
+    targetPort: 8080
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service
+  namespace: urbanx
+  labels:
+    app: order-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: order-service
+  template:
+    metadata:
+      labels:
+        app: order-service
+    spec:
+      containers:
+      - name: order-service
+        image: ghcr.io/daohainam/urbanx-sample/urbanx-order:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+        envFrom:
+        - configMapRef:
+            name: urbanx-config
+        env:
+        - name: ASPNETCORE_URLS
+          value: "http://+:8080"
+        - name: DATABASE_CONNECTION_STRING
+          valueFrom:
+            secretKeyRef:
+              name: urbanx-secrets
+              key: DATABASE_CONNECTION_STRING
+        livenessProbe:
+          httpGet:
+            path: /alive
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-service
+  namespace: urbanx
+spec:
+  selector:
+    app: order-service
+  ports:
+  - port: 80
+    targetPort: 8080
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service
+  namespace: urbanx
+  labels:
+    app: payment-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: payment-service
+  template:
+    metadata:
+      labels:
+        app: payment-service
+    spec:
+      containers:
+      - name: payment-service
+        image: ghcr.io/daohainam/urbanx-sample/urbanx-payment:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+        envFrom:
+        - configMapRef:
+            name: urbanx-config
+        env:
+        - name: ASPNETCORE_URLS
+          value: "http://+:8080"
+        - name: DATABASE_CONNECTION_STRING
+          valueFrom:
+            secretKeyRef:
+              name: urbanx-secrets
+              key: DATABASE_CONNECTION_STRING
+        livenessProbe:
+          httpGet:
+            path: /alive
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service
+  namespace: urbanx
+spec:
+  selector:
+    app: payment-service
+  ports:
+  - port: 80
+    targetPort: 8080
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: merchant-service
+  namespace: urbanx
+  labels:
+    app: merchant-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: merchant-service
+  template:
+    metadata:
+      labels:
+        app: merchant-service
+    spec:
+      containers:
+      - name: merchant-service
+        image: ghcr.io/daohainam/urbanx-sample/urbanx-merchant:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+        envFrom:
+        - configMapRef:
+            name: urbanx-config
+        env:
+        - name: ASPNETCORE_URLS
+          value: "http://+:8080"
+        - name: DATABASE_CONNECTION_STRING
+          valueFrom:
+            secretKeyRef:
+              name: urbanx-secrets
+              key: DATABASE_CONNECTION_STRING
+        livenessProbe:
+          httpGet:
+            path: /alive
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: merchant-service
+  namespace: urbanx
+spec:
+  selector:
+    app: merchant-service
+  ports:
+  - port: 80
+    targetPort: 8080
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway
+  namespace: urbanx
+  labels:
+    app: gateway
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gateway
+  template:
+    metadata:
+      labels:
+        app: gateway
+    spec:
+      containers:
+      - name: gateway
+        image: ghcr.io/daohainam/urbanx-sample/urbanx-gateway:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+        envFrom:
+        - configMapRef:
+            name: urbanx-config
+        env:
+        - name: ASPNETCORE_URLS
+          value: "http://+:8080"
+        livenessProbe:
+          httpGet:
+            path: /alive
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway
+  namespace: urbanx
+spec:
+  selector:
+    app: gateway
+  ports:
+  - port: 80
+    targetPort: 8080
+  type: LoadBalancer

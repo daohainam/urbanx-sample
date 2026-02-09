@@ -84,7 +84,7 @@ public class StripePaymentGateway : IPaymentGateway
         }
     }
 
-    public async Task<PaymentGatewayResult> RefundPaymentAsync(string transactionId, decimal amount)
+    public async Task<PaymentGatewayResult> RefundPaymentAsync(string transactionId, decimal amount, string? currency = null)
     {
         try
         {
@@ -95,7 +95,8 @@ public class StripePaymentGateway : IPaymentGateway
             var options = new RefundCreateOptions
             {
                 PaymentIntent = transactionId,
-                Amount = ConvertToStripeAmount(amount, "usd") // Default to USD, should come from original payment
+                // Only specify amount if currency is provided, otherwise Stripe will use full payment amount
+                Amount = currency != null ? ConvertToStripeAmount(amount, currency) : null
             };
 
             var refund = await refundService.CreateAsync(options);
@@ -158,12 +159,25 @@ public class StripePaymentGateway : IPaymentGateway
 
     /// <summary>
     /// Convert decimal amount to Stripe's smallest currency unit (cents)
+    /// Note: This implementation assumes 2 decimal places for most currencies.
+    /// Some currencies like JPY, KRW use 0 decimal places.
+    /// For production use, implement proper currency-specific handling using Stripe's currency list.
     /// </summary>
     private static long ConvertToStripeAmount(decimal amount, string currency)
     {
+        // Zero-decimal currencies (no conversion needed)
+        var zeroDecimalCurrencies = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "BIF", "CLP", "DJF", "GNF", "JPY", "KMF", "KRW", "MGA", "PYG", "RWF",
+            "UGX", "VND", "VUV", "XAF", "XOF", "XPF"
+        };
+
+        if (zeroDecimalCurrencies.Contains(currency))
+        {
+            return (long)amount;
+        }
+
         // Most currencies use 2 decimal places (cents)
-        // Some currencies like JPY use 0 decimal places
-        // This is a simplified implementation
         return (long)(amount * 100);
     }
 

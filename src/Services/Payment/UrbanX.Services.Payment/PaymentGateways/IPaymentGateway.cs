@@ -18,8 +18,9 @@ public interface IPaymentGateway
     /// </summary>
     /// <param name="transactionId">Transaction ID from original payment</param>
     /// <param name="amount">Amount to refund</param>
+    /// <param name="currency">Currency of the refund (optional, should match original payment)</param>
     /// <returns>Refund result</returns>
-    Task<PaymentGatewayResult> RefundPaymentAsync(string transactionId, decimal amount);
+    Task<PaymentGatewayResult> RefundPaymentAsync(string transactionId, decimal amount, string? currency = null);
     
     /// <summary>
     /// Get payment status from gateway

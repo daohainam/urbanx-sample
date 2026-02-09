@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using UrbanX.Services.Payment.Data;
 using UrbanX.Services.Payment.Models;
+using UrbanX.Services.Payment.PaymentGateways;
+using UrbanX.Services.Payment.PaymentGateways.Stripe;
 using UrbanX.Shared.Security;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +17,12 @@ builder.AddNpgsqlDbContext<PaymentDbContext>("paymentdb");
 // Add database health check
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<PaymentDbContext>(name: "paymentdb", tags: new[] { "ready", "db" });
+
+// Configure Stripe Payment Gateway (Anti-Corruption Layer)
+var stripeConfig = builder.Configuration.GetSection("Stripe").Get<StripeSettings>() 
+    ?? new StripeSettings();
+builder.Services.AddSingleton(stripeConfig);
+builder.Services.AddScoped<IPaymentGateway, StripePaymentGateway>();
 
 var app = builder.Build();
 
@@ -47,7 +55,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Payment processing
-app.MapPost("/api/payments", async (UrbanX.Services.Payment.Models.Payment payment, PaymentDbContext db) =>
+app.MapPost("/api/payments", async (UrbanX.Services.Payment.Models.Payment payment, PaymentDbContext db, IPaymentGateway paymentGateway) =>
 {
     RequestValidation.ValidateGuid(payment.OrderId, nameof(payment.OrderId));
     RequestValidation.ValidatePositive(payment.Amount, nameof(payment.Amount));
@@ -57,9 +65,46 @@ app.MapPost("/api/payments", async (UrbanX.Services.Payment.Models.Payment payme
     payment.CreatedAt = DateTime.UtcNow;
     payment.UpdatedAt = DateTime.UtcNow;
     
-    // Simulate payment processing
-    payment.TransactionId = $"TXN-{Guid.NewGuid().ToString()[..8]}";
-    payment.Status = PaymentStatus.Completed; // In real scenario, this would be async
+    // Process payment through Stripe gateway (Anti-Corruption Layer)
+    if (payment.Method == PaymentMethod.Stripe)
+    {
+        var gatewayRequest = new PaymentGatewayRequest(
+            OrderId: payment.OrderId,
+            Amount: payment.Amount,
+            Currency: "usd",
+            Metadata: new Dictionary<string, string>
+            {
+                { "payment_id", payment.Id.ToString() }
+            }
+        );
+        
+        var result = await paymentGateway.ProcessPaymentAsync(gatewayRequest);
+        
+        if (result.Success)
+        {
+            payment.TransactionId = result.TransactionId;
+            payment.Status = result.Status switch
+            {
+                PaymentGatewayStatus.Succeeded => PaymentStatus.Completed,
+                PaymentGatewayStatus.Processing => PaymentStatus.Processing,
+                PaymentGatewayStatus.Pending => PaymentStatus.Pending,
+                PaymentGatewayStatus.Failed => PaymentStatus.Failed,
+                PaymentGatewayStatus.Refunded => PaymentStatus.Refunded,
+                _ => PaymentStatus.Failed
+            };
+        }
+        else
+        {
+            payment.Status = PaymentStatus.Failed;
+            payment.TransactionId = $"FAILED-{Guid.NewGuid().ToString()[..8]}";
+        }
+    }
+    else
+    {
+        // Simulate payment processing for other methods
+        payment.TransactionId = $"TXN-{Guid.NewGuid().ToString()[..8]}";
+        payment.Status = PaymentStatus.Completed; // In real scenario, this would be async
+    }
     
     db.Payments.Add(payment);
     await db.SaveChangesAsync();

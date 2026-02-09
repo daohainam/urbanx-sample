@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using UrbanX.Services.Catalog.Data;
 using UrbanX.Services.Catalog.Models;
 using UrbanX.Services.Catalog;
+using UrbanX.Shared.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,10 @@ builder.AddServiceDefaults();
 builder.Services.AddOpenApi();
 builder.AddNpgsqlDbContext<CatalogDbContext>("catalogdb");
 
+// Add database health check
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<CatalogDbContext>(name: "catalogdb", tags: new[] { "ready", "db" });
+
 var app = builder.Build();
 
 // Map default endpoints (health checks, etc.)
@@ -21,13 +26,30 @@ app.MapDefaultEndpoints();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+}
+
+// Apply database migrations
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     
-    // Ensure database is created and seeded
-    using (var scope = app.Services.CreateScope())
+    try
     {
-        var context = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
-        await context.Database.EnsureCreatedAsync();
-        await DataSeeder.SeedAsync(context);
+        logger.LogInformation("Applying database migrations for CatalogDbContext...");
+        await context.Database.MigrateAsync();
+        logger.LogInformation("Database migrations applied successfully");
+        
+        // Seed data in development
+        if (app.Environment.IsDevelopment())
+        {
+            await DataSeeder.SeedAsync(context);
+        }
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred while applying database migrations");
+        throw;
     }
 }
 
@@ -58,12 +80,16 @@ app.MapGet("/api/products", async (CatalogDbContext db, string? search, string? 
 
 app.MapGet("/api/products/{id:guid}", async (Guid id, CatalogDbContext db) =>
 {
+    RequestValidation.ValidateGuid(id, nameof(id));
+    
     var product = await db.Products.FindAsync(id);
     return product is not null ? Results.Ok(product) : Results.NotFound();
 });
 
 app.MapGet("/api/products/merchant/{merchantId:guid}", async (Guid merchantId, CatalogDbContext db) =>
 {
+    RequestValidation.ValidateGuid(merchantId, nameof(merchantId));
+    
     var products = await db.Products
         .Where(p => p.MerchantId == merchantId && p.IsActive)
         .ToListAsync();

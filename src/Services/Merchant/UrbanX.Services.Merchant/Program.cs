@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using UrbanX.Services.Merchant.Data;
 using UrbanX.Services.Merchant.Models;
 using UrbanX.Services.Merchant;
+using UrbanX.Shared.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,10 @@ builder.AddServiceDefaults();
 builder.Services.AddOpenApi();
 builder.AddNpgsqlDbContext<MerchantDbContext>("merchantdb");
 
+// Add database health check
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<MerchantDbContext>(name: "merchantdb", tags: new[] { "ready", "db" });
+
 var app = builder.Build();
 
 // Map default endpoints (health checks, etc.)
@@ -21,25 +26,48 @@ app.MapDefaultEndpoints();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+}
+
+// Apply database migrations
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<MerchantDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     
-    // Ensure database is created and seeded
-    using (var scope = app.Services.CreateScope())
+    try
     {
-        var context = scope.ServiceProvider.GetRequiredService<MerchantDbContext>();
-        await context.Database.EnsureCreatedAsync();
-        await DataSeeder.SeedAsync(context);
+        logger.LogInformation("Applying database migrations for MerchantDbContext...");
+        await context.Database.MigrateAsync();
+        logger.LogInformation("Database migrations applied successfully");
+        
+        // Seed data in development
+        if (app.Environment.IsDevelopment())
+        {
+            await DataSeeder.SeedAsync(context);
+        }
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred while applying database migrations");
+        throw;
     }
 }
 
 // Merchant management
 app.MapGet("/api/merchants/{id:guid}", async (Guid id, MerchantDbContext db) =>
 {
+    RequestValidation.ValidateGuid(id, nameof(id));
+    
     var merchant = await db.Merchants.FindAsync(id);
     return merchant is not null ? Results.Ok(merchant) : Results.NotFound();
 });
 
 app.MapPost("/api/merchants", async (UrbanX.Services.Merchant.Models.Merchant merchant, MerchantDbContext db) =>
 {
+    RequestValidation.ValidateRequiredString(merchant.Name, nameof(merchant.Name), 200);
+    RequestValidation.ValidateRequiredString(merchant.Email, nameof(merchant.Email), 100);
+    RequestValidation.ValidateEmail(merchant.Email);
+    
     merchant.Id = Guid.NewGuid();
     merchant.CreatedAt = DateTime.UtcNow;
     merchant.UpdatedAt = DateTime.UtcNow;
@@ -54,6 +82,8 @@ app.MapPost("/api/merchants", async (UrbanX.Services.Merchant.Models.Merchant me
 // Product management for merchants
 app.MapGet("/api/merchants/{merchantId:guid}/products", async (Guid merchantId, MerchantDbContext db) =>
 {
+    RequestValidation.ValidateGuid(merchantId, nameof(merchantId));
+    
     var products = await db.Products
         .Where(p => p.MerchantId == merchantId)
         .ToListAsync();
@@ -62,6 +92,10 @@ app.MapGet("/api/merchants/{merchantId:guid}/products", async (Guid merchantId, 
 
 app.MapPost("/api/merchants/{merchantId:guid}/products", async (Guid merchantId, MerchantProduct product, MerchantDbContext db) =>
 {
+    RequestValidation.ValidateGuid(merchantId, nameof(merchantId));
+    RequestValidation.ValidateRequiredString(product.Name, nameof(product.Name), 200);
+    RequestValidation.ValidatePositive(product.Price, nameof(product.Price));
+    
     product.Id = Guid.NewGuid();
     product.MerchantId = merchantId;
     product.CreatedAt = DateTime.UtcNow;
@@ -76,6 +110,11 @@ app.MapPost("/api/merchants/{merchantId:guid}/products", async (Guid merchantId,
 
 app.MapPut("/api/merchants/{merchantId:guid}/products/{productId:guid}", async (Guid merchantId, Guid productId, MerchantProduct updatedProduct, MerchantDbContext db) =>
 {
+    RequestValidation.ValidateGuid(merchantId, nameof(merchantId));
+    RequestValidation.ValidateGuid(productId, nameof(productId));
+    RequestValidation.ValidateRequiredString(updatedProduct.Name, nameof(updatedProduct.Name), 200);
+    RequestValidation.ValidatePositive(updatedProduct.Price, nameof(updatedProduct.Price));
+    
     var product = await db.Products.FirstOrDefaultAsync(p => p.Id == productId && p.MerchantId == merchantId);
     if (product == null) return Results.NotFound();
     

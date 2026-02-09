@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using UrbanX.Services.Order.Data;
 using UrbanX.Services.Order.Models;
+using UrbanX.Shared.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,10 @@ builder.AddServiceDefaults();
 builder.Services.AddOpenApi();
 builder.AddNpgsqlDbContext<OrderDbContext>("orderdb");
 
+// Add database health check
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<OrderDbContext>(name: "orderdb", tags: new[] { "ready", "db" });
+
 var app = builder.Build();
 
 // Map default endpoints (health checks, etc.)
@@ -20,18 +25,32 @@ app.MapDefaultEndpoints();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+}
+
+// Apply database migrations
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<OrderDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     
-    // Ensure database is created
-    using (var scope = app.Services.CreateScope())
+    try
     {
-        var context = scope.ServiceProvider.GetRequiredService<OrderDbContext>();
-        await context.Database.EnsureCreatedAsync();
+        logger.LogInformation("Applying database migrations for OrderDbContext...");
+        await context.Database.MigrateAsync();
+        logger.LogInformation("Database migrations applied successfully");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred while applying database migrations");
+        throw;
     }
 }
 
 // Cart endpoints
 app.MapGet("/api/cart/{customerId:guid}", async (Guid customerId, OrderDbContext db) =>
 {
+    RequestValidation.ValidateGuid(customerId, nameof(customerId));
+    
     var cart = await db.Carts
         .Include(c => c.Items)
         .FirstOrDefaultAsync(c => c.CustomerId == customerId);
@@ -48,6 +67,12 @@ app.MapGet("/api/cart/{customerId:guid}", async (Guid customerId, OrderDbContext
 
 app.MapPost("/api/cart/{customerId:guid}/items", async (Guid customerId, CartItem item, OrderDbContext db) =>
 {
+    RequestValidation.ValidateGuid(customerId, nameof(customerId));
+    RequestValidation.ValidateGuid(item.ProductId, nameof(item.ProductId));
+    RequestValidation.ValidatePositive(item.Quantity, nameof(item.Quantity));
+    RequestValidation.ValidatePositive(item.UnitPrice, nameof(item.UnitPrice));
+    RequestValidation.ValidateRequiredString(item.ProductName, nameof(item.ProductName), 200);
+    
     var cart = await db.Carts
         .Include(c => c.Items)
         .FirstOrDefaultAsync(c => c.CustomerId == customerId);
@@ -77,6 +102,9 @@ app.MapPost("/api/cart/{customerId:guid}/items", async (Guid customerId, CartIte
 
 app.MapDelete("/api/cart/{customerId:guid}/items/{itemId:guid}", async (Guid customerId, Guid itemId, OrderDbContext db) =>
 {
+    RequestValidation.ValidateGuid(customerId, nameof(customerId));
+    RequestValidation.ValidateGuid(itemId, nameof(itemId));
+    
     var cart = await db.Carts
         .Include(c => c.Items)
         .FirstOrDefaultAsync(c => c.CustomerId == customerId);
@@ -97,6 +125,14 @@ app.MapDelete("/api/cart/{customerId:guid}/items/{itemId:guid}", async (Guid cus
 // Checkout
 app.MapPost("/api/orders", async (UrbanX.Services.Order.Models.Order order, OrderDbContext db) =>
 {
+    RequestValidation.ValidateGuid(order.CustomerId, nameof(order.CustomerId));
+    RequestValidation.ValidatePositive(order.TotalAmount, nameof(order.TotalAmount));
+    
+    if (order.Items == null || !order.Items.Any())
+    {
+        return Results.BadRequest("Order must contain at least one item");
+    }
+    
     order.Id = Guid.NewGuid();
     order.OrderNumber = $"ORD-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString()[..8]}";
     order.Status = OrderStatus.Pending;
@@ -120,6 +156,8 @@ app.MapPost("/api/orders", async (UrbanX.Services.Order.Models.Order order, Orde
 // Order tracking
 app.MapGet("/api/orders/{orderId:guid}", async (Guid orderId, OrderDbContext db) =>
 {
+    RequestValidation.ValidateGuid(orderId, nameof(orderId));
+    
     var order = await db.Orders
         .Include(o => o.Items)
         .Include(o => o.StatusHistory)
@@ -130,6 +168,8 @@ app.MapGet("/api/orders/{orderId:guid}", async (Guid orderId, OrderDbContext db)
 
 app.MapGet("/api/orders/customer/{customerId:guid}", async (Guid customerId, OrderDbContext db) =>
 {
+    RequestValidation.ValidateGuid(customerId, nameof(customerId));
+    
     var orders = await db.Orders
         .Where(o => o.CustomerId == customerId)
         .Include(o => o.Items)
@@ -142,6 +182,8 @@ app.MapGet("/api/orders/customer/{customerId:guid}", async (Guid customerId, Ord
 
 app.MapPut("/api/orders/{orderId:guid}/status", async (Guid orderId, OrderStatus status, OrderDbContext db) =>
 {
+    RequestValidation.ValidateGuid(orderId, nameof(orderId));
+    
     var order = await db.Orders
         .Include(o => o.StatusHistory)
         .FirstOrDefaultAsync(o => o.Id == orderId);

@@ -47,7 +47,7 @@ public class OrderServiceIntegrationTests
             .Include(c => c.Items)
             .FirstOrDefaultAsync(c => c.CustomerId == customerId);
         Assert.NotNull(savedCart);
-        Assert.Equal(1, savedCart!.Items.Count);
+        Assert.Single(savedCart!.Items);
         Assert.Equal(2, savedCart.Items.First().Quantity);
     }
 
@@ -95,7 +95,7 @@ public class OrderServiceIntegrationTests
             .Include(o => o.Items)
             .FirstOrDefaultAsync(o => o.Id == order.Id);
         Assert.NotNull(savedOrder);
-        Assert.Equal(1, savedOrder!.Items.Count);
+        Assert.Single(savedOrder!.Items);
         Assert.Equal(100.00m, savedOrder.TotalAmount);
     }
 

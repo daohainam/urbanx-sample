@@ -101,7 +101,7 @@ public class OrderDbContextTests
                 .Include(c => c.Items)
                 .FirstOrDefaultAsync(c => c.Id == cart.Id);
             Assert.NotNull(savedCart);
-            Assert.Equal(1, savedCart!.Items.Count);
+            Assert.Single(savedCart!.Items);
             Assert.Equal("Test Product", savedCart.Items.First().ProductName);
         }
     }
@@ -200,9 +200,9 @@ public class OrderDbContextTests
                 .Include(o => o.StatusHistory)
                 .FirstOrDefaultAsync(o => o.Id == order.Id);
             Assert.NotNull(savedOrder);
-            Assert.Equal(1, savedOrder!.Items.Count);
+            Assert.Single(savedOrder!.Items);
             Assert.Equal("Product A", savedOrder.Items.First().ProductName);
-            Assert.Equal(1, savedOrder.StatusHistory.Count);
+            Assert.Single(savedOrder.StatusHistory);
             Assert.Equal(OrderStatus.Pending, savedOrder.StatusHistory.First().Status);
         }
     }

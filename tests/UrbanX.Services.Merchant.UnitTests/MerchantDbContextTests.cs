@@ -178,7 +178,7 @@ public class MerchantDbContextTests
             var merchantProducts = await context.Products
                 .Where(p => p.MerchantId == merchantId)
                 .ToListAsync();
-            Assert.Equal(1, merchantProducts.Count);
+            Assert.Single(merchantProducts);
             Assert.Equal("Product 1", merchantProducts.First().Name);
         }
     }

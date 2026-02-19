@@ -41,9 +41,4 @@ var frontend = builder.AddViteApp("frontend", "../../frontend/urbanx-react")
     .WithReference(gateway)
     .WithExternalHttpEndpoints();
 
-// Add Admin Frontend
-var admin = builder.AddProject<Projects.UrbanX_Admin>("admin")
-    .WithReference(gateway)
-    .WithExternalHttpEndpoints();
-
 builder.Build().Run();

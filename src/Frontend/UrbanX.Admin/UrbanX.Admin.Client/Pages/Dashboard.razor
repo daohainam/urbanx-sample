@@ -1,4 +1,5 @@
 @page "/"
+@using Microsoft.FluentUI.AspNetCore.Components
 
 <PageTitle>Dashboard - UrbanX Admin</PageTitle>
 
@@ -9,7 +10,7 @@
         <FluentGridItem xs="12" sm="6" md="3">
             <FluentCard>
                 <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
-                    <FluentIcon Value="@(new Icons.Regular.Size24.Building())" Color="Color.Accent" />
+                    <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.Building())" Color="Color.Accent" />
                     <FluentLabel Typo="Typography.H4">@_stats.TotalTenants</FluentLabel>
                     <FluentLabel>Total Tenants</FluentLabel>
                     <FluentLabel Typo="Typography.Body">@_stats.ActiveTenants Active</FluentLabel>
@@ -20,7 +21,7 @@
         <FluentGridItem xs="12" sm="6" md="3">
             <FluentCard>
                 <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
-                    <FluentIcon Value="@(new Icons.Regular.Size24.People())" Color="Color.Info" />
+                    <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.People())" Color="Color.Info" />
                     <FluentLabel Typo="Typography.H4">@_stats.TotalCustomers</FluentLabel>
                     <FluentLabel>Total Customers</FluentLabel>
                     <FluentLabel Typo="Typography.Body">@_stats.ActiveCustomers Active</FluentLabel>
@@ -31,7 +32,7 @@
         <FluentGridItem xs="12" sm="6" md="3">
             <FluentCard>
                 <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
-                    <FluentIcon Value="@(new Icons.Regular.Size24.ShoppingBag())" Color="Color.Success" />
+                    <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.ShoppingBag())" Color="Color.Success" />
                     <FluentLabel Typo="Typography.H4">@_stats.TotalOrders</FluentLabel>
                     <FluentLabel>Total Orders</FluentLabel>
                     <FluentLabel Typo="Typography.Body">@_stats.PendingOrders Pending</FluentLabel>
@@ -42,7 +43,7 @@
         <FluentGridItem xs="12" sm="6" md="3">
             <FluentCard>
                 <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
-                    <FluentIcon Value="@(new Icons.Regular.Size24.Money())" Color="Color.Warning" />
+                    <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.Money())" Color="Color.Warning" />
                     <FluentLabel Typo="Typography.H4">$@_stats.TotalRevenue.ToString("N0")</FluentLabel>
                     <FluentLabel>Total Revenue</FluentLabel>
                     <FluentLabel Typo="Typography.Body">This month: $@_stats.MonthlyRevenue.ToString("N0")</FluentLabel>

@@ -1,0 +1,29 @@
+.git
+.vs
+.idea
+.vscode
+
+# Test projects
+tests/
+
+# Build artifacts
+**/bin/
+**/obj/
+**/TestResults/
+
+# Docs and scripts not needed in build context
+*.md
+*.sh
+*.ps1
+*.http
+
+# Docker files themselves
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Aspire AppHost (not needed for service builds)
+src/AppHost/
+
+# NuGet cache
+.nuget/

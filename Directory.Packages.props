@@ -35,6 +35,9 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.15.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.15.0" />
 
+    <!-- Elasticsearch -->
+    <PackageVersion Include="Elastic.Clients.Elasticsearch" Version="9.3.0" />
+
     <!-- Third-party packages -->
     <PackageVersion Include="Duende.IdentityServer" Version="7.4.6" />
     <PackageVersion Include="Scalar.AspNetCore" Version="2.11.0" />

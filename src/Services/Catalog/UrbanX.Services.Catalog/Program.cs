@@ -1,7 +1,10 @@
+using Elastic.Clients.Elasticsearch;
 using Microsoft.EntityFrameworkCore;
-using UrbanX.Services.Catalog.Data;
-using UrbanX.Services.Catalog.Models;
 using UrbanX.Services.Catalog;
+using UrbanX.Services.Catalog.Data;
+using UrbanX.Services.Catalog.Messaging;
+using UrbanX.Services.Catalog.Models;
+using UrbanX.Services.Catalog.Search;
 using UrbanX.Shared.Security;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +19,17 @@ builder.AddNpgsqlDbContext<CatalogDbContext>("catalogdb");
 // Add database health check
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<CatalogDbContext>(name: "catalogdb", tags: ["ready", "db"]);
+
+// Configure Elasticsearch (read side)
+var elasticsearchUri = builder.Configuration["Elasticsearch:Uri"] ?? "http://localhost:9200";
+builder.Services.AddSingleton(new ElasticsearchClient(new Uri(elasticsearchUri)));
+builder.Services.AddSingleton<IProductSearchService, ElasticsearchProductSearchService>();
+
+// Configure Kafka producer (write side event publishing)
+builder.Services.AddSingleton<IProductEventPublisher, KafkaProductEventPublisher>();
+
+// Configure Kafka consumer background service (syncs events to Elasticsearch)
+builder.Services.AddHostedService<KafkaProductEventConsumer>();
 
 var app = builder.Build();
 
@@ -53,47 +67,145 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+// ────────────────────────────────────────────────────────
+// READ endpoints – query Elasticsearch (CQRS read side)
+// ────────────────────────────────────────────────────────
+
 // Product search and browse
-app.MapGet("/api/products", async (CatalogDbContext db, string? search, string? category, int page = 1, int pageSize = 20) =>
+app.MapGet("/api/products", async (IProductSearchService searchService, string? search, string? category, int page = 1, int pageSize = 20) =>
 {
-    var query = db.Products.Where(p => p.IsActive);
-    
-    if (!string.IsNullOrEmpty(search))
-    {
-        query = query.Where(p => p.Name.Contains(search) || (p.Description != null && p.Description.Contains(search)));
-    }
-    
-    if (!string.IsNullOrEmpty(category))
-    {
-        query = query.Where(p => p.Category == category);
-    }
-    
-    var total = await query.CountAsync();
-    var products = await query
-        .OrderBy(p => p.Name)
-        .Skip((page - 1) * pageSize)
-        .Take(pageSize)
-        .ToListAsync();
-    
-    return Results.Ok(new { products, total, page, pageSize });
+    var result = await searchService.SearchAsync(search, category, page, pageSize);
+    return Results.Ok(new { products = result.Products, total = result.Total, page = result.Page, pageSize = result.PageSize });
 });
 
-app.MapGet("/api/products/{id:guid}", async (Guid id, CatalogDbContext db) =>
+app.MapGet("/api/products/{id:guid}", async (Guid id, IProductSearchService searchService, CatalogDbContext db) =>
 {
     RequestValidation.ValidateGuid(id, nameof(id));
-    
+
+    // Try Elasticsearch first; fall back to PostgreSQL
+    var document = await searchService.GetByIdAsync(id);
+    if (document is not null) return Results.Ok(document);
+
     var product = await db.Products.FindAsync(id);
     return product is not null ? Results.Ok(product) : Results.NotFound();
 });
 
-app.MapGet("/api/products/merchant/{merchantId:guid}", async (Guid merchantId, CatalogDbContext db) =>
+app.MapGet("/api/products/merchant/{merchantId:guid}", async (Guid merchantId, IProductSearchService searchService, int page = 1, int pageSize = 20) =>
 {
     RequestValidation.ValidateGuid(merchantId, nameof(merchantId));
-    
-    var products = await db.Products
-        .Where(p => p.MerchantId == merchantId && p.IsActive)
-        .ToListAsync();
-    return Results.Ok(products);
+
+    var result = await searchService.GetByMerchantAsync(merchantId, page, pageSize);
+    return Results.Ok(new { products = result.Products, total = result.Total, page = result.Page, pageSize = result.PageSize });
+});
+
+// ────────────────────────────────────────────────────────
+// WRITE endpoints – persist to PostgreSQL + publish Kafka event
+// ────────────────────────────────────────────────────────
+
+app.MapPost("/api/products", async (CreateProductRequest request, CatalogDbContext db, IProductEventPublisher publisher) =>
+{
+    RequestValidation.Validate(request);
+    RequestValidation.ValidateGuid(request.MerchantId, nameof(request.MerchantId));
+    RequestValidation.ValidateRequiredString(request.Name, nameof(request.Name), 200);
+    RequestValidation.ValidatePositive(request.Price, nameof(request.Price));
+
+    var product = new Product
+    {
+        Id = Guid.NewGuid(),
+        Name = request.Name,
+        Description = request.Description,
+        Price = request.Price,
+        MerchantId = request.MerchantId,
+        StockQuantity = request.StockQuantity,
+        ImageUrl = request.ImageUrl,
+        Category = request.Category,
+        IsActive = true,
+        CreatedAt = DateTime.UtcNow,
+        UpdatedAt = DateTime.UtcNow
+    };
+
+    db.Products.Add(product);
+    await db.SaveChangesAsync();
+
+    await publisher.PublishAsync(new ProductEvent
+    {
+        ProductId = product.Id,
+        EventType = ProductEventType.Created,
+        Name = product.Name,
+        Description = product.Description,
+        Price = product.Price,
+        MerchantId = product.MerchantId,
+        StockQuantity = product.StockQuantity,
+        ImageUrl = product.ImageUrl,
+        Category = product.Category,
+        IsActive = product.IsActive,
+        CreatedAt = product.CreatedAt,
+        OccurredAt = product.CreatedAt
+    });
+
+    return Results.Created($"/api/products/{product.Id}", product);
+});
+
+app.MapPut("/api/products/{id:guid}", async (Guid id, UpdateProductRequest request, CatalogDbContext db, IProductEventPublisher publisher) =>
+{
+    RequestValidation.ValidateGuid(id, nameof(id));
+    RequestValidation.Validate(request);
+    RequestValidation.ValidateRequiredString(request.Name, nameof(request.Name), 200);
+    RequestValidation.ValidatePositive(request.Price, nameof(request.Price));
+
+    var product = await db.Products.FindAsync(id);
+    if (product is null) return Results.NotFound();
+
+    product.Name = request.Name;
+    product.Description = request.Description;
+    product.Price = request.Price;
+    product.StockQuantity = request.StockQuantity;
+    product.ImageUrl = request.ImageUrl;
+    product.Category = request.Category;
+    product.IsActive = request.IsActive;
+    product.UpdatedAt = DateTime.UtcNow;
+
+    await db.SaveChangesAsync();
+
+    await publisher.PublishAsync(new ProductEvent
+    {
+        ProductId = product.Id,
+        EventType = ProductEventType.Updated,
+        Name = product.Name,
+        Description = product.Description,
+        Price = product.Price,
+        MerchantId = product.MerchantId,
+        StockQuantity = product.StockQuantity,
+        ImageUrl = product.ImageUrl,
+        Category = product.Category,
+        IsActive = product.IsActive,
+        CreatedAt = product.CreatedAt,
+        OccurredAt = product.UpdatedAt
+    });
+
+    return Results.Ok(product);
+});
+
+app.MapDelete("/api/products/{id:guid}", async (Guid id, CatalogDbContext db, IProductEventPublisher publisher) =>
+{
+    RequestValidation.ValidateGuid(id, nameof(id));
+
+    var product = await db.Products.FindAsync(id);
+    if (product is null) return Results.NotFound();
+
+    db.Products.Remove(product);
+    await db.SaveChangesAsync();
+
+    await publisher.PublishAsync(new ProductEvent
+    {
+        ProductId = product.Id,
+        EventType = ProductEventType.Deleted,
+        MerchantId = product.MerchantId,
+        CreatedAt = product.CreatedAt,
+        OccurredAt = DateTime.UtcNow
+    });
+
+    return Results.NoContent();
 });
 
 app.Run();

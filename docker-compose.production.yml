@@ -23,7 +23,7 @@ services:
     restart: unless-stopped
 
   zookeeper:
-    image: confluentinc/cp-zookeeper:latest
+    image: confluentinc/cp-zookeeper:7.6.1
     container_name: urbanx-zookeeper-prod
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
@@ -31,14 +31,14 @@ services:
     networks:
       - urbanx-network
     healthcheck:
-      test: ["CMD", "nc", "-z", "localhost", "2181"]
+      test: ["CMD-SHELL", "echo ruok | nc localhost 2181"]
       interval: 10s
       timeout: 5s
       retries: 3
     restart: unless-stopped
 
   kafka:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:7.6.1
     container_name: urbanx-kafka-prod
     depends_on:
       zookeeper:
@@ -99,9 +99,12 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
       - DATABASE_CONNECTION_STRING=Host=postgres;Database=urbanx_catalog;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD}
+      - Kafka__BootstrapServers=kafka:9092
       - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_COLLECTOR_ENDPOINT}
     depends_on:
       postgres:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
     networks:
       - urbanx-network
@@ -127,9 +130,12 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
       - DATABASE_CONNECTION_STRING=Host=postgres;Database=urbanx_order;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD}
+      - Kafka__BootstrapServers=kafka:9092
       - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_COLLECTOR_ENDPOINT}
     depends_on:
       postgres:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
     networks:
       - urbanx-network
@@ -155,9 +161,12 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
       - DATABASE_CONNECTION_STRING=Host=postgres;Database=urbanx_payment;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD}
+      - Kafka__BootstrapServers=kafka:9092
       - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_COLLECTOR_ENDPOINT}
     depends_on:
       postgres:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
     networks:
       - urbanx-network
@@ -202,6 +211,37 @@ services:
           cpus: '0.5'
           memory: 512M
 
+  inventory-service:
+    build:
+      context: .
+      dockerfile: src/Services/Inventory/Dockerfile
+    container_name: urbanx-inventory
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - DATABASE_CONNECTION_STRING=Host=postgres;Database=urbanx_inventory;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD}
+      - Kafka__BootstrapServers=kafka:9092
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_COLLECTOR_ENDPOINT}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - urbanx-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/alive"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
   gateway:
     build:
       context: .
@@ -218,6 +258,7 @@ services:
       - order-service
       - payment-service
       - merchant-service
+      - inventory-service
     ports:
       - "5000:8080"
     networks:

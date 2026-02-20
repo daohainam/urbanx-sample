@@ -15,6 +15,11 @@ spec:
       labels:
         app: identity-service
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
       containers:
       - name: identity-service
         image: ghcr.io/daohainam/urbanx-sample/urbanx-identity:latest
@@ -28,6 +33,11 @@ spec:
         env:
         - name: ASPNETCORE_URLS
           value: "http://+:8080"
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
         livenessProbe:
           httpGet:
             path: /alive
@@ -78,6 +88,11 @@ spec:
       labels:
         app: catalog-service
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
       containers:
       - name: catalog-service
         image: ghcr.io/daohainam/urbanx-sample/urbanx-catalog:latest
@@ -96,6 +111,11 @@ spec:
             secretKeyRef:
               name: urbanx-secrets
               key: DATABASE_CONNECTION_STRING
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
         livenessProbe:
           httpGet:
             path: /alive
@@ -146,6 +166,11 @@ spec:
       labels:
         app: order-service
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
       containers:
       - name: order-service
         image: ghcr.io/daohainam/urbanx-sample/urbanx-order:latest
@@ -164,6 +189,11 @@ spec:
             secretKeyRef:
               name: urbanx-secrets
               key: DATABASE_CONNECTION_STRING
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
         livenessProbe:
           httpGet:
             path: /alive
@@ -214,6 +244,11 @@ spec:
       labels:
         app: payment-service
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
       containers:
       - name: payment-service
         image: ghcr.io/daohainam/urbanx-sample/urbanx-payment:latest
@@ -232,6 +267,11 @@ spec:
             secretKeyRef:
               name: urbanx-secrets
               key: DATABASE_CONNECTION_STRING
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
         livenessProbe:
           httpGet:
             path: /alive
@@ -282,6 +322,11 @@ spec:
       labels:
         app: merchant-service
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
       containers:
       - name: merchant-service
         image: ghcr.io/daohainam/urbanx-sample/urbanx-merchant:latest
@@ -300,6 +345,11 @@ spec:
             secretKeyRef:
               name: urbanx-secrets
               key: DATABASE_CONNECTION_STRING
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
         livenessProbe:
           httpGet:
             path: /alive
@@ -350,6 +400,11 @@ spec:
       labels:
         app: gateway
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
       containers:
       - name: gateway
         image: ghcr.io/daohainam/urbanx-sample/urbanx-gateway:latest
@@ -363,6 +418,11 @@ spec:
         env:
         - name: ASPNETCORE_URLS
           value: "http://+:8080"
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
         livenessProbe:
           httpGet:
             path: /alive
@@ -395,3 +455,81 @@ spec:
   - port: 80
     targetPort: 8080
   type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-service
+  namespace: urbanx
+  labels:
+    app: inventory-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: inventory-service
+  template:
+    metadata:
+      labels:
+        app: inventory-service
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+      containers:
+      - name: inventory-service
+        image: ghcr.io/daohainam/urbanx-sample/urbanx-inventory:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+        envFrom:
+        - configMapRef:
+            name: urbanx-config
+        env:
+        - name: ASPNETCORE_URLS
+          value: "http://+:8080"
+        - name: DATABASE_CONNECTION_STRING
+          valueFrom:
+            secretKeyRef:
+              name: urbanx-secrets
+              key: DATABASE_CONNECTION_STRING
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        livenessProbe:
+          httpGet:
+            path: /alive
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-service
+  namespace: urbanx
+spec:
+  selector:
+    app: inventory-service
+  ports:
+  - port: 80
+    targetPort: 8080
+  type: ClusterIP

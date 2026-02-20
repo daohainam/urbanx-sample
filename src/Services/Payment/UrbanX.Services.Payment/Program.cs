@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 using UrbanX.Services.Payment.Data;
+using UrbanX.Services.Payment.Messaging;
 using UrbanX.Services.Payment.Models;
 using UrbanX.Services.Payment.PaymentGateways;
 using UrbanX.Services.Payment.PaymentGateways.Stripe;
@@ -23,6 +25,12 @@ var stripeConfig = builder.Configuration.GetSection("Stripe").Get<StripeSettings
     ?? new StripeSettings();
 builder.Services.AddSingleton(stripeConfig);
 builder.Services.AddScoped<IPaymentGateway, StripePaymentGateway>();
+
+// Configure Kafka publisher for payment events (Saga)
+builder.Services.AddSingleton<IPaymentEventPublisher, KafkaPaymentEventPublisher>();
+
+// Configure outbox relay service (publishes payment events to Kafka)
+builder.Services.AddHostedService<PaymentOutboxRelayService>();
 
 var app = builder.Build();
 
@@ -106,7 +114,29 @@ app.MapPost("/api/payments", async (UrbanX.Services.Payment.Models.Payment payme
         payment.Status = PaymentStatus.Completed; // In real scenario, this would be async
     }
     
+    // Publish payment event via transactional outbox for order Saga
+    var paymentEventType = payment.Status == PaymentStatus.Completed
+        ? PaymentEventType.Completed
+        : PaymentEventType.Failed;
+
+    var paymentEvent = new PaymentEvent
+    {
+        PaymentId = payment.Id,
+        OrderId = payment.OrderId,
+        Amount = payment.Amount,
+        EventType = paymentEventType,
+        FailureReason = payment.Status == PaymentStatus.Failed ? "Payment processing failed" : null,
+        OccurredAt = payment.UpdatedAt
+    };
+
     db.Payments.Add(payment);
+    db.OutboxMessages.Add(new OutboxMessage
+    {
+        Id = Guid.NewGuid(),
+        EventType = paymentEventType.ToString(),
+        Payload = JsonSerializer.Serialize(paymentEvent),
+        CreatedAt = DateTime.UtcNow
+    });
     await db.SaveChangesAsync();
     
     return Results.Created($"/api/payments/{payment.Id}", payment);

@@ -6,23 +6,23 @@ using UrbanX.Services.Order.Data;
 namespace UrbanX.Services.Order.Messaging;
 
 /// <summary>
-/// Consumes inventory response events from the inventory.events Kafka topic.
-/// Updates order status based on whether inventory was successfully reserved,
-/// completing the Saga for the order checking process.
+/// Consumes payment response events from the payment.events Kafka topic.
+/// Updates order status based on whether payment was successfully processed,
+/// completing the payment step of the Saga for the order checkout process.
 /// </summary>
-public class KafkaInventoryResponseConsumer : BackgroundService
+public class KafkaPaymentResponseConsumer : BackgroundService
 {
-    private const string Topic = "inventory.events";
-    private const string ConsumerGroup = "order-saga-coordinator";
+    private const string Topic = "payment.events";
+    private const string ConsumerGroup = "order-payment-saga-coordinator";
 
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IConfiguration _configuration;
-    private readonly ILogger<KafkaInventoryResponseConsumer> _logger;
+    private readonly ILogger<KafkaPaymentResponseConsumer> _logger;
 
-    public KafkaInventoryResponseConsumer(
+    public KafkaPaymentResponseConsumer(
         IServiceScopeFactory scopeFactory,
         IConfiguration configuration,
-        ILogger<KafkaInventoryResponseConsumer> logger)
+        ILogger<KafkaPaymentResponseConsumer> logger)
     {
         _scopeFactory = scopeFactory;
         _configuration = configuration;
@@ -43,7 +43,7 @@ public class KafkaInventoryResponseConsumer : BackgroundService
         using var consumer = new ConsumerBuilder<string, string>(config).Build();
         consumer.Subscribe(Topic);
 
-        _logger.LogInformation("Kafka inventory response consumer started, subscribing to topic {Topic}", Topic);
+        _logger.LogInformation("Kafka payment response consumer started, subscribing to topic {Topic}", Topic);
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -52,10 +52,10 @@ public class KafkaInventoryResponseConsumer : BackgroundService
                 var consumeResult = consumer.Consume(stoppingToken);
                 if (consumeResult?.Message?.Value == null) continue;
 
-                var inventoryEvent = JsonSerializer.Deserialize<InventoryResponseEvent>(consumeResult.Message.Value);
-                if (inventoryEvent == null) continue;
+                var paymentEvent = JsonSerializer.Deserialize<PaymentResponseEvent>(consumeResult.Message.Value);
+                if (paymentEvent == null) continue;
 
-                await ProcessInventoryResponseAsync(inventoryEvent, stoppingToken);
+                await ProcessPaymentResponseAsync(paymentEvent, stoppingToken);
                 consumer.Commit(consumeResult);
             }
             catch (OperationCanceledException)
@@ -69,7 +69,7 @@ public class KafkaInventoryResponseConsumer : BackgroundService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error processing inventory response event");
+                _logger.LogError(ex, "Unexpected error processing payment response event");
                 await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
             }
         }
@@ -77,30 +77,31 @@ public class KafkaInventoryResponseConsumer : BackgroundService
         consumer.Close();
     }
 
-    private async Task ProcessInventoryResponseAsync(InventoryResponseEvent inventoryEvent, CancellationToken cancellationToken)
+    private async Task ProcessPaymentResponseAsync(PaymentResponseEvent paymentEvent, CancellationToken cancellationToken)
     {
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<OrderDbContext>();
 
         var order = await db.Orders
             .Include(o => o.StatusHistory)
-            .FirstOrDefaultAsync(o => o.Id == inventoryEvent.OrderId, cancellationToken);
+            .FirstOrDefaultAsync(o => o.Id == paymentEvent.OrderId, cancellationToken);
 
         if (order == null)
         {
-            _logger.LogWarning("Order {OrderId} not found when processing inventory response", inventoryEvent.OrderId);
+            _logger.LogWarning("Order {OrderId} not found when processing payment response", paymentEvent.OrderId);
             return;
         }
 
-        var (newStatus, note) = inventoryEvent.EventType switch
+        var (newStatus, note) = paymentEvent.EventType switch
         {
-            InventoryEventType.ReservationFailed => (Models.OrderStatus.Cancelled, $"Inventory reservation failed: {inventoryEvent.FailureReason}"),
+            PaymentEventType.Completed => (Models.OrderStatus.PaymentReceived, "Payment completed successfully"),
+            PaymentEventType.Failed => (Models.OrderStatus.Cancelled, $"Payment failed: {paymentEvent.FailureReason}"),
             _ => (order.Status, null)
         };
 
         if (newStatus == order.Status)
         {
-            _logger.LogDebug("Order {OrderId} status unchanged for inventory event {EventType}", inventoryEvent.OrderId, inventoryEvent.EventType);
+            _logger.LogDebug("Order {OrderId} status unchanged for payment event {EventType}", paymentEvent.OrderId, paymentEvent.EventType);
             return;
         }
 
@@ -118,7 +119,7 @@ public class KafkaInventoryResponseConsumer : BackgroundService
         await db.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation(
-            "Order {OrderId} status updated to {Status} based on inventory event {EventType}",
-            inventoryEvent.OrderId, newStatus, inventoryEvent.EventType);
+            "Order {OrderId} status updated to {Status} based on payment event {EventType}",
+            paymentEvent.OrderId, newStatus, paymentEvent.EventType);
     }
 }

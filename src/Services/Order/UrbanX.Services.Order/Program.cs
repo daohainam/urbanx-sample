@@ -14,7 +14,7 @@ builder.AddNpgsqlDbContext<OrderDbContext>("orderdb");
 
 // Add database health check
 builder.Services.AddHealthChecks()
-    .AddDbContextCheck<OrderDbContext>(name: "orderdb", tags: new[] { "ready", "db" });
+    .AddDbContextCheck<OrderDbContext>(name: "orderdb", tags: ["ready", "db"]);
 
 var app = builder.Build();
 

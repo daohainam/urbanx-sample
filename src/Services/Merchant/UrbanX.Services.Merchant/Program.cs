@@ -15,7 +15,7 @@ builder.AddNpgsqlDbContext<MerchantDbContext>("merchantdb");
 
 // Add database health check
 builder.Services.AddHealthChecks()
-    .AddDbContextCheck<MerchantDbContext>(name: "merchantdb", tags: new[] { "ready", "db" });
+    .AddDbContextCheck<MerchantDbContext>(name: "merchantdb", tags: ["ready", "db"]);
 
 var app = builder.Build();
 

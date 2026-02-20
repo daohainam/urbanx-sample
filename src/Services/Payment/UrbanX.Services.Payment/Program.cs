@@ -16,7 +16,7 @@ builder.AddNpgsqlDbContext<PaymentDbContext>("paymentdb");
 
 // Add database health check
 builder.Services.AddHealthChecks()
-    .AddDbContextCheck<PaymentDbContext>(name: "paymentdb", tags: new[] { "ready", "db" });
+    .AddDbContextCheck<PaymentDbContext>(name: "paymentdb", tags: ["ready", "db"]);
 
 // Configure Stripe Payment Gateway (Anti-Corruption Layer)
 var stripeConfig = builder.Configuration.GetSection("Stripe").Get<StripeSettings>() 

@@ -11,7 +11,7 @@ public class ExtensionsTests
     public void AddServiceDefaults_ShouldRegisterServices()
     {
         // Arrange
-        var builder = WebApplication.CreateBuilder(new string[] { });
+        var builder = WebApplication.CreateBuilder([]);
         
         // Act
         builder.AddServiceDefaults();
@@ -26,7 +26,7 @@ public class ExtensionsTests
     public void AddDefaultHealthChecks_ShouldRegisterHealthChecks()
     {
         // Arrange
-        var builder = WebApplication.CreateBuilder(new string[] { });
+        var builder = WebApplication.CreateBuilder([]);
         
         // Act
         builder.AddDefaultHealthChecks();
@@ -41,7 +41,7 @@ public class ExtensionsTests
     public void MapDefaultEndpoints_ShouldMapHealthChecksInDevelopment()
     {
         // Arrange
-        var builder = WebApplication.CreateBuilder(new string[] { });
+        var builder = WebApplication.CreateBuilder([]);
         builder.Environment.EnvironmentName = Environments.Development;
         builder.AddDefaultHealthChecks();
         var app = builder.Build();
@@ -58,7 +58,7 @@ public class ExtensionsTests
     public void ConfigureOpenTelemetry_ShouldConfigureObservability()
     {
         // Arrange
-        var builder = WebApplication.CreateBuilder(new string[] { });
+        var builder = WebApplication.CreateBuilder([]);
         
         // Act
         builder.ConfigureOpenTelemetry();

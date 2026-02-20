@@ -20,21 +20,21 @@ var identityServerBuilder = builder.Services.AddIdentityServer(options =>
     // Use persistent key storage in production
     options.KeyManagement.Enabled = true;
 })
-.AddInMemoryIdentityResources(new IdentityResource[]
-{
+.AddInMemoryIdentityResources(
+[
     new IdentityResources.OpenId(),
     new IdentityResources.Profile(),
     new IdentityResources.Email()
-})
-.AddInMemoryApiScopes(new ApiScope[]
-{
+])
+.AddInMemoryApiScopes(
+[
     new("catalog.read", "Read access to catalog"),
     new("orders.read", "Read access to orders"),
     new("orders.write", "Write access to orders"),
     new("merchant.manage", "Manage merchant resources")
-})
-.AddInMemoryClients(new Client[]
-{
+])
+.AddInMemoryClients(
+[
     new() {
         ClientId = "urbanx-spa",
         ClientName = "UrbanX SPA",
@@ -61,7 +61,7 @@ var identityServerBuilder = builder.Services.AddIdentityServer(options =>
         // Enable consent in production
         RequireConsent = !builder.Environment.IsDevelopment()
     }
-});
+]);
 
 // WARNING: Test users are ONLY for development and MUST be replaced in production
 // with proper user storage using ASP.NET Identity + Entity Framework Core
@@ -74,23 +74,23 @@ if (builder.Environment.IsDevelopment())
             SubjectId = "1",
             Username = "customer@test.com",
             Password = "Password123!",
-            Claims = new[]
-            {
+            Claims =
+            [
                 new System.Security.Claims.Claim("name", "Test Customer"),
                 new System.Security.Claims.Claim("email", "customer@test.com"),
                 new System.Security.Claims.Claim("role", "customer")
-            }
+            ]
         },
         new() {
             SubjectId = "2",
             Username = "merchant@test.com",
             Password = "Password123!",
-            Claims = new[]
-            {
+            Claims =
+            [
                 new System.Security.Claims.Claim("name", "Test Merchant"),
                 new System.Security.Claims.Claim("email", "merchant@test.com"),
                 new System.Security.Claims.Claim("role", "merchant")
-            }
+            ]
         }
     });
 }

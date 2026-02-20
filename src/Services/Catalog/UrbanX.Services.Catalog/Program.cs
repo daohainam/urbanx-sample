@@ -15,7 +15,7 @@ builder.AddNpgsqlDbContext<CatalogDbContext>("catalogdb");
 
 // Add database health check
 builder.Services.AddHealthChecks()
-    .AddDbContextCheck<CatalogDbContext>(name: "catalogdb", tags: new[] { "ready", "db" });
+    .AddDbContextCheck<CatalogDbContext>(name: "catalogdb", tags: ["ready", "db"]);
 
 var app = builder.Build();
 

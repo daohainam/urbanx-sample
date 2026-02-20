@@ -139,7 +139,7 @@ namespace UrbanX.Services.Order.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_OrderStatusHistory_OrderId_CreatedAt",
                 table: "OrderStatusHistory",
-                columns: new[] { "OrderId", "CreatedAt" });
+                columns: ["OrderId", "CreatedAt"]);
         }
 
         /// <inheritdoc />

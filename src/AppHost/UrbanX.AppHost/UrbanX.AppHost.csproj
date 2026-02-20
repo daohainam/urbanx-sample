@@ -5,6 +5,7 @@
     <ProjectReference Include="..\..\Services\Order\UrbanX.Services.Order\UrbanX.Services.Order.csproj" />
     <ProjectReference Include="..\..\Services\Merchant\UrbanX.Services.Merchant\UrbanX.Services.Merchant.csproj" />
     <ProjectReference Include="..\..\Services\Payment\UrbanX.Services.Payment\UrbanX.Services.Payment.csproj" />
+    <ProjectReference Include="..\..\Services\Inventory\UrbanX.Services.Inventory\UrbanX.Services.Inventory.csproj" />
     <ProjectReference Include="..\..\Services\Identity\UrbanX.Services.Identity\UrbanX.Services.Identity.csproj" />
     <ProjectReference Include="..\..\Gateway\UrbanX.Gateway\UrbanX.Gateway.csproj" />
   </ItemGroup>

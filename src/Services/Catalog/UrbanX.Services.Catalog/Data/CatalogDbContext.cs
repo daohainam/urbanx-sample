@@ -10,6 +10,7 @@ public class CatalogDbContext : DbContext
     }
 
     public DbSet<Product> Products => Set<Product>();
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -24,6 +25,15 @@ public class CatalogDbContext : DbContext
             entity.HasIndex(e => e.MerchantId);
             entity.HasIndex(e => e.Category);
             entity.HasIndex(e => e.IsActive);
+        });
+
+        modelBuilder.Entity<OutboxMessage>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.EventType).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Payload).IsRequired();
+            entity.HasIndex(e => e.ProcessedAt);
+            entity.HasIndex(e => e.CreatedAt);
         });
     }
 }

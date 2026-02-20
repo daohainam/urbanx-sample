@@ -1,5 +1,6 @@
 using Elastic.Clients.Elasticsearch;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 using UrbanX.Services.Catalog;
 using UrbanX.Services.Catalog.Data;
 using UrbanX.Services.Catalog.Messaging;
@@ -30,6 +31,9 @@ builder.Services.AddSingleton<IProductEventPublisher, KafkaProductEventPublisher
 
 // Configure Kafka consumer background service (syncs events to Elasticsearch)
 builder.Services.AddHostedService<KafkaProductEventConsumer>();
+
+// Configure outbox relay service (publishes pending outbox messages to Kafka)
+builder.Services.AddHostedService<OutboxRelayService>();
 
 var app = builder.Build();
 
@@ -102,7 +106,7 @@ app.MapGet("/api/products/merchant/{merchantId:guid}", async (Guid merchantId, I
 // WRITE endpoints – persist to PostgreSQL + publish Kafka event
 // ────────────────────────────────────────────────────────
 
-app.MapPost("/api/products", async (CreateProductRequest request, CatalogDbContext db, IProductEventPublisher publisher) =>
+app.MapPost("/api/products", async (CreateProductRequest request, CatalogDbContext db) =>
 {
     RequestValidation.Validate(request);
     RequestValidation.ValidateGuid(request.MerchantId, nameof(request.MerchantId));
@@ -124,10 +128,7 @@ app.MapPost("/api/products", async (CreateProductRequest request, CatalogDbConte
         UpdatedAt = DateTime.UtcNow
     };
 
-    db.Products.Add(product);
-    await db.SaveChangesAsync();
-
-    await publisher.PublishAsync(new ProductEvent
+    var productEvent = new ProductEvent
     {
         ProductId = product.Id,
         EventType = ProductEventType.Created,
@@ -141,12 +142,22 @@ app.MapPost("/api/products", async (CreateProductRequest request, CatalogDbConte
         IsActive = product.IsActive,
         CreatedAt = product.CreatedAt,
         OccurredAt = product.CreatedAt
+    };
+
+    db.Products.Add(product);
+    db.OutboxMessages.Add(new OutboxMessage
+    {
+        Id = Guid.NewGuid(),
+        EventType = nameof(ProductEventType.Created),
+        Payload = JsonSerializer.Serialize(productEvent),
+        CreatedAt = DateTime.UtcNow
     });
+    await db.SaveChangesAsync();
 
     return Results.Created($"/api/products/{product.Id}", product);
 });
 
-app.MapPut("/api/products/{id:guid}", async (Guid id, UpdateProductRequest request, CatalogDbContext db, IProductEventPublisher publisher) =>
+app.MapPut("/api/products/{id:guid}", async (Guid id, UpdateProductRequest request, CatalogDbContext db) =>
 {
     RequestValidation.ValidateGuid(id, nameof(id));
     RequestValidation.Validate(request);
@@ -165,9 +176,7 @@ app.MapPut("/api/products/{id:guid}", async (Guid id, UpdateProductRequest reque
     product.IsActive = request.IsActive;
     product.UpdatedAt = DateTime.UtcNow;
 
-    await db.SaveChangesAsync();
-
-    await publisher.PublishAsync(new ProductEvent
+    var productEvent = new ProductEvent
     {
         ProductId = product.Id,
         EventType = ProductEventType.Updated,
@@ -181,29 +190,45 @@ app.MapPut("/api/products/{id:guid}", async (Guid id, UpdateProductRequest reque
         IsActive = product.IsActive,
         CreatedAt = product.CreatedAt,
         OccurredAt = product.UpdatedAt
+    };
+
+    db.OutboxMessages.Add(new OutboxMessage
+    {
+        Id = Guid.NewGuid(),
+        EventType = nameof(ProductEventType.Updated),
+        Payload = JsonSerializer.Serialize(productEvent),
+        CreatedAt = DateTime.UtcNow
     });
+    await db.SaveChangesAsync();
 
     return Results.Ok(product);
 });
 
-app.MapDelete("/api/products/{id:guid}", async (Guid id, CatalogDbContext db, IProductEventPublisher publisher) =>
+app.MapDelete("/api/products/{id:guid}", async (Guid id, CatalogDbContext db) =>
 {
     RequestValidation.ValidateGuid(id, nameof(id));
 
     var product = await db.Products.FindAsync(id);
     if (product is null) return Results.NotFound();
 
-    db.Products.Remove(product);
-    await db.SaveChangesAsync();
-
-    await publisher.PublishAsync(new ProductEvent
+    var productEvent = new ProductEvent
     {
         ProductId = product.Id,
         EventType = ProductEventType.Deleted,
         MerchantId = product.MerchantId,
         CreatedAt = product.CreatedAt,
         OccurredAt = DateTime.UtcNow
+    };
+
+    db.Products.Remove(product);
+    db.OutboxMessages.Add(new OutboxMessage
+    {
+        Id = Guid.NewGuid(),
+        EventType = nameof(ProductEventType.Deleted),
+        Payload = JsonSerializer.Serialize(productEvent),
+        CreatedAt = DateTime.UtcNow
     });
+    await db.SaveChangesAsync();
 
     return Results.NoContent();
 });

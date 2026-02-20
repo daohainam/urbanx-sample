@@ -39,7 +39,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.Audience = builder.Configuration["IdentityServer:Audience"] ?? "urbanx-api";
         options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
     });
-builder.Services.AddAuthorization();
+builder.Services.AddUrbanXAuthorization();
 
 // Configure Kafka publisher for payment events (Saga)
 builder.Services.AddSingleton<IPaymentEventPublisher, KafkaPaymentEventPublisher>();
@@ -166,7 +166,7 @@ app.MapPost("/api/payments", async (UrbanX.Services.Payment.Models.Payment payme
     await db.SaveChangesAsync();
     
     return Results.Created($"/api/payments/{payment.Id}", payment);
-}).RequireAuthorization();
+}).RequireAuthorization(AuthorizationPolicies.CustomerOnly);
 
 app.MapGet("/api/payments/{id:guid}", async (Guid id, PaymentDbContext db) =>
 {
@@ -174,7 +174,7 @@ app.MapGet("/api/payments/{id:guid}", async (Guid id, PaymentDbContext db) =>
     
     var payment = await db.Payments.FindAsync(id);
     return payment is not null ? Results.Ok(payment) : Results.NotFound();
-}).RequireAuthorization();
+}).RequireAuthorization(AuthorizationPolicies.CustomerOrMerchant);
 
 app.MapGet("/api/payments/order/{orderId:guid}", async (Guid orderId, PaymentDbContext db) =>
 {
@@ -182,7 +182,7 @@ app.MapGet("/api/payments/order/{orderId:guid}", async (Guid orderId, PaymentDbC
     
     var payment = await db.Payments.FirstOrDefaultAsync(p => p.OrderId == orderId);
     return payment is not null ? Results.Ok(payment) : Results.NotFound();
-}).RequireAuthorization();
+}).RequireAuthorization(AuthorizationPolicies.CustomerOrMerchant);
 
 app.Run();
 

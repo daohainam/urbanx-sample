@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using UrbanX.Services.Merchant.Data;
 using UrbanX.Services.Merchant.Models;
@@ -17,6 +18,20 @@ builder.AddNpgsqlDbContext<MerchantDbContext>("merchantdb");
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<MerchantDbContext>(name: "merchantdb", tags: ["ready", "db"]);
 
+// Configure JWT bearer authentication
+var identityAuthority = builder.Configuration["services__identity__https__0"]
+    ?? builder.Configuration["services__identity__http__0"]
+    ?? builder.Configuration["IdentityServer:Authority"];
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = identityAuthority;
+        options.Audience = builder.Configuration["IdentityServer:Audience"] ?? "urbanx-api";
+        options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
+    });
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
 
 // Map default endpoints (health checks, etc.)
@@ -27,6 +42,9 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Apply database migrations
 using (var scope = app.Services.CreateScope())
@@ -77,7 +95,7 @@ app.MapPost("/api/merchants", async (UrbanX.Services.Merchant.Models.Merchant me
     await db.SaveChangesAsync();
     
     return Results.Created($"/api/merchants/{merchant.Id}", merchant);
-});
+}).RequireAuthorization();
 
 // Product management for merchants
 app.MapGet("/api/merchants/{merchantId:guid}/products", async (Guid merchantId, MerchantDbContext db) =>
@@ -106,7 +124,7 @@ app.MapPost("/api/merchants/{merchantId:guid}/products", async (Guid merchantId,
     await db.SaveChangesAsync();
     
     return Results.Created($"/api/merchants/{merchantId}/products/{product.Id}", product);
-});
+}).RequireAuthorization();
 
 app.MapPut("/api/merchants/{merchantId:guid}/products/{productId:guid}", async (Guid merchantId, Guid productId, MerchantProduct updatedProduct, MerchantDbContext db) =>
 {
@@ -129,7 +147,7 @@ app.MapPut("/api/merchants/{merchantId:guid}/products/{productId:guid}", async (
     
     await db.SaveChangesAsync();
     return Results.Ok(product);
-});
+}).RequireAuthorization();
 
 app.MapDelete("/api/merchants/{merchantId:guid}/products/{productId:guid}", async (Guid merchantId, Guid productId, MerchantDbContext db) =>
 {
@@ -139,7 +157,7 @@ app.MapDelete("/api/merchants/{merchantId:guid}/products/{productId:guid}", asyn
     db.Products.Remove(product);
     await db.SaveChangesAsync();
     return Results.NoContent();
-});
+}).RequireAuthorization();
 
 // Order management for merchants
 app.MapGet("/api/merchants/{merchantId:guid}/orders", async (Guid merchantId, MerchantDbContext db) =>
@@ -147,7 +165,7 @@ app.MapGet("/api/merchants/{merchantId:guid}/orders", async (Guid merchantId, Me
     // This would typically query the Order service for orders containing this merchant's products
     // For now, returning empty list as a placeholder
     return Results.Ok(new List<object>());
-});
+}).RequireAuthorization();
 
 // Category management for merchants
 app.MapGet("/api/merchants/{merchantId:guid}/categories", async (Guid merchantId, MerchantDbContext db) =>
@@ -170,7 +188,7 @@ app.MapPost("/api/merchants/{merchantId:guid}/categories", async (Guid merchantI
     await db.SaveChangesAsync();
     
     return Results.Created($"/api/merchants/{merchantId}/categories/{category.Id}", category);
-});
+}).RequireAuthorization();
 
 app.MapPut("/api/merchants/{merchantId:guid}/categories/{categoryId:guid}", async (Guid merchantId, Guid categoryId, MerchantCategory updatedCategory, MerchantDbContext db) =>
 {
@@ -184,7 +202,7 @@ app.MapPut("/api/merchants/{merchantId:guid}/categories/{categoryId:guid}", asyn
     
     await db.SaveChangesAsync();
     return Results.Ok(category);
-});
+}).RequireAuthorization();
 
 app.MapDelete("/api/merchants/{merchantId:guid}/categories/{categoryId:guid}", async (Guid merchantId, Guid categoryId, MerchantDbContext db) =>
 {
@@ -194,7 +212,7 @@ app.MapDelete("/api/merchants/{merchantId:guid}/categories/{categoryId:guid}", a
     db.Categories.Remove(category);
     await db.SaveChangesAsync();
     return Results.NoContent();
-});
+}).RequireAuthorization();
 
 app.Run();
 

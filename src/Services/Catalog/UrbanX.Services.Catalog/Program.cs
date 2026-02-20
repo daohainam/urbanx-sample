@@ -34,7 +34,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.Audience = builder.Configuration["IdentityServer:Audience"] ?? "urbanx-api";
         options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
     });
-builder.Services.AddAuthorization();
+builder.Services.AddUrbanXAuthorization();
 
 // Configure Elasticsearch (read side)
 var elasticsearchUri = builder.Configuration["Elasticsearch:Uri"] ?? "http://localhost:9200";
@@ -173,7 +173,7 @@ app.MapPost("/api/products", async (CreateProductRequest request, CatalogDbConte
     await db.SaveChangesAsync();
 
     return Results.Created($"/api/products/{product.Id}", product);
-}).RequireAuthorization();
+}).RequireAuthorization(AuthorizationPolicies.MerchantOnly);
 
 app.MapPut("/api/products/{id:guid}", async (Guid id, UpdateProductRequest request, CatalogDbContext db) =>
 {
@@ -220,7 +220,7 @@ app.MapPut("/api/products/{id:guid}", async (Guid id, UpdateProductRequest reque
     await db.SaveChangesAsync();
 
     return Results.Ok(product);
-}).RequireAuthorization();
+}).RequireAuthorization(AuthorizationPolicies.MerchantOnly);
 
 app.MapDelete("/api/products/{id:guid}", async (Guid id, CatalogDbContext db) =>
 {
@@ -249,7 +249,7 @@ app.MapDelete("/api/products/{id:guid}", async (Guid id, CatalogDbContext db) =>
     await db.SaveChangesAsync();
 
     return Results.NoContent();
-}).RequireAuthorization();
+}).RequireAuthorization(AuthorizationPolicies.MerchantOnly);
 
 app.Run();
 

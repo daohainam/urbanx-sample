@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using UrbanX.Services.Inventory.Data;
 using UrbanX.Services.Inventory.Messaging;
@@ -26,6 +27,20 @@ builder.Services.AddHostedService<KafkaOrderEventConsumer>();
 // Configure outbox relay service (publishes pending outbox messages to Kafka)
 builder.Services.AddHostedService<OutboxRelayService>();
 
+// Configure JWT bearer authentication
+var identityAuthority = builder.Configuration["services__identity__https__0"]
+    ?? builder.Configuration["services__identity__http__0"]
+    ?? builder.Configuration["IdentityServer:Authority"];
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = identityAuthority;
+        options.Audience = builder.Configuration["IdentityServer:Audience"] ?? "urbanx-api";
+        options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
+    });
+builder.Services.AddUrbanXAuthorization();
+
 var app = builder.Build();
 
 // Map default endpoints (health checks, etc.)
@@ -36,6 +51,9 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Apply database migrations
 using (var scope = app.Services.CreateScope())
@@ -64,7 +82,7 @@ app.MapGet("/api/inventory/{productId:guid}", async (Guid productId, InventoryDb
 
     var item = await db.InventoryItems.FirstOrDefaultAsync(i => i.ProductId == productId);
     return item is not null ? Results.Ok(item) : Results.NotFound();
-});
+}).RequireAuthorization(AuthorizationPolicies.MerchantOnly);
 
 app.MapPost("/api/inventory", async (InventoryItem item, InventoryDbContext db) =>
 {
@@ -85,7 +103,7 @@ app.MapPost("/api/inventory", async (InventoryItem item, InventoryDbContext db) 
     await db.SaveChangesAsync();
 
     return Results.Created($"/api/inventory/{item.ProductId}", item);
-});
+}).RequireAuthorization(AuthorizationPolicies.MerchantOnly);
 
 app.MapPut("/api/inventory/{productId:guid}", async (Guid productId, InventoryItem update, InventoryDbContext db) =>
 {
@@ -99,7 +117,7 @@ app.MapPut("/api/inventory/{productId:guid}", async (Guid productId, InventoryIt
 
     await db.SaveChangesAsync();
     return Results.Ok(item);
-});
+}).RequireAuthorization(AuthorizationPolicies.MerchantOnly);
 
 app.MapGet("/api/inventory/reservations/{orderId:guid}", async (Guid orderId, InventoryDbContext db) =>
 {
@@ -110,7 +128,7 @@ app.MapGet("/api/inventory/reservations/{orderId:guid}", async (Guid orderId, In
         .ToListAsync();
 
     return Results.Ok(reservations);
-});
+}).RequireAuthorization(AuthorizationPolicies.CustomerOrMerchant);
 
 app.Run();
 

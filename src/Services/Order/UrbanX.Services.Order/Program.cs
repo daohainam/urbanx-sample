@@ -158,11 +158,25 @@ app.MapDelete("/api/cart/{customerId:guid}/items/{itemId:guid}", async (Guid cus
 app.MapPost("/api/orders", async (UrbanX.Services.Order.Models.Order order, OrderDbContext db) =>
 {
     RequestValidation.ValidateGuid(order.CustomerId, nameof(order.CustomerId));
-    RequestValidation.ValidatePositive(order.TotalAmount, nameof(order.TotalAmount));
+    RequestValidation.ValidateRequiredString(order.ShippingAddress, nameof(order.ShippingAddress), 500);
     
     if (order.Items == null || !order.Items.Any())
     {
         return Results.BadRequest("Order must contain at least one item");
+    }
+
+    foreach (var item in order.Items)
+    {
+        RequestValidation.ValidateGuid(item.ProductId, nameof(item.ProductId));
+        RequestValidation.ValidateRequiredString(item.ProductName, nameof(item.ProductName), 200);
+        RequestValidation.ValidatePositive(item.Quantity, nameof(item.Quantity));
+        RequestValidation.ValidatePositive(item.UnitPrice, nameof(item.UnitPrice));
+    }
+
+    var expectedTotal = order.Items.Sum(i => i.Quantity * i.UnitPrice);
+    if (Math.Abs(order.TotalAmount - expectedTotal) > 0.01m)
+    {
+        return Results.BadRequest("TotalAmount does not match the sum of item quantities and unit prices.");
     }
     
     order.Id = Guid.NewGuid();
@@ -240,7 +254,12 @@ app.MapPut("/api/orders/{orderId:guid}/status", async (Guid orderId, OrderStatus
         .FirstOrDefaultAsync(o => o.Id == orderId);
     
     if (order == null) return Results.NotFound();
-    
+
+    if (!OrderStatusTransitions.IsAllowed(order.Status, status))
+    {
+        return Results.UnprocessableEntity(new { error = $"Cannot transition order from '{order.Status}' to '{status}'." });
+    }
+
     order.Status = status;
     order.UpdatedAt = DateTime.UtcNow;
     order.StatusHistory.Add(new OrderStatusHistory

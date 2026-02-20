@@ -85,6 +85,14 @@ app.MapPost("/api/payments", async (UrbanX.Services.Payment.Models.Payment payme
 {
     RequestValidation.ValidateGuid(payment.OrderId, nameof(payment.OrderId));
     RequestValidation.ValidatePositive(payment.Amount, nameof(payment.Amount));
+
+    var existingPayment = await db.Payments
+        .FirstOrDefaultAsync(p => p.OrderId == payment.OrderId
+                                   && p.Status != PaymentStatus.Failed);
+    if (existingPayment != null)
+    {
+        return Results.Conflict(new { error = "A payment has already been initiated for this order." });
+    }
     
     payment.Id = Guid.NewGuid();
     payment.Status = PaymentStatus.Processing;

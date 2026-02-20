@@ -8,6 +8,7 @@ var catalogDb = postgres.AddDatabase("catalogdb", "urbanx_catalog");
 var orderDb = postgres.AddDatabase("orderdb", "urbanx_order");
 var merchantDb = postgres.AddDatabase("merchantdb", "urbanx_merchant");
 var paymentDb = postgres.AddDatabase("paymentdb", "urbanx_payment");
+var inventoryDb = postgres.AddDatabase("inventorydb", "urbanx_inventory");
 
 // Add Kafka
 var kafka = builder.AddKafka("kafka");
@@ -27,6 +28,10 @@ var merchantService = builder.AddProject<Projects.UrbanX_Services_Merchant>("mer
 var paymentService = builder.AddProject<Projects.UrbanX_Services_Payment>("payment")
     .WithReference(paymentDb);
 
+var inventoryService = builder.AddProject<Projects.UrbanX_Services_Inventory>("inventory")
+    .WithReference(inventoryDb)
+    .WithReference(kafka);
+
 var identityService = builder.AddProject<Projects.UrbanX_Services_Identity>("identity");
 
 // Add Gateway with references to all services
@@ -35,6 +40,7 @@ var gateway = builder.AddProject<Projects.UrbanX_Gateway>("gateway")
     .WithReference(orderService)
     .WithReference(merchantService)
     .WithReference(paymentService)
+    .WithReference(inventoryService)
     .WithReference(identityService);
 
 var frontend = builder.AddViteApp("frontend", "../../frontend/urbanx-react")

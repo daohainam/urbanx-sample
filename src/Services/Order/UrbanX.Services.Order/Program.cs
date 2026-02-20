@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 using UrbanX.Services.Order.Data;
+using UrbanX.Services.Order.Messaging;
 using UrbanX.Services.Order.Models;
 using UrbanX.Shared.Security;
 
@@ -15,6 +17,15 @@ builder.AddNpgsqlDbContext<OrderDbContext>("orderdb");
 // Add database health check
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<OrderDbContext>(name: "orderdb", tags: ["ready", "db"]);
+
+// Configure Kafka publisher for order events (Saga)
+builder.Services.AddSingleton<IOrderEventPublisher, KafkaOrderEventPublisher>();
+
+// Configure outbox relay service (publishes order events to Kafka)
+builder.Services.AddHostedService<OrderOutboxRelayService>();
+
+// Configure Kafka consumer for inventory responses (Saga coordinator)
+builder.Services.AddHostedService<KafkaInventoryResponseConsumer>();
 
 var app = builder.Build();
 
@@ -147,7 +158,26 @@ app.MapPost("/api/orders", async (UrbanX.Services.Order.Models.Order order, Orde
         CreatedAt = DateTime.UtcNow
     });
     
+    // Publish OrderCreated event via transactional outbox for inventory Saga
+    var orderCreatedEvent = new OrderCreatedEvent
+    {
+        OrderId = order.Id,
+        Items = order.Items.Select(i => new OrderCreatedEventItem
+        {
+            ProductId = i.ProductId,
+            Quantity = i.Quantity
+        }).ToList(),
+        OccurredAt = order.CreatedAt
+    };
+
     db.Orders.Add(order);
+    db.OutboxMessages.Add(new OutboxMessage
+    {
+        Id = Guid.NewGuid(),
+        EventType = nameof(OrderCreatedEvent),
+        Payload = JsonSerializer.Serialize(orderCreatedEvent),
+        CreatedAt = DateTime.UtcNow
+    });
     await db.SaveChangesAsync();
     
     return Results.Created($"/api/orders/{order.Id}", order);

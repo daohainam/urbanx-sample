@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using UrbanX.Services.Order.Data;
@@ -17,6 +18,20 @@ builder.AddNpgsqlDbContext<OrderDbContext>("orderdb");
 // Add database health check
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<OrderDbContext>(name: "orderdb", tags: ["ready", "db"]);
+
+// Configure JWT bearer authentication
+var identityAuthority = builder.Configuration["services__identity__https__0"]
+    ?? builder.Configuration["services__identity__http__0"]
+    ?? builder.Configuration["IdentityServer:Authority"];
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = identityAuthority;
+        options.Audience = builder.Configuration["IdentityServer:Audience"] ?? "urbanx-api";
+        options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
+    });
+builder.Services.AddAuthorization();
 
 // Configure Kafka publisher for order events (Saga)
 builder.Services.AddSingleton<IOrderEventPublisher, KafkaOrderEventPublisher>();
@@ -40,6 +55,9 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Apply database migrations
 using (var scope = app.Services.CreateScope())
@@ -77,7 +95,7 @@ app.MapGet("/api/cart/{customerId:guid}", async (Guid customerId, OrderDbContext
     }
     
     return Results.Ok(cart);
-});
+}).RequireAuthorization();
 
 app.MapPost("/api/cart/{customerId:guid}/items", async (Guid customerId, CartItem item, OrderDbContext db) =>
 {
@@ -112,7 +130,7 @@ app.MapPost("/api/cart/{customerId:guid}/items", async (Guid customerId, CartIte
     cart.UpdatedAt = DateTime.UtcNow;
     await db.SaveChangesAsync();
     return Results.Ok(cart);
-});
+}).RequireAuthorization();
 
 app.MapDelete("/api/cart/{customerId:guid}/items/{itemId:guid}", async (Guid customerId, Guid itemId, OrderDbContext db) =>
 {
@@ -134,7 +152,7 @@ app.MapDelete("/api/cart/{customerId:guid}/items/{itemId:guid}", async (Guid cus
     }
     
     return Results.Ok(cart);
-});
+}).RequireAuthorization();
 
 // Checkout
 app.MapPost("/api/orders", async (UrbanX.Services.Order.Models.Order order, OrderDbContext db) =>
@@ -184,7 +202,7 @@ app.MapPost("/api/orders", async (UrbanX.Services.Order.Models.Order order, Orde
     await db.SaveChangesAsync();
     
     return Results.Created($"/api/orders/{order.Id}", order);
-});
+}).RequireAuthorization();
 
 // Order tracking
 app.MapGet("/api/orders/{orderId:guid}", async (Guid orderId, OrderDbContext db) =>
@@ -197,7 +215,7 @@ app.MapGet("/api/orders/{orderId:guid}", async (Guid orderId, OrderDbContext db)
         .FirstOrDefaultAsync(o => o.Id == orderId);
     
     return order is not null ? Results.Ok(order) : Results.NotFound();
-});
+}).RequireAuthorization();
 
 app.MapGet("/api/orders/customer/{customerId:guid}", async (Guid customerId, OrderDbContext db) =>
 {
@@ -211,7 +229,7 @@ app.MapGet("/api/orders/customer/{customerId:guid}", async (Guid customerId, Ord
         .ToListAsync();
     
     return Results.Ok(orders);
-});
+}).RequireAuthorization();
 
 app.MapPut("/api/orders/{orderId:guid}/status", async (Guid orderId, OrderStatus status, OrderDbContext db) =>
 {
@@ -235,7 +253,7 @@ app.MapPut("/api/orders/{orderId:guid}/status", async (Guid orderId, OrderStatus
     
     await db.SaveChangesAsync();
     return Results.Ok(order);
-});
+}).RequireAuthorization();
 
 // Merchant accept checkout after payment
 app.MapPost("/api/orders/{orderId:guid}/accept", async (Guid orderId, OrderDbContext db) =>
@@ -264,7 +282,7 @@ app.MapPost("/api/orders/{orderId:guid}/accept", async (Guid orderId, OrderDbCon
 
     await db.SaveChangesAsync();
     return Results.Ok(order);
-});
+}).RequireAuthorization();
 
 app.Run();
 

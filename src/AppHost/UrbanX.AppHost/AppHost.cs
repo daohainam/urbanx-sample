@@ -14,25 +14,29 @@ var inventoryDb = postgres.AddDatabase("inventorydb", "urbanx_inventory");
 var kafka = builder.AddKafka("kafka");
 
 // Add Services
+var identityService = builder.AddProject<Projects.UrbanX_Services_Identity>("identity");
+
 var catalogService = builder.AddProject<Projects.UrbanX_Services_Catalog>("catalog")
     .WithReference(catalogDb)
-    .WithReference(kafka);
+    .WithReference(kafka)
+    .WithReference(identityService);
 
 var orderService = builder.AddProject<Projects.UrbanX_Services_Order>("order")
     .WithReference(orderDb)
-    .WithReference(kafka);
+    .WithReference(kafka)
+    .WithReference(identityService);
 
 var merchantService = builder.AddProject<Projects.UrbanX_Services_Merchant>("merchant")
-    .WithReference(merchantDb);
+    .WithReference(merchantDb)
+    .WithReference(identityService);
 
 var paymentService = builder.AddProject<Projects.UrbanX_Services_Payment>("payment")
-    .WithReference(paymentDb);
+    .WithReference(paymentDb)
+    .WithReference(identityService);
 
 var inventoryService = builder.AddProject<Projects.UrbanX_Services_Inventory>("inventory")
     .WithReference(inventoryDb)
     .WithReference(kafka);
-
-var identityService = builder.AddProject<Projects.UrbanX_Services_Identity>("identity");
 
 // Add Gateway with references to all services
 var gateway = builder.AddProject<Projects.UrbanX_Gateway>("gateway")

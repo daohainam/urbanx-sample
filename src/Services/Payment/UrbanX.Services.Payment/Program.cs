@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using UrbanX.Services.Payment.Data;
@@ -26,6 +27,20 @@ var stripeConfig = builder.Configuration.GetSection("Stripe").Get<StripeSettings
 builder.Services.AddSingleton(stripeConfig);
 builder.Services.AddScoped<IPaymentGateway, StripePaymentGateway>();
 
+// Configure JWT bearer authentication
+var identityAuthority = builder.Configuration["services__identity__https__0"]
+    ?? builder.Configuration["services__identity__http__0"]
+    ?? builder.Configuration["IdentityServer:Authority"];
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = identityAuthority;
+        options.Audience = builder.Configuration["IdentityServer:Audience"] ?? "urbanx-api";
+        options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
+    });
+builder.Services.AddAuthorization();
+
 // Configure Kafka publisher for payment events (Saga)
 builder.Services.AddSingleton<IPaymentEventPublisher, KafkaPaymentEventPublisher>();
 
@@ -42,6 +57,9 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Apply database migrations
 using (var scope = app.Services.CreateScope())
@@ -140,7 +158,7 @@ app.MapPost("/api/payments", async (UrbanX.Services.Payment.Models.Payment payme
     await db.SaveChangesAsync();
     
     return Results.Created($"/api/payments/{payment.Id}", payment);
-});
+}).RequireAuthorization();
 
 app.MapGet("/api/payments/{id:guid}", async (Guid id, PaymentDbContext db) =>
 {
@@ -148,7 +166,7 @@ app.MapGet("/api/payments/{id:guid}", async (Guid id, PaymentDbContext db) =>
     
     var payment = await db.Payments.FindAsync(id);
     return payment is not null ? Results.Ok(payment) : Results.NotFound();
-});
+}).RequireAuthorization();
 
 app.MapGet("/api/payments/order/{orderId:guid}", async (Guid orderId, PaymentDbContext db) =>
 {
@@ -156,7 +174,7 @@ app.MapGet("/api/payments/order/{orderId:guid}", async (Guid orderId, PaymentDbC
     
     var payment = await db.Payments.FirstOrDefaultAsync(p => p.OrderId == orderId);
     return payment is not null ? Results.Ok(payment) : Results.NotFound();
-});
+}).RequireAuthorization();
 
 app.Run();
 

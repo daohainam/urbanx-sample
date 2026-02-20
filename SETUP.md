@@ -2,192 +2,150 @@
 
 ## Prerequisites
 - .NET 10 SDK
-- Node.js 18+
-- Docker & Docker Compose (for PostgreSQL and Kafka)
+- Node.js 20+
+- Docker & Docker Compose
 
-## Quick Start
+## Recommended: .NET Aspire
+
+The fastest way to run the entire platform locally is with .NET Aspire, which automatically
+provisions PostgreSQL and Kafka, wires up service discovery, and provides a live dashboard.
+
+```bash
+# 1. Install Aspire workload (once)
+dotnet workload install aspire
+
+# 2. Start all backend services
+cd src/AppHost/UrbanX.AppHost
+dotnet run
+
+# 3. Start the frontend (separate terminal)
+cd src/Frontend/urbanx-react
+npm install
+npm run dev
+```
+
+- **Aspire Dashboard:** http://localhost:15260
+- **Frontend:** http://localhost:5173
+- **API Gateway:** Dynamically assigned (visible in the Aspire Dashboard)
+
+## Manual Setup
 
 ### 1. Start Infrastructure
 ```bash
 docker-compose up -d
 ```
 
-This will start:
+This starts:
 - PostgreSQL on port 5432
 - Kafka on port 9092
 - Zookeeper on port 2181
 
-### 2. Build Backend
+### 2. Start Backend Services
+
+Open a separate terminal for each service:
+
 ```bash
-dotnet build UrbanX.sln
+# Identity Service
+cd src/Services/Identity/UrbanX.Services.Identity && dotnet run
+
+# Catalog Service
+cd src/Services/Catalog/UrbanX.Services.Catalog && dotnet run
+
+# Order Service
+cd src/Services/Order/UrbanX.Services.Order && dotnet run
+
+# Merchant Service
+cd src/Services/Merchant/UrbanX.Services.Merchant && dotnet run
+
+# Payment Service
+cd src/Services/Payment/UrbanX.Services.Payment && dotnet run
+
+# Inventory Service
+cd src/Services/Inventory/UrbanX.Services.Inventory && dotnet run
+
+# API Gateway
+cd src/Gateway/UrbanX.Gateway && dotnet run
 ```
 
-### 3. Start Services
+You can also use the helper scripts:
 
-#### Option A: Using Scripts
-**Linux/Mac:**
 ```bash
+# Linux/macOS
 ./start-services.sh
-```
 
-**Windows:**
-```powershell
+# Windows PowerShell
 .\start-services.ps1
 ```
 
-#### Option B: Manual Start
-Open separate terminals for each service:
-
+### 3. Start the Frontend
 ```bash
-# Terminal 1 - Gateway
-cd src/Gateway/UrbanX.Gateway
-dotnet run
-
-# Terminal 2 - Catalog Service
-cd src/Services/Catalog/UrbanX.Services.Catalog
-dotnet run
-
-# Terminal 3 - Order Service
-cd src/Services/Order/UrbanX.Services.Order
-dotnet run
-
-# Terminal 4 - Merchant Service
-cd src/Services/Merchant/UrbanX.Services.Merchant
-dotnet run
-
-# Terminal 5 - Payment Service
-cd src/Services/Payment/UrbanX.Services.Payment
-dotnet run
-
-# Terminal 6 - Identity Service
-cd src/Services/Identity/UrbanX.Services.Identity
-dotnet run
-```
-
-### 4. Start Frontend
-```bash
-cd src/Frontend/urbanx-frontend
+cd src/Frontend/urbanx-react
 npm install
 npm run dev
 ```
 
-### 5. Access the Application
+### 4. Access the Application
 - **Frontend:** http://localhost:5173
 - **API Gateway:** http://localhost:5000
 - **Identity Server:** http://localhost:5005
 
-## Architecture Overview
-
-```
-┌─────────────┐
-│   React     │ (Port 5173)
-│   Frontend  │
-└──────┬──────┘
-       │
-       │ HTTP
-       ▼
-┌─────────────┐
-│   YARP      │ (Port 5000)
-│   Gateway   │
-└──────┬──────┘
-       │
-       ├───────────────┬──────────────┬──────────────┬──────────────┐
-       │               │              │              │              │
-       ▼               ▼              ▼              ▼              ▼
-┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐
-│ Catalog  │   │  Order   │   │ Merchant │   │ Payment  │   │ Identity │
-│ Service  │   │ Service  │   │ Service  │   │ Service  │   │ Service  │
-│ (5001)   │   │ (5002)   │   │ (5003)   │   │ (5004)   │   │ (5005)   │
-└────┬─────┘   └────┬─────┘   └────┬─────┘   └────┬─────┘   └────┬─────┘
-     │              │              │              │              │
-     ▼              ▼              ▼              ▼              ▼
-┌────────────────────────────────────────────────────────────────────┐
-│                     PostgreSQL (5432)                               │
-└────────────────────────────────────────────────────────────────────┘
-     ▲              ▲              ▲
-     │              │              │
-     └──────────────┴──────────────┘
-              Kafka (9092)
-```
-
 ## API Testing
 
-You can test the APIs using the provided `.http` files in each service directory:
+`.http` files are included in each service directory for quick endpoint testing:
 - `UrbanX.Services.Catalog.http`
 - `UrbanX.Services.Order.http`
 - `UrbanX.Services.Merchant.http`
 - `UrbanX.Services.Payment.http`
-- `UrbanX.Services.Identity.http`
 
-Or use the Gateway at http://localhost:5000:
+Or test via the Gateway directly:
 
 ```bash
-# Get products
+# List products (public)
 curl http://localhost:5000/api/products
 
-# Get cart for a customer
-curl http://localhost:5000/api/cart/00000000-0000-0000-0000-000000000001
+# Get a specific product
+curl http://localhost:5000/api/products/<product-id>
+```
+
+## Running Tests
+```bash
+dotnet test UrbanX.sln
 ```
 
 ## Troubleshooting
 
 ### Port Already in Use
-If you get port conflicts, you can change the ports in each service's `Properties/launchSettings.json` file.
+Change the port in the service's `Properties/launchSettings.json`.
 
 ### Database Connection Issues
-Ensure PostgreSQL is running:
 ```bash
-docker-compose ps
-```
-
-If not running:
-```bash
-docker-compose up -d postgres
+docker-compose ps              # check container status
+docker-compose up -d postgres  # restart if needed
 ```
 
 ### Frontend Build Issues
-Clear node_modules and reinstall:
 ```bash
-cd src/Frontend/urbanx-frontend
+cd src/Frontend/urbanx-react
 rm -rf node_modules package-lock.json
 npm install
 ```
 
 ### Backend Build Issues
-Clean and rebuild:
 ```bash
-dotnet clean
-dotnet build
+dotnet clean && dotnet build
 ```
 
 ## Development Tips
 
 ### Hot Reload
-- Frontend: Hot reload is automatic with Vite
-- Backend: Use `dotnet watch run` instead of `dotnet run` for hot reload
+- Frontend: automatic with Vite (`npm run dev`)
+- Backend: use `dotnet watch run` for hot reload
 
 ### Database Migrations
-Each service has its own database context. To create migrations:
-
+Migrations are applied automatically on startup. To add a new migration:
 ```bash
-cd src/Services/Catalog/UrbanX.Services.Catalog
-dotnet ef migrations add InitialCreate
-dotnet ef database update
+cd src/Services/<Service>/UrbanX.Services.<Service>
+dotnet ef migrations add <MigrationName> --context <Service>DbContext
 ```
 
-### Environment Variables
-Copy `.env.example` to `.env` in the frontend directory and adjust as needed:
-```bash
-cp src/Frontend/urbanx-frontend/.env.example src/Frontend/urbanx-frontend/.env
-```
-
-## Next Steps
-
-1. **Add Database Migrations:** Create and apply EF Core migrations for each service
-2. **Implement Kafka Events:** Add event publishing/consuming between services
-3. **Add Authentication:** Integrate OIDC authentication in the frontend
-4. **Add Tests:** Create unit and integration tests
-5. **Add Logging:** Implement structured logging with Serilog
-6. **Add Health Checks:** Implement health check endpoints
-7. **Add API Documentation:** Use Swagger/OpenAPI for API documentation
-8. **Deploy:** Create Kubernetes manifests or Docker Compose for production
+See [DATABASE_MIGRATIONS.md](DATABASE_MIGRATIONS.md) for full guidance.

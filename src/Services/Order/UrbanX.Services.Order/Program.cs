@@ -27,6 +27,9 @@ builder.Services.AddHostedService<OrderOutboxRelayService>();
 // Configure Kafka consumer for inventory responses (Saga coordinator)
 builder.Services.AddHostedService<KafkaInventoryResponseConsumer>();
 
+// Configure Kafka consumer for payment responses (Saga coordinator)
+builder.Services.AddHostedService<KafkaPaymentResponseConsumer>();
+
 var app = builder.Build();
 
 // Map default endpoints (health checks, etc.)
@@ -230,6 +233,35 @@ app.MapPut("/api/orders/{orderId:guid}/status", async (Guid orderId, OrderStatus
         CreatedAt = DateTime.UtcNow
     });
     
+    await db.SaveChangesAsync();
+    return Results.Ok(order);
+});
+
+// Merchant accept checkout after payment
+app.MapPost("/api/orders/{orderId:guid}/accept", async (Guid orderId, OrderDbContext db) =>
+{
+    RequestValidation.ValidateGuid(orderId, nameof(orderId));
+
+    var order = await db.Orders
+        .Include(o => o.StatusHistory)
+        .FirstOrDefaultAsync(o => o.Id == orderId);
+
+    if (order == null) return Results.NotFound();
+
+    if (order.Status != OrderStatus.PaymentReceived)
+        return Results.BadRequest($"Order cannot be accepted in its current status ({order.Status}). Order must be in PaymentReceived status.");
+
+    order.Status = OrderStatus.Confirmed;
+    order.UpdatedAt = DateTime.UtcNow;
+    order.StatusHistory.Add(new OrderStatusHistory
+    {
+        Id = Guid.NewGuid(),
+        OrderId = orderId,
+        Status = OrderStatus.Confirmed,
+        Note = "Order accepted by merchant",
+        CreatedAt = DateTime.UtcNow
+    });
+
     await db.SaveChangesAsync();
     return Results.Ok(order);
 });

@@ -186,6 +186,60 @@ public class OutboxPatternTests
     }
 
     [Fact]
+    public async Task SoftDeleteProduct_ShouldAtomicallySaveIsActiveFalseAndOutboxMessage()
+    {
+        // Arrange
+        using var context = CreateContext("Outbox_SoftDelete_" + Guid.NewGuid());
+        var productId = Guid.NewGuid();
+        var now = DateTime.UtcNow;
+
+        context.Products.Add(new Product
+        {
+            Id = productId,
+            Name = "To Soft Delete",
+            Price = 5.00m,
+            MerchantId = Guid.NewGuid(),
+            StockQuantity = 1,
+            IsActive = true,
+            CreatedAt = now,
+            UpdatedAt = now
+        });
+        await context.SaveChangesAsync();
+
+        // Act – simulate the soft-delete path used by the endpoint
+        var product = await context.Products.FindAsync(productId);
+        var productEvent = new ProductEvent
+        {
+            ProductId = productId,
+            EventType = ProductEventType.Deleted,
+            MerchantId = product!.MerchantId,
+            CreatedAt = product.CreatedAt,
+            OccurredAt = DateTime.UtcNow
+        };
+
+        product.IsActive = false;
+        product.UpdatedAt = DateTime.UtcNow;
+        context.OutboxMessages.Add(new OutboxMessage
+        {
+            Id = Guid.NewGuid(),
+            EventType = nameof(ProductEventType.Deleted),
+            Payload = JsonSerializer.Serialize(productEvent),
+            CreatedAt = DateTime.UtcNow
+        });
+        await context.SaveChangesAsync();
+
+        // Assert – product still exists in DB but is inactive; outbox message exists
+        var softDeleted = await context.Products.FindAsync(productId);
+        var outboxMessage = await context.OutboxMessages.FirstOrDefaultAsync();
+
+        Assert.NotNull(softDeleted);
+        Assert.False(softDeleted!.IsActive);
+        Assert.NotNull(outboxMessage);
+        Assert.Equal(nameof(ProductEventType.Deleted), outboxMessage!.EventType);
+        Assert.Null(outboxMessage.ProcessedAt);
+    }
+
+    [Fact]
     public async Task OutboxMessage_AfterProcessing_ShouldHaveProcessedAtSet()
     {
         // Arrange

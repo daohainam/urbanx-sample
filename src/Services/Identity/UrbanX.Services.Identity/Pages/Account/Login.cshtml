@@ -1,0 +1,54 @@
+@page
+@model UrbanX.Services.Identity.Pages.Account.LoginModel
+@{
+    ViewData["Title"] = "Sign In";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UrbanX – @ViewData["Title"]</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f5f5f5; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+        .card { background: #fff; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,.12); padding: 2rem; width: 100%; max-width: 380px; }
+        h1 { margin: 0 0 1.5rem; font-size: 1.5rem; color: #1a1a1a; }
+        label { display: block; font-size: .875rem; color: #555; margin-bottom: .25rem; }
+        input[type=text], input[type=password] { width: 100%; box-sizing: border-box; padding: .625rem .75rem; border: 1px solid #ddd; border-radius: 4px; font-size: 1rem; margin-bottom: 1rem; }
+        input[type=text]:focus, input[type=password]:focus { outline: none; border-color: #0078d4; }
+        button[type=submit] { width: 100%; padding: .75rem; background: #0078d4; color: #fff; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer; }
+        button[type=submit]:hover { background: #006cbe; }
+        .error { color: #c53030; font-size: .875rem; margin-bottom: 1rem; }
+        .remember { display: flex; align-items: center; gap: .5rem; margin-bottom: 1rem; font-size: .875rem; color: #555; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>UrbanX Sign In</h1>
+
+    @if (Model.ErrorMessage != null)
+    {
+        <p class="error">@Model.ErrorMessage</p>
+    }
+
+    <form method="post">
+        <input type="hidden" asp-for="Input.ReturnUrl" />
+        <div asp-validation-summary="ModelOnly" class="error"></div>
+
+        <label asp-for="Input.Username">Email / Username</label>
+        <input type="text" asp-for="Input.Username" autocomplete="username" autofocus />
+
+        <label asp-for="Input.Password">Password</label>
+        <input type="password" asp-for="Input.Password" autocomplete="current-password" />
+
+        <div class="remember">
+            <input type="checkbox" asp-for="Input.RememberLogin" />
+            <label asp-for="Input.RememberLogin">Keep me signed in</label>
+        </div>
+
+        <button type="submit">Sign In</button>
+    </form>
+</div>
+</body>
+</html>

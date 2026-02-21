@@ -41,6 +41,8 @@
 
     <!-- Third-party packages -->
     <PackageVersion Include="Duende.IdentityServer" Version="7.4.6" />
+    <PackageVersion Include="Duende.IdentityServer.AspNetIdentity" Version="7.4.6" />
+    <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.3" />
     <PackageVersion Include="Scalar.AspNetCore" Version="2.11.0" />
     <PackageVersion Include="Stripe.net" Version="50.3.0" />
     <PackageVersion Include="Yarp.ReverseProxy" Version="2.3.0" />

@@ -153,6 +153,41 @@ public class CatalogWriteOperationsTests
     }
 
     [Fact]
+    public async Task CatalogService_ShouldSoftDeleteProductBySettingIsActiveFalse()
+    {
+        // Arrange
+        using var context = CreateContext("CatalogSoftDeleteEndpoint_" + Guid.NewGuid());
+        var productId = Guid.NewGuid();
+        var merchantId = Guid.NewGuid();
+
+        context.Products.Add(new Product
+        {
+            Id = productId,
+            Name = "Product To Soft Delete",
+            Price = 19.99m,
+            MerchantId = merchantId,
+            StockQuantity = 5,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        });
+        await context.SaveChangesAsync();
+
+        // Act – simulate the endpoint's soft delete: set IsActive=false instead of Remove
+        var product = await context.Products.FindAsync(productId);
+        Assert.NotNull(product);
+        product!.IsActive = false;
+        product.UpdatedAt = DateTime.UtcNow;
+        await context.SaveChangesAsync();
+
+        // Assert – product still exists in the database but is inactive
+        var softDeleted = await context.Products.FindAsync(productId);
+        Assert.NotNull(softDeleted);
+        Assert.False(softDeleted!.IsActive);
+        Assert.Equal(merchantId, softDeleted.MerchantId);
+    }
+
+    [Fact]
     public void ProductEvent_ShouldConstructWithCreatedEventType()
     {
         // Arrange

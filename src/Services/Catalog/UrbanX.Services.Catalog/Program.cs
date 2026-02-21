@@ -109,7 +109,7 @@ app.MapGet("/api/products/{id:guid}", async (Guid id, IProductSearchService sear
     if (document is not null) return Results.Ok(document);
 
     var product = await db.Products.FindAsync(id);
-    return product is not null ? Results.Ok(product) : Results.NotFound();
+    return product is not null && product.IsActive ? Results.Ok(product) : Results.NotFound();
 });
 
 app.MapGet("/api/products/merchant/{merchantId:guid}", async (Guid merchantId, IProductSearchService searchService, int page = 1, int pageSize = 20) =>
@@ -124,12 +124,16 @@ app.MapGet("/api/products/merchant/{merchantId:guid}", async (Guid merchantId, I
 // WRITE endpoints – persist to PostgreSQL + publish Kafka event
 // ────────────────────────────────────────────────────────
 
-app.MapPost("/api/products", async (CreateProductRequest request, CatalogDbContext db) =>
+app.MapPost("/api/products", async (CreateProductRequest request, CatalogDbContext db, HttpContext httpContext) =>
 {
     RequestValidation.Validate(request);
     RequestValidation.ValidateGuid(request.MerchantId, nameof(request.MerchantId));
     RequestValidation.ValidateRequiredString(request.Name, nameof(request.Name), 200);
     RequestValidation.ValidatePositive(request.Price, nameof(request.Price));
+
+    var sub = httpContext.User.FindFirst("sub")?.Value;
+    if (!Guid.TryParse(sub, out var callerMerchantId) || callerMerchantId != request.MerchantId)
+        return Results.Forbid();
 
     var product = new Product
     {
@@ -175,7 +179,7 @@ app.MapPost("/api/products", async (CreateProductRequest request, CatalogDbConte
     return Results.Created($"/api/products/{product.Id}", product);
 }).RequireAuthorization(AuthorizationPolicies.MerchantOnly);
 
-app.MapPut("/api/products/{id:guid}", async (Guid id, UpdateProductRequest request, CatalogDbContext db) =>
+app.MapPut("/api/products/{id:guid}", async (Guid id, UpdateProductRequest request, CatalogDbContext db, HttpContext httpContext) =>
 {
     RequestValidation.ValidateGuid(id, nameof(id));
     RequestValidation.Validate(request);
@@ -184,6 +188,10 @@ app.MapPut("/api/products/{id:guid}", async (Guid id, UpdateProductRequest reque
 
     var product = await db.Products.FindAsync(id);
     if (product is null) return Results.NotFound();
+
+    var sub = httpContext.User.FindFirst("sub")?.Value;
+    if (!Guid.TryParse(sub, out var callerMerchantId) || callerMerchantId != product.MerchantId)
+        return Results.Forbid();
 
     product.Name = request.Name;
     product.Description = request.Description;
@@ -222,12 +230,16 @@ app.MapPut("/api/products/{id:guid}", async (Guid id, UpdateProductRequest reque
     return Results.Ok(product);
 }).RequireAuthorization(AuthorizationPolicies.MerchantOnly);
 
-app.MapDelete("/api/products/{id:guid}", async (Guid id, CatalogDbContext db) =>
+app.MapDelete("/api/products/{id:guid}", async (Guid id, CatalogDbContext db, HttpContext httpContext) =>
 {
     RequestValidation.ValidateGuid(id, nameof(id));
 
     var product = await db.Products.FindAsync(id);
     if (product is null) return Results.NotFound();
+
+    var sub = httpContext.User.FindFirst("sub")?.Value;
+    if (!Guid.TryParse(sub, out var callerMerchantId) || callerMerchantId != product.MerchantId)
+        return Results.Forbid();
 
     var productEvent = new ProductEvent
     {
@@ -238,7 +250,8 @@ app.MapDelete("/api/products/{id:guid}", async (Guid id, CatalogDbContext db) =>
         OccurredAt = DateTime.UtcNow
     };
 
-    db.Products.Remove(product);
+    product.IsActive = false;
+    product.UpdatedAt = DateTime.UtcNow;
     db.OutboxMessages.Add(new OutboxMessage
     {
         Id = Guid.NewGuid(),

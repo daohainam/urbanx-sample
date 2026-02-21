@@ -5,7 +5,7 @@ namespace UrbanX.Services.Identity.Models;
 /// <summary>
 /// ApplicationUser extends ASP.NET Core Identity's IdentityUser to add application-specific
 /// profile fields. IdentityUser already provides: Id (string, GUID), UserName, Email,
-/// PasswordHash (bcrypt), SecurityStamp, PhoneNumber, EmailConfirmed, LockoutEnabled, etc.
+/// PasswordHash (PBKDF2-SHA256), SecurityStamp, PhoneNumber, EmailConfirmed, LockoutEnabled, etc.
 ///
 /// In the OIDC/OAuth2 flow:
 /// - The user's Id becomes the "sub" (subject) claim in the ID token and access token.

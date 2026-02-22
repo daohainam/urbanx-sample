@@ -33,7 +33,7 @@ const ProductDetailsPage = () => {
                     imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80',
                     description: 'Elevate your listening experience with our flagship Premium Wireless Headphones. Engineered for audiophiles, these headphones deliver precision sound, robust bass, and crystalline highs. Featuring advanced active noise cancellation (ANC), they let you immerse yourself in music, podcasts, or calls without distraction. The lightweight design and plush memory foam ear cushions ensure comfort during extended sessions. With up to 40 hours of battery life and fast-charging capabilities, they are the perfect companion for travel, work, or home relaxation.',
                     merchantId: 'm1',
-                    inventoryCount: 10
+                    stockQuantity: 10
                 });
             } finally {
                 setLoading(false);

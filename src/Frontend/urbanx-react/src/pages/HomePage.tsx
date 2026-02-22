@@ -9,10 +9,10 @@ const categories = [
 ];
 
 const featuredProducts = [
-    { id: 'p1', name: 'Premium Wireless Headphones', price: 299, category: 'Electronics', imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800', description: '', merchantId: 'm1', inventoryCount: 10 },
-    { id: 'p2', name: 'Leather Weekend Bag', price: 180, category: 'Fashion', imageUrl: 'https://images.unsplash.com/photo-1547949003-9792a18a2601?auto=format&fit=crop&q=80&w=800', description: '', merchantId: 'm2', inventoryCount: 5 },
-    { id: 'p3', name: 'Minimalist Ceramic Vase', price: 45, category: 'Home', imageUrl: 'https://images.unsplash.com/photo-1581783898377-1c85bf937427?auto=format&fit=crop&q=80&w=800', description: '', merchantId: 'm3', inventoryCount: 20 },
-    { id: 'p4', name: 'Smart Watch Series X', price: 399, category: 'Electronics', imageUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800', description: '', merchantId: 'm1', inventoryCount: 15 },
+    { id: 'p1', name: 'Premium Wireless Headphones', price: 299, category: 'Electronics', imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800', description: '', merchantId: 'm1', stockQuantity: 10 },
+    { id: 'p2', name: 'Leather Weekend Bag', price: 180, category: 'Fashion', imageUrl: 'https://images.unsplash.com/photo-1547949003-9792a18a2601?auto=format&fit=crop&q=80&w=800', description: '', merchantId: 'm2', stockQuantity: 5 },
+    { id: 'p3', name: 'Minimalist Ceramic Vase', price: 45, category: 'Home', imageUrl: 'https://images.unsplash.com/photo-1581783898377-1c85bf937427?auto=format&fit=crop&q=80&w=800', description: '', merchantId: 'm3', stockQuantity: 20 },
+    { id: 'p4', name: 'Smart Watch Series X', price: 399, category: 'Electronics', imageUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800', description: '', merchantId: 'm1', stockQuantity: 15 },
 ];
 
 const HomePage = () => {

@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useCart } from '../context/useCart';
-import { Check, ChevronRight, CreditCard, Truck, Tag, ShoppingBag } from 'lucide-react';
+import { useAuth } from '../context/useAuth';
+import { orderService } from '../services/api';
+import { Check, ChevronRight, CreditCard, Truck, Tag, ShoppingBag, LogIn } from 'lucide-react';
+import type { PlaceOrderRequest } from '../types';
 
 const shippingMethods = [
     { id: 'std', name: 'Standard Shipping', price: 0, estimatedDays: '3-5 business days' },
@@ -15,6 +18,7 @@ const paymentMethods = [
 
 const CheckoutPage = () => {
     const { items, selectedItems, totalPrice, clearCart } = useCart();
+    const { user, login } = useAuth();
     const [step, setStep] = useState(1);
     const [address, setAddress] = useState({
         firstName: '',
@@ -29,7 +33,9 @@ const CheckoutPage = () => {
     const [coupons, setCoupons] = useState<string[]>([]);
     const [couponInput, setCouponInput] = useState('');
     const [isOrderPlaced, setIsOrderPlaced] = useState(false);
-    const [orderNumber] = useState(() => Math.floor(Math.random() * 1000000));
+    const [orderNumber, setOrderNumber] = useState('');
+    const [orderError, setOrderError] = useState<string | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const checkoutItems = items.filter(item => selectedItems.has(item.id));
     const shippingCost = shippingMethod.price;
@@ -43,9 +49,36 @@ const CheckoutPage = () => {
         }
     };
 
-    const handlePlaceOrder = () => {
-        setIsOrderPlaced(true);
-        clearCart();
+    const handlePlaceOrder = async () => {
+        if (!user) {
+            await login();
+            return;
+        }
+        setOrderError(null);
+        setIsSubmitting(true);
+        try {
+            const shippingAddressStr = `${address.firstName} ${address.lastName}, ${address.street}, ${address.city}, ${address.zipCode}, ${address.country}`;
+            const orderRequest: PlaceOrderRequest = {
+                customerId: user.profile.sub,
+                items: checkoutItems.map(item => ({
+                    productId: item.id,
+                    productName: item.name,
+                    quantity: item.quantity,
+                    unitPrice: item.price,
+                    merchantId: item.merchantId,
+                })),
+                totalAmount: finalTotal,
+                shippingAddress: shippingAddressStr,
+            };
+            const placedOrder = await orderService.placeOrder(orderRequest);
+            setOrderNumber(placedOrder.orderNumber);
+            setIsOrderPlaced(true);
+            clearCart();
+        } catch (err) {
+            setOrderError(err instanceof Error ? err.message : 'Failed to place order. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,7 +95,7 @@ const CheckoutPage = () => {
                 <h1 className="text-3xl font-serif font-bold text-gray-900 mb-4">Thank you for your order!</h1>
                 <p className="text-gray-600 mb-8">Your order has been placed successfully and is being processed.</p>
                 <div className="inline-block bg-gray-100 px-4 py-2 rounded-md font-mono text-sm text-gray-700 mb-8 border border-gray-200">
-                    Order #URB-{orderNumber}
+                    Order #{orderNumber}
                 </div>
                 <div>
                     <button
@@ -87,6 +120,22 @@ const CheckoutPage = () => {
                     onClick={() => window.location.href = '/cart'}
                 >
                     Go to Cart
+                </button>
+            </div>
+        );
+    }
+
+    if (!user) {
+        return (
+            <div className="container mx-auto px-6 py-20 text-center">
+                <ShoppingBag size={64} className="mx-auto text-gray-200 mb-6" />
+                <h1 className="text-2xl font-serif font-bold text-gray-900 mb-3">Sign in to continue</h1>
+                <p className="text-gray-500 mb-8">Please sign in to complete your purchase.</p>
+                <button
+                    className="inline-flex items-center gap-2 h-10 justify-center rounded-md bg-primary px-8 text-sm font-medium text-white shadow transition-colors hover:bg-gray-900"
+                    onClick={login}
+                >
+                    <LogIn size={16} /> Sign In
                 </button>
             </div>
         );
@@ -237,11 +286,20 @@ const CheckoutPage = () => {
                                     <p className="text-gray-900">{paymentMethod.name}</p>
                                 </div>
                             </div>
-                            <div className="mt-8 flex justify-between">
-                                <button className="text-gray-500 font-medium hover:text-gray-900 px-4" onClick={() => setStep(3)}>Back</button>
-                                <button className="bg-primary text-white px-8 py-3 rounded-md font-medium hover:bg-gray-900 transition-colors shadow-lg shadow-gray-200" onClick={handlePlaceOrder}>
-                                    Place Order
-                                </button>
+                            <div className="mt-8 flex flex-col gap-4">
+                                {orderError && (
+                                    <div className="text-sm text-red-600 bg-red-50 px-4 py-3 rounded-md border border-red-100">{orderError}</div>
+                                )}
+                                <div className="flex justify-between">
+                                    <button className="text-gray-500 font-medium hover:text-gray-900 px-4" onClick={() => setStep(3)}>Back</button>
+                                    <button
+                                        className="bg-primary text-white px-8 py-3 rounded-md font-medium hover:bg-gray-900 transition-colors shadow-lg shadow-gray-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                                        onClick={handlePlaceOrder}
+                                        disabled={isSubmitting}
+                                    >
+                                        {isSubmitting ? 'Placing Order...' : 'Place Order'}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     )}

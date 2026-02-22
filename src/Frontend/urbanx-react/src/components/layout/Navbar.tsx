@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, User, ShoppingBag, Menu, X } from 'lucide-react';
+import { Search, User, ShoppingBag, Menu, X, LogIn, LogOut } from 'lucide-react';
 import { useCart } from '../../context/useCart';
+import { useAuth } from '../../context/useAuth';
 
 const Navbar = () => {
     const { totalItems } = useCart();
+    const { user, login, logout } = useAuth();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
@@ -42,9 +44,28 @@ const Navbar = () => {
                         />
                     </div>
 
-                    <Link to="/profile" className="p-2 text-primary hover:bg-gray-100 rounded-full transition-colors">
-                        <User size={20} />
-                    </Link>
+                    {user ? (
+                        <>
+                            <Link to="/profile" className="p-2 text-primary hover:bg-gray-100 rounded-full transition-colors" title={user.profile.name ?? user.profile.email}>
+                                <User size={20} />
+                            </Link>
+                            <button
+                                onClick={logout}
+                                className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors"
+                                title="Sign out"
+                            >
+                                <LogOut size={20} />
+                            </button>
+                        </>
+                    ) : (
+                        <button
+                            onClick={login}
+                            className="p-2 text-primary hover:bg-gray-100 rounded-full transition-colors"
+                            title="Sign in"
+                        >
+                            <LogIn size={20} />
+                        </button>
+                    )}
 
                     <Link to="/cart" className="p-2 text-primary hover:bg-gray-100 rounded-full transition-colors relative">
                         <ShoppingBag size={20} />

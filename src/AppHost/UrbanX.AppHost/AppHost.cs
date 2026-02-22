@@ -2,7 +2,7 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 // Add PostgreSQL
 var postgres = builder.AddPostgres("postgres")
-    .WithPgAdmin();
+    .WithPgWeb();
 
 var catalogDb = postgres.AddDatabase("catalogdb", "urbanx_catalog");
 var orderDb = postgres.AddDatabase("orderdb", "urbanx_order");

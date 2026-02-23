@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { User, Mail, Lock, CheckCircle, ArrowRight } from 'lucide-react';
+import { accountService } from '../services/api';
 
 const SignUpPage = () => {
     const navigate = useNavigate();
@@ -11,29 +12,31 @@ const SignUpPage = () => {
         confirmPassword: ''
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError(null);
 
         if (formData.password !== formData.confirmPassword) {
-            alert("Passwords don't match!");
+            setError("Passwords don't match!");
             return;
         }
 
         setIsSubmitting(true);
-        console.log('Registering user:', formData);
-
-        // Simulate API call
-        setTimeout(() => {
-            setIsSubmitting(false);
-            alert('Account created successfully! Please login.');
+        try {
+            await accountService.register(formData.email, formData.password, formData.name);
             navigate('/login');
-        }, 1500);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Registration failed. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -124,6 +127,10 @@ const SignUpPage = () => {
                             I agree to the <a href="#" className="text-secondary hover:text-primary">Terms of Service</a> and <a href="#" className="text-secondary hover:text-primary">Privacy Policy</a>
                         </label>
                     </div>
+
+                    {error && (
+                        <div className="text-sm text-red-600 bg-red-50 px-4 py-3 rounded-md border border-red-100">{error}</div>
+                    )}
 
                     <div>
                         <button

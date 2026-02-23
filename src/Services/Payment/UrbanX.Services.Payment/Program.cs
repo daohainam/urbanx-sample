@@ -40,6 +40,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
     });
 builder.Services.AddUrbanXAuthorization();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 // Configure Kafka publisher for payment events (Saga)
 builder.Services.AddSingleton<IPaymentEventPublisher, KafkaPaymentEventPublisher>();
@@ -58,6 +60,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+app.UseExceptionHandler();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -180,7 +183,7 @@ app.MapGet("/api/payments/order/{orderId:guid}", async (Guid orderId, PaymentDbC
 {
     RequestValidation.ValidateGuid(orderId, nameof(orderId));
     
-    var payment = await db.Payments.FirstOrDefaultAsync(p => p.OrderId == orderId);
+    var payment = await db.Payments.AsNoTracking().FirstOrDefaultAsync(p => p.OrderId == orderId);
     return payment is not null ? Results.Ok(payment) : Results.NotFound();
 }).RequireAuthorization(AuthorizationPolicies.CustomerOrMerchant);
 

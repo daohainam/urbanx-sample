@@ -17,6 +17,9 @@ public static class AuthorizationPolicies
     /// <summary>Requires the authenticated user to have either the <c>customer</c> or <c>merchant</c> role.</summary>
     public const string CustomerOrMerchant = "CustomerOrMerchant";
 
+    /// <summary>Requires the authenticated user to have the <c>admin</c> role.</summary>
+    public const string AdminOnly = "AdminOnly";
+
     /// <summary>
     /// Registers the UrbanX authorization policies with the DI container.
     /// Call this instead of the plain <c>AddAuthorization()</c> overload.
@@ -38,6 +41,10 @@ public static class AuthorizationPolicies
                       .RequireAssertion(ctx =>
                           ctx.User.HasClaim("role", "customer") ||
                           ctx.User.HasClaim("role", "merchant")));
+
+            options.AddPolicy(AdminOnly, policy =>
+                policy.RequireAuthenticatedUser()
+                      .RequireClaim("role", "admin"));
         });
 
         return services;

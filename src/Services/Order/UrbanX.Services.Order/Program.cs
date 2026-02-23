@@ -32,8 +32,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
     });
 builder.Services.AddUrbanXAuthorization();
-
-// Configure Kafka publisher for order events (Saga)
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 builder.Services.AddSingleton<IOrderEventPublisher, KafkaOrderEventPublisher>();
 
 // Configure outbox relay service (publishes order events to Kafka)
@@ -56,10 +56,11 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+app.UseExceptionHandler();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Apply database migrations
+// Apply database migrations for Order
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<OrderDbContext>();
@@ -224,6 +225,7 @@ app.MapGet("/api/orders/{orderId:guid}", async (Guid orderId, OrderDbContext db)
     RequestValidation.ValidateGuid(orderId, nameof(orderId));
     
     var order = await db.Orders
+        .AsNoTracking()
         .Include(o => o.Items)
         .Include(o => o.StatusHistory)
         .FirstOrDefaultAsync(o => o.Id == orderId);
@@ -236,6 +238,7 @@ app.MapGet("/api/orders/customer/{customerId:guid}", async (Guid customerId, Ord
     RequestValidation.ValidateGuid(customerId, nameof(customerId));
     
     var orders = await db.Orders
+        .AsNoTracking()
         .Where(o => o.CustomerId == customerId)
         .Include(o => o.Items)
         .Include(o => o.StatusHistory)

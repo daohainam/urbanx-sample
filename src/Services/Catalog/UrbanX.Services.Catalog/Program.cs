@@ -35,6 +35,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
     });
 builder.Services.AddUrbanXAuthorization();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 // Configure Elasticsearch (read side)
 var elasticsearchUri = builder.Configuration["Elasticsearch:Uri"] ?? "http://localhost:9200";
@@ -61,6 +63,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+app.UseExceptionHandler();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -96,6 +99,7 @@ using (var scope = app.Services.CreateScope())
 // Product search and browse
 app.MapGet("/api/products", async (IProductSearchService searchService, string? search, string? category, int page = 1, int pageSize = 20) =>
 {
+    pageSize = RequestValidation.ValidatePageSize(pageSize);
     var result = await searchService.SearchAsync(search, category, page, pageSize);
     return Results.Ok(new { products = result.Products, total = result.Total, page = result.Page, pageSize = result.PageSize });
 });
@@ -115,6 +119,7 @@ app.MapGet("/api/products/{id:guid}", async (Guid id, IProductSearchService sear
 app.MapGet("/api/products/merchant/{merchantId:guid}", async (Guid merchantId, IProductSearchService searchService, int page = 1, int pageSize = 20) =>
 {
     RequestValidation.ValidateGuid(merchantId, nameof(merchantId));
+    pageSize = RequestValidation.ValidatePageSize(pageSize);
 
     var result = await searchService.GetByMerchantAsync(merchantId, page, pageSize);
     return Results.Ok(new { products = result.Products, total = result.Total, page = result.Page, pageSize = result.PageSize });

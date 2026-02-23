@@ -40,6 +40,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
     });
 builder.Services.AddUrbanXAuthorization();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 var app = builder.Build();
 
@@ -52,6 +54,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+app.UseExceptionHandler();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -124,6 +127,7 @@ app.MapGet("/api/inventory/reservations/{orderId:guid}", async (Guid orderId, In
     RequestValidation.ValidateGuid(orderId, nameof(orderId));
 
     var reservations = await db.InventoryReservations
+        .AsNoTracking()
         .Where(r => r.OrderId == orderId)
         .ToListAsync();
 

@@ -248,6 +248,9 @@ builder.Services.AddIdentityServer(options =>
         }
     ]);
 
+// ── Authorization policies for management API endpoints ──────────────────────
+builder.Services.AddUrbanXAuthorization();
+
 // ── Build the application ─────────────────────────────────────────────────────
 var app = builder.Build();
 
@@ -394,7 +397,7 @@ app.MapPost("/api/account/admin/create", async (
     await userManager.AddToRoleAsync(user, request.Role);
 
     return Results.Created($"/api/account/{user.Id}", new { userId = user.Id, email = user.Email });
-}).RequireAuthorization("admin");
+}).RequireAuthorization(AuthorizationPolicies.AdminOnly);
 
 app.Run();
 

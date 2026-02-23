@@ -31,6 +31,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
     });
 builder.Services.AddUrbanXAuthorization();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 var app = builder.Build();
 
@@ -43,6 +45,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+app.UseExceptionHandler();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -103,17 +106,22 @@ app.MapGet("/api/merchants/{merchantId:guid}/products", async (Guid merchantId, 
     RequestValidation.ValidateGuid(merchantId, nameof(merchantId));
     
     var products = await db.Products
+        .AsNoTracking()
         .Where(p => p.MerchantId == merchantId)
         .ToListAsync();
     return Results.Ok(products);
 });
 
-app.MapPost("/api/merchants/{merchantId:guid}/products", async (Guid merchantId, MerchantProduct product, MerchantDbContext db) =>
+app.MapPost("/api/merchants/{merchantId:guid}/products", async (Guid merchantId, MerchantProduct product, MerchantDbContext db, HttpContext httpContext) =>
 {
     RequestValidation.ValidateGuid(merchantId, nameof(merchantId));
     RequestValidation.ValidateRequiredString(product.Name, nameof(product.Name), 200);
     RequestValidation.ValidatePositive(product.Price, nameof(product.Price));
-    
+
+    var sub = httpContext.User.FindFirst("sub")?.Value;
+    if (!Guid.TryParse(sub, out var callerMerchantId) || callerMerchantId != merchantId)
+        return Results.Forbid();
+
     product.Id = Guid.NewGuid();
     product.MerchantId = merchantId;
     product.CreatedAt = DateTime.UtcNow;
@@ -126,13 +134,17 @@ app.MapPost("/api/merchants/{merchantId:guid}/products", async (Guid merchantId,
     return Results.Created($"/api/merchants/{merchantId}/products/{product.Id}", product);
 }).RequireAuthorization(AuthorizationPolicies.MerchantOnly);
 
-app.MapPut("/api/merchants/{merchantId:guid}/products/{productId:guid}", async (Guid merchantId, Guid productId, MerchantProduct updatedProduct, MerchantDbContext db) =>
+app.MapPut("/api/merchants/{merchantId:guid}/products/{productId:guid}", async (Guid merchantId, Guid productId, MerchantProduct updatedProduct, MerchantDbContext db, HttpContext httpContext) =>
 {
     RequestValidation.ValidateGuid(merchantId, nameof(merchantId));
     RequestValidation.ValidateGuid(productId, nameof(productId));
     RequestValidation.ValidateRequiredString(updatedProduct.Name, nameof(updatedProduct.Name), 200);
     RequestValidation.ValidatePositive(updatedProduct.Price, nameof(updatedProduct.Price));
-    
+
+    var sub = httpContext.User.FindFirst("sub")?.Value;
+    if (!Guid.TryParse(sub, out var callerMerchantId) || callerMerchantId != merchantId)
+        return Results.Forbid();
+
     var product = await db.Products.FirstOrDefaultAsync(p => p.Id == productId && p.MerchantId == merchantId);
     if (product == null) return Results.NotFound();
     
@@ -149,8 +161,12 @@ app.MapPut("/api/merchants/{merchantId:guid}/products/{productId:guid}", async (
     return Results.Ok(product);
 }).RequireAuthorization(AuthorizationPolicies.MerchantOnly);
 
-app.MapDelete("/api/merchants/{merchantId:guid}/products/{productId:guid}", async (Guid merchantId, Guid productId, MerchantDbContext db) =>
+app.MapDelete("/api/merchants/{merchantId:guid}/products/{productId:guid}", async (Guid merchantId, Guid productId, MerchantDbContext db, HttpContext httpContext) =>
 {
+    var sub = httpContext.User.FindFirst("sub")?.Value;
+    if (!Guid.TryParse(sub, out var callerMerchantId) || callerMerchantId != merchantId)
+        return Results.Forbid();
+
     var product = await db.Products.FirstOrDefaultAsync(p => p.Id == productId && p.MerchantId == merchantId);
     if (product == null) return Results.NotFound();
     
@@ -171,13 +187,21 @@ app.MapGet("/api/merchants/{merchantId:guid}/orders", async (Guid merchantId, Me
 app.MapGet("/api/merchants/{merchantId:guid}/categories", async (Guid merchantId, MerchantDbContext db) =>
 {
     var categories = await db.Categories
+        .AsNoTracking()
         .Where(c => c.MerchantId == merchantId)
         .ToListAsync();
     return Results.Ok(categories);
 });
 
-app.MapPost("/api/merchants/{merchantId:guid}/categories", async (Guid merchantId, MerchantCategory category, MerchantDbContext db) =>
+app.MapPost("/api/merchants/{merchantId:guid}/categories", async (Guid merchantId, MerchantCategory category, MerchantDbContext db, HttpContext httpContext) =>
 {
+    RequestValidation.ValidateGuid(merchantId, nameof(merchantId));
+    RequestValidation.ValidateRequiredString(category.Name, nameof(category.Name), 200);
+
+    var sub = httpContext.User.FindFirst("sub")?.Value;
+    if (!Guid.TryParse(sub, out var callerMerchantId) || callerMerchantId != merchantId)
+        return Results.Forbid();
+
     category.Id = Guid.NewGuid();
     category.MerchantId = merchantId;
     category.CreatedAt = DateTime.UtcNow;
@@ -190,8 +214,14 @@ app.MapPost("/api/merchants/{merchantId:guid}/categories", async (Guid merchantI
     return Results.Created($"/api/merchants/{merchantId}/categories/{category.Id}", category);
 }).RequireAuthorization(AuthorizationPolicies.MerchantOnly);
 
-app.MapPut("/api/merchants/{merchantId:guid}/categories/{categoryId:guid}", async (Guid merchantId, Guid categoryId, MerchantCategory updatedCategory, MerchantDbContext db) =>
+app.MapPut("/api/merchants/{merchantId:guid}/categories/{categoryId:guid}", async (Guid merchantId, Guid categoryId, MerchantCategory updatedCategory, MerchantDbContext db, HttpContext httpContext) =>
 {
+    RequestValidation.ValidateRequiredString(updatedCategory.Name, nameof(updatedCategory.Name), 200);
+
+    var sub = httpContext.User.FindFirst("sub")?.Value;
+    if (!Guid.TryParse(sub, out var callerMerchantId) || callerMerchantId != merchantId)
+        return Results.Forbid();
+
     var category = await db.Categories.FirstOrDefaultAsync(c => c.Id == categoryId && c.MerchantId == merchantId);
     if (category == null) return Results.NotFound();
     
@@ -204,8 +234,12 @@ app.MapPut("/api/merchants/{merchantId:guid}/categories/{categoryId:guid}", asyn
     return Results.Ok(category);
 }).RequireAuthorization(AuthorizationPolicies.MerchantOnly);
 
-app.MapDelete("/api/merchants/{merchantId:guid}/categories/{categoryId:guid}", async (Guid merchantId, Guid categoryId, MerchantDbContext db) =>
+app.MapDelete("/api/merchants/{merchantId:guid}/categories/{categoryId:guid}", async (Guid merchantId, Guid categoryId, MerchantDbContext db, HttpContext httpContext) =>
 {
+    var sub = httpContext.User.FindFirst("sub")?.Value;
+    if (!Guid.TryParse(sub, out var callerMerchantId) || callerMerchantId != merchantId)
+        return Results.Forbid();
+
     var category = await db.Categories.FirstOrDefaultAsync(c => c.Id == categoryId && c.MerchantId == merchantId);
     if (category == null) return Results.NotFound();
     

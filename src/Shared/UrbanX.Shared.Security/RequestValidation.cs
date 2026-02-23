@@ -72,6 +72,29 @@ public static class RequestValidation
     }
 
     /// <summary>
+    /// Validates a positive integer
+    /// </summary>
+    public static void ValidatePositive(int value, string parameterName)
+    {
+        if (value <= 0)
+        {
+            throw new ValidationException($"{parameterName} must be greater than zero.");
+        }
+    }
+
+    /// <summary>
+    /// Validates and caps page size to prevent oversized queries
+    /// </summary>
+    public static int ValidatePageSize(int pageSize, int maxPageSize = 100)
+    {
+        if (pageSize <= 0)
+        {
+            throw new ValidationException($"pageSize must be greater than zero.");
+        }
+        return Math.Min(pageSize, maxPageSize);
+    }
+
+    /// <summary>
     /// Validates an email address format
     /// </summary>
     public static void ValidateEmail(string? email)

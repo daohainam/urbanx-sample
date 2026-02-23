@@ -163,6 +163,9 @@ app.MapPut("/api/merchants/{merchantId:guid}/products/{productId:guid}", async (
 
 app.MapDelete("/api/merchants/{merchantId:guid}/products/{productId:guid}", async (Guid merchantId, Guid productId, MerchantDbContext db, HttpContext httpContext) =>
 {
+    RequestValidation.ValidateGuid(merchantId, nameof(merchantId));
+    RequestValidation.ValidateGuid(productId, nameof(productId));
+
     var sub = httpContext.User.FindFirst("sub")?.Value;
     if (!Guid.TryParse(sub, out var callerMerchantId) || callerMerchantId != merchantId)
         return Results.Forbid();
@@ -216,6 +219,8 @@ app.MapPost("/api/merchants/{merchantId:guid}/categories", async (Guid merchantI
 
 app.MapPut("/api/merchants/{merchantId:guid}/categories/{categoryId:guid}", async (Guid merchantId, Guid categoryId, MerchantCategory updatedCategory, MerchantDbContext db, HttpContext httpContext) =>
 {
+    RequestValidation.ValidateGuid(merchantId, nameof(merchantId));
+    RequestValidation.ValidateGuid(categoryId, nameof(categoryId));
     RequestValidation.ValidateRequiredString(updatedCategory.Name, nameof(updatedCategory.Name), 200);
 
     var sub = httpContext.User.FindFirst("sub")?.Value;
@@ -236,6 +241,9 @@ app.MapPut("/api/merchants/{merchantId:guid}/categories/{categoryId:guid}", asyn
 
 app.MapDelete("/api/merchants/{merchantId:guid}/categories/{categoryId:guid}", async (Guid merchantId, Guid categoryId, MerchantDbContext db, HttpContext httpContext) =>
 {
+    RequestValidation.ValidateGuid(merchantId, nameof(merchantId));
+    RequestValidation.ValidateGuid(categoryId, nameof(categoryId));
+
     var sub = httpContext.User.FindFirst("sub")?.Value;
     if (!Guid.TryParse(sub, out var callerMerchantId) || callerMerchantId != merchantId)
         return Results.Forbid();

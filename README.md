@@ -151,7 +151,6 @@ docker-compose up -d
 This starts:
 - PostgreSQL on port 5432
 - Kafka on port 9092
-- Zookeeper on port 2181
 
 **Step 2:** Copy the environment file and fill in any required values:
 

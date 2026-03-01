@@ -1,7 +1,5 @@
 # UrbanX - Multi-Merchant Commerce Platform
 
-[Xem phiên bản tiếng Việt](README-vi.md)
-
 UrbanX is a sample e-commerce platform built to demonstrate how a real-world application is structured using modern software engineering techniques. It is designed for educational purposes, so the code is organized to make each concept as clear as possible.
 
 The system is built as a set of **microservices** — small, independent backend programs that each handle one area of the business. A React frontend provides the customer-facing interface. Everything runs behind an API Gateway that acts as the single entry point for all requests.

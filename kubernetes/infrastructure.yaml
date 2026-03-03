@@ -24,7 +24,12 @@ metadata:
 type: Opaque
 stringData:
   POSTGRES_PASSWORD: "CHANGE_ME_IN_PRODUCTION"
-  DATABASE_CONNECTION_STRING: "Host=postgres;Database=urbanx;Username=postgres;Password=CHANGE_ME_IN_PRODUCTION"
+  ConnectionStrings__identitydb: "Host=postgres;Database=urbanx_identity;Username=postgres;Password=CHANGE_ME_IN_PRODUCTION"
+  ConnectionStrings__catalogdb: "Host=postgres;Database=urbanx_catalog;Username=postgres;Password=CHANGE_ME_IN_PRODUCTION"
+  ConnectionStrings__orderdb: "Host=postgres;Database=urbanx_order;Username=postgres;Password=CHANGE_ME_IN_PRODUCTION"
+  ConnectionStrings__paymentdb: "Host=postgres;Database=urbanx_payment;Username=postgres;Password=CHANGE_ME_IN_PRODUCTION"
+  ConnectionStrings__merchantdb: "Host=postgres;Database=urbanx_merchant;Username=postgres;Password=CHANGE_ME_IN_PRODUCTION"
+  ConnectionStrings__inventorydb: "Host=postgres;Database=urbanx_inventory;Username=postgres;Password=CHANGE_ME_IN_PRODUCTION"
 ---
 apiVersion: apps/v1
 kind: Deployment

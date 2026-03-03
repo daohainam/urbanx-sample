@@ -33,6 +33,11 @@ spec:
         env:
         - name: ASPNETCORE_URLS
           value: "http://+:8080"
+        - name: ConnectionStrings__identitydb
+          valueFrom:
+            secretKeyRef:
+              name: urbanx-secrets
+              key: ConnectionStrings__identitydb
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
@@ -106,11 +111,13 @@ spec:
         env:
         - name: ASPNETCORE_URLS
           value: "http://+:8080"
-        - name: DATABASE_CONNECTION_STRING
+        - name: ConnectionStrings__catalogdb
           valueFrom:
             secretKeyRef:
               name: urbanx-secrets
-              key: DATABASE_CONNECTION_STRING
+              key: ConnectionStrings__catalogdb
+        - name: IdentityServer__Authority
+          value: "http://identity-service"
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
@@ -184,11 +191,13 @@ spec:
         env:
         - name: ASPNETCORE_URLS
           value: "http://+:8080"
-        - name: DATABASE_CONNECTION_STRING
+        - name: ConnectionStrings__orderdb
           valueFrom:
             secretKeyRef:
               name: urbanx-secrets
-              key: DATABASE_CONNECTION_STRING
+              key: ConnectionStrings__orderdb
+        - name: IdentityServer__Authority
+          value: "http://identity-service"
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
@@ -262,11 +271,13 @@ spec:
         env:
         - name: ASPNETCORE_URLS
           value: "http://+:8080"
-        - name: DATABASE_CONNECTION_STRING
+        - name: ConnectionStrings__paymentdb
           valueFrom:
             secretKeyRef:
               name: urbanx-secrets
-              key: DATABASE_CONNECTION_STRING
+              key: ConnectionStrings__paymentdb
+        - name: IdentityServer__Authority
+          value: "http://identity-service"
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
@@ -340,11 +351,13 @@ spec:
         env:
         - name: ASPNETCORE_URLS
           value: "http://+:8080"
-        - name: DATABASE_CONNECTION_STRING
+        - name: ConnectionStrings__merchantdb
           valueFrom:
             secretKeyRef:
               name: urbanx-secrets
-              key: DATABASE_CONNECTION_STRING
+              key: ConnectionStrings__merchantdb
+        - name: IdentityServer__Authority
+          value: "http://identity-service"
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
@@ -491,11 +504,13 @@ spec:
         env:
         - name: ASPNETCORE_URLS
           value: "http://+:8080"
-        - name: DATABASE_CONNECTION_STRING
+        - name: ConnectionStrings__inventorydb
           valueFrom:
             secretKeyRef:
               name: urbanx-secrets
-              key: DATABASE_CONNECTION_STRING
+              key: ConnectionStrings__inventorydb
+        - name: IdentityServer__Authority
+          value: "http://identity-service"
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:

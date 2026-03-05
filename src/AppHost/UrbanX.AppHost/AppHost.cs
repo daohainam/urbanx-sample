@@ -43,15 +43,19 @@ var merchantService = builder.AddProject<Projects.UrbanX_Services_Merchant>("mer
 
 var paymentService = builder.AddProject<Projects.UrbanX_Services_Payment>("payment")
     .WithReference(paymentDb)
+    .WithReference(kafka)
     .WithReference(identityService)
     .WaitFor(paymentDb)
+    .WaitFor(kafka)
     .WaitFor(identityService);
 
 var inventoryService = builder.AddProject<Projects.UrbanX_Services_Inventory>("inventory")
     .WithReference(inventoryDb)
     .WithReference(kafka)
+    .WithReference(identityService)
     .WaitFor(inventoryDb)
-    .WaitFor(kafka);
+    .WaitFor(kafka)
+    .WaitFor(identityService);
 
 // Add Gateway with references to all services
 var gateway = builder.AddProject<Projects.UrbanX_Gateway>("gateway")

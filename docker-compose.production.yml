@@ -8,7 +8,7 @@ services:
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: urbanx
+      POSTGRES_DB: postgres
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
@@ -57,7 +57,11 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__identitydb=Host=postgres;Database=urbanx_identity;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD}
       - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_COLLECTOR_ENDPOINT}
+    depends_on:
+      postgres:
+        condition: service_healthy
     ports:
       - "5005:8080"
     networks:
@@ -86,13 +90,16 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
-      - DATABASE_CONNECTION_STRING=Host=postgres;Database=urbanx_catalog;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD}
+      - ConnectionStrings__catalogdb=Host=postgres;Database=urbanx_catalog;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD}
       - Kafka__BootstrapServers=kafka:9092
+      - IdentityServer__Authority=http://identity-service:8080
       - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_COLLECTOR_ENDPOINT}
     depends_on:
       postgres:
         condition: service_healthy
       kafka:
+        condition: service_healthy
+      identity-service:
         condition: service_healthy
     networks:
       - urbanx-network
@@ -117,13 +124,16 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
-      - DATABASE_CONNECTION_STRING=Host=postgres;Database=urbanx_order;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD}
+      - ConnectionStrings__orderdb=Host=postgres;Database=urbanx_order;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD}
       - Kafka__BootstrapServers=kafka:9092
+      - IdentityServer__Authority=http://identity-service:8080
       - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_COLLECTOR_ENDPOINT}
     depends_on:
       postgres:
         condition: service_healthy
       kafka:
+        condition: service_healthy
+      identity-service:
         condition: service_healthy
     networks:
       - urbanx-network
@@ -148,13 +158,16 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
-      - DATABASE_CONNECTION_STRING=Host=postgres;Database=urbanx_payment;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD}
+      - ConnectionStrings__paymentdb=Host=postgres;Database=urbanx_payment;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD}
       - Kafka__BootstrapServers=kafka:9092
+      - IdentityServer__Authority=http://identity-service:8080
       - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_COLLECTOR_ENDPOINT}
     depends_on:
       postgres:
         condition: service_healthy
       kafka:
+        condition: service_healthy
+      identity-service:
         condition: service_healthy
     networks:
       - urbanx-network
@@ -179,10 +192,13 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
-      - DATABASE_CONNECTION_STRING=Host=postgres;Database=urbanx_merchant;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD}
+      - ConnectionStrings__merchantdb=Host=postgres;Database=urbanx_merchant;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD}
+      - IdentityServer__Authority=http://identity-service:8080
       - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_COLLECTOR_ENDPOINT}
     depends_on:
       postgres:
+        condition: service_healthy
+      identity-service:
         condition: service_healthy
     networks:
       - urbanx-network
@@ -207,8 +223,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
-      - DATABASE_CONNECTION_STRING=Host=postgres;Database=urbanx_inventory;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD}
+      - ConnectionStrings__inventorydb=Host=postgres;Database=urbanx_inventory;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD}
       - Kafka__BootstrapServers=kafka:9092
+      - IdentityServer__Authority=http://identity-service:8080
       - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_COLLECTOR_ENDPOINT}
     depends_on:
       postgres:

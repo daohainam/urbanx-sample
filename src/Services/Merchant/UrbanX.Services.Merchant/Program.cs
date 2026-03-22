@@ -189,6 +189,8 @@ app.MapGet("/api/merchants/{merchantId:guid}/orders", async (Guid merchantId, Me
 // Category management for merchants
 app.MapGet("/api/merchants/{merchantId:guid}/categories", async (Guid merchantId, MerchantDbContext db) =>
 {
+    RequestValidation.ValidateGuid(merchantId, nameof(merchantId));
+
     var categories = await db.Categories
         .AsNoTracking()
         .Where(c => c.MerchantId == merchantId)

@@ -80,9 +80,13 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Cart endpoints
-app.MapGet("/api/cart/{customerId:guid}", async (Guid customerId, OrderDbContext db) =>
+app.MapGet("/api/cart/{customerId:guid}", async (Guid customerId, OrderDbContext db, HttpContext httpContext) =>
 {
     RequestValidation.ValidateGuid(customerId, nameof(customerId));
+
+    var sub = httpContext.User.FindFirst("sub")?.Value;
+    if (!Guid.TryParse(sub, out var callerId) || callerId != customerId)
+        return Results.Forbid();
     
     var cart = await db.Carts
         .Include(c => c.Items)
@@ -98,13 +102,17 @@ app.MapGet("/api/cart/{customerId:guid}", async (Guid customerId, OrderDbContext
     return Results.Ok(cart);
 }).RequireAuthorization(AuthorizationPolicies.CustomerOnly);
 
-app.MapPost("/api/cart/{customerId:guid}/items", async (Guid customerId, CartItem item, OrderDbContext db) =>
+app.MapPost("/api/cart/{customerId:guid}/items", async (Guid customerId, CartItem item, OrderDbContext db, HttpContext httpContext) =>
 {
     RequestValidation.ValidateGuid(customerId, nameof(customerId));
     RequestValidation.ValidateGuid(item.ProductId, nameof(item.ProductId));
     RequestValidation.ValidatePositive(item.Quantity, nameof(item.Quantity));
     RequestValidation.ValidatePositive(item.UnitPrice, nameof(item.UnitPrice));
     RequestValidation.ValidateRequiredString(item.ProductName, nameof(item.ProductName), 200);
+
+    var sub = httpContext.User.FindFirst("sub")?.Value;
+    if (!Guid.TryParse(sub, out var callerId) || callerId != customerId)
+        return Results.Forbid();
     
     var cart = await db.Carts
         .Include(c => c.Items)
@@ -133,10 +141,14 @@ app.MapPost("/api/cart/{customerId:guid}/items", async (Guid customerId, CartIte
     return Results.Ok(cart);
 }).RequireAuthorization(AuthorizationPolicies.CustomerOnly);
 
-app.MapDelete("/api/cart/{customerId:guid}/items/{itemId:guid}", async (Guid customerId, Guid itemId, OrderDbContext db) =>
+app.MapDelete("/api/cart/{customerId:guid}/items/{itemId:guid}", async (Guid customerId, Guid itemId, OrderDbContext db, HttpContext httpContext) =>
 {
     RequestValidation.ValidateGuid(customerId, nameof(customerId));
     RequestValidation.ValidateGuid(itemId, nameof(itemId));
+
+    var sub = httpContext.User.FindFirst("sub")?.Value;
+    if (!Guid.TryParse(sub, out var callerId) || callerId != customerId)
+        return Results.Forbid();
     
     var cart = await db.Carts
         .Include(c => c.Items)
@@ -156,10 +168,14 @@ app.MapDelete("/api/cart/{customerId:guid}/items/{itemId:guid}", async (Guid cus
 }).RequireAuthorization(AuthorizationPolicies.CustomerOnly);
 
 // Checkout
-app.MapPost("/api/orders", async (UrbanX.Services.Order.Models.Order order, OrderDbContext db) =>
+app.MapPost("/api/orders", async (UrbanX.Services.Order.Models.Order order, OrderDbContext db, HttpContext httpContext) =>
 {
     RequestValidation.ValidateGuid(order.CustomerId, nameof(order.CustomerId));
     RequestValidation.ValidateRequiredString(order.ShippingAddress, nameof(order.ShippingAddress), 500);
+
+    var sub = httpContext.User.FindFirst("sub")?.Value;
+    if (!Guid.TryParse(sub, out var callerId) || callerId != order.CustomerId)
+        return Results.Forbid();
     
     if (order.Items == null || !order.Items.Any())
     {
@@ -220,7 +236,7 @@ app.MapPost("/api/orders", async (UrbanX.Services.Order.Models.Order order, Orde
 }).RequireAuthorization(AuthorizationPolicies.CustomerOnly);
 
 // Order tracking
-app.MapGet("/api/orders/{orderId:guid}", async (Guid orderId, OrderDbContext db) =>
+app.MapGet("/api/orders/{orderId:guid}", async (Guid orderId, OrderDbContext db, HttpContext httpContext) =>
 {
     RequestValidation.ValidateGuid(orderId, nameof(orderId));
     
@@ -230,12 +246,27 @@ app.MapGet("/api/orders/{orderId:guid}", async (Guid orderId, OrderDbContext db)
         .Include(o => o.StatusHistory)
         .FirstOrDefaultAsync(o => o.Id == orderId);
     
-    return order is not null ? Results.Ok(order) : Results.NotFound();
+    if (order is null) return Results.NotFound();
+
+    var sub = httpContext.User.FindFirst("sub")?.Value;
+    if (!Guid.TryParse(sub, out var callerId))
+        return Results.Forbid();
+
+    var isCustomerOwner = callerId == order.CustomerId;
+    var isMerchantOwner = order.Items.Any(i => i.MerchantId == callerId);
+    if (!isCustomerOwner && !isMerchantOwner)
+        return Results.Forbid();
+
+    return Results.Ok(order);
 }).RequireAuthorization(AuthorizationPolicies.CustomerOrMerchant);
 
-app.MapGet("/api/orders/customer/{customerId:guid}", async (Guid customerId, OrderDbContext db) =>
+app.MapGet("/api/orders/customer/{customerId:guid}", async (Guid customerId, OrderDbContext db, HttpContext httpContext) =>
 {
     RequestValidation.ValidateGuid(customerId, nameof(customerId));
+
+    var sub = httpContext.User.FindFirst("sub")?.Value;
+    if (!Guid.TryParse(sub, out var callerId) || callerId != customerId)
+        return Results.Forbid();
     
     var orders = await db.Orders
         .AsNoTracking()
@@ -248,15 +279,20 @@ app.MapGet("/api/orders/customer/{customerId:guid}", async (Guid customerId, Ord
     return Results.Ok(orders);
 }).RequireAuthorization(AuthorizationPolicies.CustomerOnly);
 
-app.MapPut("/api/orders/{orderId:guid}/status", async (Guid orderId, OrderStatus status, OrderDbContext db) =>
+app.MapPut("/api/orders/{orderId:guid}/status", async (Guid orderId, OrderStatus status, OrderDbContext db, HttpContext httpContext) =>
 {
     RequestValidation.ValidateGuid(orderId, nameof(orderId));
     
     var order = await db.Orders
+        .Include(o => o.Items)
         .Include(o => o.StatusHistory)
         .FirstOrDefaultAsync(o => o.Id == orderId);
     
     if (order == null) return Results.NotFound();
+
+    var sub = httpContext.User.FindFirst("sub")?.Value;
+    if (!Guid.TryParse(sub, out var callerMerchantId) || !order.Items.Any(i => i.MerchantId == callerMerchantId))
+        return Results.Forbid();
 
     if (!OrderStatusTransitions.IsAllowed(order.Status, status))
     {
@@ -278,15 +314,20 @@ app.MapPut("/api/orders/{orderId:guid}/status", async (Guid orderId, OrderStatus
 }).RequireAuthorization(AuthorizationPolicies.MerchantOnly);
 
 // Merchant accept checkout after payment
-app.MapPost("/api/orders/{orderId:guid}/accept", async (Guid orderId, OrderDbContext db) =>
+app.MapPost("/api/orders/{orderId:guid}/accept", async (Guid orderId, OrderDbContext db, HttpContext httpContext) =>
 {
     RequestValidation.ValidateGuid(orderId, nameof(orderId));
 
     var order = await db.Orders
+        .Include(o => o.Items)
         .Include(o => o.StatusHistory)
         .FirstOrDefaultAsync(o => o.Id == orderId);
 
     if (order == null) return Results.NotFound();
+
+    var sub = httpContext.User.FindFirst("sub")?.Value;
+    if (!Guid.TryParse(sub, out var callerMerchantId) || !order.Items.Any(i => i.MerchantId == callerMerchantId))
+        return Results.Forbid();
 
     if (order.Status != OrderStatus.PaymentReceived)
         return Results.BadRequest($"Order cannot be accepted in its current status ({order.Status}). Order must be in PaymentReceived status.");

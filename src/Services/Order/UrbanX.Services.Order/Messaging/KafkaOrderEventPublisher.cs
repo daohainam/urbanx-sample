@@ -6,11 +6,13 @@ namespace UrbanX.Services.Order.Messaging;
 public interface IOrderEventPublisher
 {
     Task PublishAsync(OrderCreatedEvent orderCreatedEvent, CancellationToken cancellationToken = default);
+    Task PublishCancellationAsync(OrderCancelledEvent orderCancelledEvent, CancellationToken cancellationToken = default);
 }
 
 public class KafkaOrderEventPublisher : IOrderEventPublisher, IDisposable
 {
-    private const string Topic = "order.created";
+    private const string OrderCreatedTopic = "order.created";
+    private const string OrderCancelledTopic = "order.cancelled";
 
     private readonly IProducer<string, string> _producer;
     private readonly ILogger<KafkaOrderEventPublisher> _logger;
@@ -34,7 +36,7 @@ public class KafkaOrderEventPublisher : IOrderEventPublisher, IDisposable
 
         try
         {
-            var result = await _producer.ProduceAsync(Topic, message, cancellationToken);
+            var result = await _producer.ProduceAsync(OrderCreatedTopic, message, cancellationToken);
             _logger.LogInformation(
                 "Published OrderCreated event for order {OrderId} to partition {Partition}",
                 orderCreatedEvent.OrderId, result.Partition.Value);
@@ -43,6 +45,29 @@ public class KafkaOrderEventPublisher : IOrderEventPublisher, IDisposable
         {
             _logger.LogError(ex, "Failed to publish OrderCreated event for order {OrderId}",
                 orderCreatedEvent.OrderId);
+            throw;
+        }
+    }
+
+    public async Task PublishCancellationAsync(OrderCancelledEvent orderCancelledEvent, CancellationToken cancellationToken = default)
+    {
+        var message = new Message<string, string>
+        {
+            Key = orderCancelledEvent.OrderId.ToString(),
+            Value = JsonSerializer.Serialize(orderCancelledEvent)
+        };
+
+        try
+        {
+            var result = await _producer.ProduceAsync(OrderCancelledTopic, message, cancellationToken);
+            _logger.LogInformation(
+                "Published OrderCancelled event for order {OrderId} to partition {Partition}",
+                orderCancelledEvent.OrderId, result.Partition.Value);
+        }
+        catch (ProduceException<string, string> ex)
+        {
+            _logger.LogError(ex, "Failed to publish OrderCancelled event for order {OrderId}",
+                orderCancelledEvent.OrderId);
             throw;
         }
     }

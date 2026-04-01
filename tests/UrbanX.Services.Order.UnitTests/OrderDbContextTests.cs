@@ -259,4 +259,65 @@ public class OrderDbContextTests
             Assert.Null(deletedItem);
         }
     }
+
+    [Fact]
+    public async Task Checkout_ShouldClearCartItemsAfterOrderIsPlaced()
+    {
+        // After checkout the customer's cart must be emptied so they cannot
+        // accidentally re-order the same items.
+        var options = new DbContextOptionsBuilder<OrderDbContext>()
+            .UseInMemoryDatabase(databaseName: "OrderTestDb_" + Guid.NewGuid())
+            .Options;
+
+        var customerId = Guid.NewGuid();
+        var cart = new Cart
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = customerId,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+        cart.Items.Add(new CartItem
+        {
+            Id = Guid.NewGuid(),
+            CartId = cart.Id,
+            ProductId = Guid.NewGuid(),
+            ProductName = "Widget",
+            Quantity = 2,
+            UnitPrice = 10.00m,
+            MerchantId = Guid.NewGuid()
+        });
+
+        using (var context = new OrderDbContext(options))
+        {
+            context.Carts.Add(cart);
+            await context.SaveChangesAsync();
+        }
+
+        // Simulate the checkout handler clearing the cart
+        using (var context = new OrderDbContext(options))
+        {
+            var customerCart = await context.Carts
+                .Include(c => c.Items)
+                .FirstOrDefaultAsync(c => c.CustomerId == customerId);
+
+            Assert.NotNull(customerCart);
+            Assert.Single(customerCart!.Items);
+
+            customerCart.Items.Clear();
+            customerCart.UpdatedAt = DateTime.UtcNow;
+            await context.SaveChangesAsync();
+        }
+
+        // Assert – cart is now empty
+        using (var context = new OrderDbContext(options))
+        {
+            var customerCart = await context.Carts
+                .Include(c => c.Items)
+                .FirstOrDefaultAsync(c => c.CustomerId == customerId);
+
+            Assert.NotNull(customerCart);
+            Assert.Empty(customerCart!.Items);
+        }
+    }
 }

@@ -7,6 +7,7 @@ public class Payment
     public decimal Amount { get; set; }
     public PaymentStatus Status { get; set; }
     public PaymentMethod Method { get; set; }
+    public string? PaymentMethodId { get; set; }
     public string? TransactionId { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }

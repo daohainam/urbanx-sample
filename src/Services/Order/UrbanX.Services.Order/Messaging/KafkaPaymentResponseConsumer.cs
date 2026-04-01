@@ -116,6 +116,25 @@ public class KafkaPaymentResponseConsumer : BackgroundService
             CreatedAt = DateTime.UtcNow
         });
 
+        // When payment fails the order is cancelled; publish a compensation event so the
+        // Inventory service can release any reserved stock (Saga choreography).
+        if (paymentEvent.EventType == PaymentEventType.Failed)
+        {
+            var orderCancelledEvent = new OrderCancelledEvent
+            {
+                OrderId = order.Id,
+                Reason = note,
+                OccurredAt = DateTime.UtcNow
+            };
+            db.OutboxMessages.Add(new Models.OutboxMessage
+            {
+                Id = Guid.NewGuid(),
+                EventType = nameof(OrderCancelledEvent),
+                Payload = JsonSerializer.Serialize(orderCancelledEvent),
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+
         await db.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation(

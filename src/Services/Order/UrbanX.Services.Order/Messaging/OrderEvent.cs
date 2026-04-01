@@ -13,6 +13,13 @@ public class OrderCreatedEventItem
     public int Quantity { get; set; }
 }
 
+public class OrderCancelledEvent
+{
+    public Guid OrderId { get; set; }
+    public string? Reason { get; set; }
+    public DateTime OccurredAt { get; set; }
+}
+
 public enum InventoryEventType
 {
     Reserved,

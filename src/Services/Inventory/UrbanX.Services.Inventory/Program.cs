@@ -24,6 +24,9 @@ builder.Services.AddSingleton<IInventoryEventPublisher, KafkaInventoryEventPubli
 // Configure Kafka consumer background service (consumes order.created events)
 builder.Services.AddHostedService<KafkaOrderEventConsumer>();
 
+// Configure Kafka consumer for order cancellation (Saga compensation: releases reserved inventory)
+builder.Services.AddHostedService<KafkaOrderCancelledConsumer>();
+
 // Configure outbox relay service (publishes pending outbox messages to Kafka)
 builder.Services.AddHostedService<OutboxRelayService>();
 

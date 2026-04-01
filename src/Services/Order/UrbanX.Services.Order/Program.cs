@@ -230,6 +230,17 @@ app.MapPost("/api/orders", async (UrbanX.Services.Order.Models.Order order, Orde
         Payload = JsonSerializer.Serialize(orderCreatedEvent),
         CreatedAt = DateTime.UtcNow
     });
+
+    // Clear the customer's cart after placing the order
+    var cart = await db.Carts
+        .Include(c => c.Items)
+        .FirstOrDefaultAsync(c => c.CustomerId == order.CustomerId);
+    if (cart != null)
+    {
+        cart.Items.Clear();
+        cart.UpdatedAt = DateTime.UtcNow;
+    }
+
     await db.SaveChangesAsync();
     
     return Results.Created($"/api/orders/{order.Id}", order);

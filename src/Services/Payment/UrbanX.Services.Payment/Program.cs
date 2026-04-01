@@ -24,6 +24,11 @@ builder.Services.AddHealthChecks()
 // Configure Stripe Payment Gateway (Anti-Corruption Layer)
 var stripeConfig = builder.Configuration.GetSection("Stripe").Get<StripeSettings>() 
     ?? new StripeSettings();
+
+// Fail fast: Stripe secret key is required for payment processing
+if (string.IsNullOrWhiteSpace(stripeConfig.SecretKey))
+    throw new InvalidOperationException("Stripe:SecretKey configuration is required. Set it via environment variables or secrets vault.");
+
 builder.Services.AddSingleton(stripeConfig);
 builder.Services.AddScoped<IPaymentGateway, StripePaymentGateway>();
 
@@ -89,6 +94,11 @@ app.MapPost("/api/payments", async (UrbanX.Services.Payment.Models.Payment payme
     RequestValidation.ValidateGuid(payment.OrderId, nameof(payment.OrderId));
     RequestValidation.ValidatePositive(payment.Amount, nameof(payment.Amount));
 
+    if (payment.Method != PaymentMethod.Stripe)
+    {
+        return Results.BadRequest(new { error = $"Payment method '{payment.Method}' is not supported. Only Stripe is accepted." });
+    }
+
     var existingPayment = await db.Payments
         .FirstOrDefaultAsync(p => p.OrderId == payment.OrderId
                                    && p.Status != PaymentStatus.Failed);
@@ -109,6 +119,7 @@ app.MapPost("/api/payments", async (UrbanX.Services.Payment.Models.Payment payme
             OrderId: payment.OrderId,
             Amount: payment.Amount,
             Currency: "usd",
+            PaymentMethodId: payment.PaymentMethodId,
             Metadata: new Dictionary<string, string>
             {
                 { "payment_id", payment.Id.ToString() }
@@ -135,12 +146,6 @@ app.MapPost("/api/payments", async (UrbanX.Services.Payment.Models.Payment payme
             payment.Status = PaymentStatus.Failed;
             payment.TransactionId = $"FAILED-{Guid.NewGuid().ToString()[..8]}";
         }
-    }
-    else
-    {
-        // Simulate payment processing for other methods
-        payment.TransactionId = $"TXN-{Guid.NewGuid().ToString()[..8]}";
-        payment.Status = PaymentStatus.Completed; // In real scenario, this would be async
     }
     
     // Publish payment event via transactional outbox for order Saga

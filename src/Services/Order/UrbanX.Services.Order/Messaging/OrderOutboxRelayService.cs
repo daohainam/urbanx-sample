@@ -77,16 +77,34 @@ public class OrderOutboxRelayService : BackgroundService
     {
         try
         {
-            var orderCreatedEvent = JsonSerializer.Deserialize<OrderCreatedEvent>(message.Payload);
-            if (orderCreatedEvent == null)
+            if (message.EventType == nameof(OrderCreatedEvent))
             {
-                _logger.LogWarning("Order outbox message {Id} has null payload after deserialization; skipping", message.Id);
-                message.ProcessedAt = DateTime.UtcNow;
-                await db.SaveChangesAsync(cancellationToken);
-                return;
+                var orderCreatedEvent = JsonSerializer.Deserialize<OrderCreatedEvent>(message.Payload);
+                if (orderCreatedEvent == null)
+                {
+                    _logger.LogWarning("Order outbox message {Id} has null payload after deserialization; skipping", message.Id);
+                    message.ProcessedAt = DateTime.UtcNow;
+                    await db.SaveChangesAsync(cancellationToken);
+                    return;
+                }
+                await publisher.PublishAsync(orderCreatedEvent, cancellationToken);
             }
-
-            await publisher.PublishAsync(orderCreatedEvent, cancellationToken);
+            else if (message.EventType == nameof(OrderCancelledEvent))
+            {
+                var orderCancelledEvent = JsonSerializer.Deserialize<OrderCancelledEvent>(message.Payload);
+                if (orderCancelledEvent == null)
+                {
+                    _logger.LogWarning("Order outbox message {Id} has null payload after deserialization; skipping", message.Id);
+                    message.ProcessedAt = DateTime.UtcNow;
+                    await db.SaveChangesAsync(cancellationToken);
+                    return;
+                }
+                await publisher.PublishCancellationAsync(orderCancelledEvent, cancellationToken);
+            }
+            else
+            {
+                _logger.LogWarning("Order outbox message {Id} has unknown event type '{EventType}'; skipping", message.Id, message.EventType);
+            }
 
             message.ProcessedAt = DateTime.UtcNow;
             await db.SaveChangesAsync(cancellationToken);

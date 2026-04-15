@@ -7,6 +7,7 @@ var postgres = builder.AddPostgres("postgres")
 var catalogDb = postgres.AddDatabase("catalogdb", "urbanx_catalog");
 var orderDb = postgres.AddDatabase("orderdb", "urbanx_order");
 var merchantDb = postgres.AddDatabase("merchantdb", "urbanx_merchant");
+var customerDb = postgres.AddDatabase("customerdb", "urbanx_customer");
 var paymentDb = postgres.AddDatabase("paymentdb", "urbanx_payment");
 var inventoryDb = postgres.AddDatabase("inventorydb", "urbanx_inventory");
 var identityDb = postgres.AddDatabase("identitydb", "urbanx_identity");
@@ -41,6 +42,12 @@ var merchantService = builder.AddProject<Projects.UrbanX_Services_Merchant>("mer
     .WaitFor(merchantDb)
     .WaitFor(identityService);
 
+var customerService = builder.AddProject<Projects.UrbanX_Services_Customer>("customer")
+    .WithReference(customerDb)
+    .WithReference(identityService)
+    .WaitFor(customerDb)
+    .WaitFor(identityService);
+
 var paymentService = builder.AddProject<Projects.UrbanX_Services_Payment>("payment")
     .WithReference(paymentDb)
     .WithReference(kafka)
@@ -62,12 +69,14 @@ var gateway = builder.AddProject<Projects.UrbanX_Gateway>("gateway")
     .WithReference(catalogService)
     .WithReference(orderService)
     .WithReference(merchantService)
+    .WithReference(customerService)
     .WithReference(paymentService)
     .WithReference(inventoryService)
     .WithReference(identityService)
     .WaitFor(catalogService)
     .WaitFor(orderService)
     .WaitFor(merchantService)
+    .WaitFor(customerService)
     .WaitFor(paymentService)
     .WaitFor(inventoryService)
     .WaitFor(identityService);

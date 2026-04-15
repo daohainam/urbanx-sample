@@ -215,6 +215,37 @@ services:
           cpus: '0.5'
           memory: 512M
 
+  customer-service:
+    build:
+      context: .
+      dockerfile: src/Services/Customer/Dockerfile
+    container_name: urbanx-customer
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__customerdb=Host=postgres;Database=urbanx_customer;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD}
+      - IdentityServer__Authority=http://identity-service:8080
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_COLLECTOR_ENDPOINT}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      identity-service:
+        condition: service_healthy
+    networks:
+      - urbanx-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/alive"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
   inventory-service:
     build:
       context: .
@@ -263,6 +294,7 @@ services:
       - order-service
       - payment-service
       - merchant-service
+      - customer-service
       - inventory-service
     ports:
       - "5000:8080"

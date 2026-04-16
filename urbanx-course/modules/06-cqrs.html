@@ -1,0 +1,327 @@
+<section class="module" id="module-6" style="background: var(--color-bg-warm)">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">06</span>
+      <h1 class="module-title">Two Databases, One Truth</h1>
+      <p class="module-subtitle">PostgreSQL stores products accurately. Elasticsearch finds them instantly. Kafka keeps them in sync. This is CQRS.</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- SCREEN 1: The Problem & Metaphor -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The right database for the right job</h2>
+        <p>
+          PostgreSQL is brilliant at storing products accurately — every field, every constraint, every relationship.
+          But a
+          <span class="term" data-definition="Finding documents that contain words or phrases, even with typos or partial matches. Google uses it. Elasticsearch is built for it. PostgreSQL LIKE queries are not.">full-text search</span>
+          for "wireless headphones" across 10,000 products? That is not what relational databases are built for.
+          <span class="term" data-definition="A distributed search and analytics engine built for fast full-text search. Stores documents in an inverted index optimized for queries. Not a replacement for a relational database.">Elasticsearch</span>
+          is. So UrbanX uses both — each for what it does best.
+        </p>
+        <p>
+          This pattern is called
+          <span class="term" data-definition="Command Query Responsibility Segregation — a pattern where the database used for writing (commands) is separate from the database used for reading (queries). Each is optimized for its job.">CQRS</span>.
+          Writes go to the
+          <span class="term" data-definition="The authoritative database that handles all data mutations. In UrbanX, PostgreSQL is the write model — the source of truth.">write model</span>
+          (PostgreSQL). Reads come from the
+          <span class="term" data-definition="A database or data structure optimized for reading — often denormalized and pre-computed for specific queries. In UrbanX, Elasticsearch is the read model for the product catalog.">read model</span>
+          (Elasticsearch). Kafka bridges the gap.
+        </p>
+
+        <div class="icon-rows animate-in">
+          <div class="icon-row">
+            <div class="icon-circle" style="background: #E8F0F7">📚</div>
+            <div>
+              <strong>Think of a library with two card catalogs.</strong>
+              <p>The acquisitions desk uses a detailed ledger (PostgreSQL) — author, ISBN, condition, purchase date. The public search terminal (Elasticsearch) uses a fast index built for "find me books about dragons." When a new book arrives, the ledger is updated first, then the index is refreshed.</p>
+            </div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-info-light)">⚡</div>
+            <div>
+              <strong>The trade-off you accept consciously.</strong>
+              <p>The search index lags the database by a few seconds — called
+                <span class="term" data-definition="A guarantee that data across multiple stores will eventually agree, but there may be a brief window where they differ. Acceptable for most features; unacceptable for financial transactions.">eventual consistency</span>.
+                For a product catalog, this is completely fine. For a bank balance, it would not be.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 2: Write→Sync flow animation -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The full write-to-search pipeline</h2>
+        <p>When a merchant updates a product, the change flows through five actors before a customer sees it in search results. Click through to trace the path.</p>
+
+        <div class="flow-animation animate-in" id="flow-cqrs" data-steps='[
+          {"highlight":"flow-actor-1","label":"A merchant edits a product name via PUT /api/products/{id}."},
+          {"highlight":"flow-actor-2","label":"PostgreSQL is updated atomically. Product.Name = new value. An OutboxMessage is also saved in the same transaction.","packet":true,"from":"actor-1","to":"actor-2"},
+          {"highlight":"flow-actor-3","label":"Outbox Relay publishes ProductUpdated to the catalog.products Kafka topic within about 5 seconds.","packet":true,"from":"actor-2","to":"actor-3"},
+          {"highlight":"flow-actor-4","label":"The Catalog Service Kafka consumer receives the event and calls Elasticsearch.IndexAsync() to update the search document.","packet":true,"from":"actor-3","to":"actor-4"},
+          {"highlight":"flow-actor-5","label":"Customer searches for the product — Elasticsearch returns the updated name. Total lag: under 10 seconds. This is eventual consistency in action.","packet":true,"from":"actor-4","to":"actor-5"}
+        ]'>
+          <div class="flow-actors">
+            <div class="flow-actor" id="flow-actor-1">
+              <div class="flow-actor-icon" style="background: var(--color-accent-light); border-color: var(--color-actor-1); color: var(--color-actor-1)">🏪</div>
+              <span>Merchant</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-2">
+              <div class="flow-actor-icon" style="background: #336791; border-color: #1D4972; color: white; font-size: var(--text-sm)">PG</div>
+              <span>PostgreSQL</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-3">
+              <div class="flow-actor-icon" style="background: #1E1E2E; border-color: #45475A; color: #CDD6F4">📡</div>
+              <span>Outbox / Kafka</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-4">
+              <div class="flow-actor-icon" style="background: #FDE8F3; border-color: #F04E98; color: #F04E98; font-size: var(--text-sm)">ES</div>
+              <span>Elasticsearch</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-5">
+              <div class="flow-actor-icon" style="background: var(--color-success-light); border-color: var(--color-actor-5); color: var(--color-actor-5)">🛍️</div>
+              <span>Customer</span>
+            </div>
+          </div>
+          <div class="flow-packet"></div>
+          <div class="flow-step-label">Click "Next Step" to begin</div>
+          <div class="flow-controls">
+            <button class="btn btn-primary flow-next-btn">Next Step</button>
+            <button class="btn flow-reset-btn">Restart</button>
+            <span class="flow-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 3: Elasticsearch query translation -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">What a search query looks like in code</h2>
+        <p>
+          When a customer types "wireless headphones" into the search bar, this query runs against the
+          <span class="term" data-definition="A named collection of search documents in Elasticsearch — equivalent to a table in a relational database, but optimized for search queries.">index (Elasticsearch)</span>
+          — not against PostgreSQL.
+        </p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">var</span> response <span class="code-operator">=</span> <span class="code-keyword">await</span> _client.<span class="code-function">SearchAsync</span>&lt;<span class="code-function">ProductDocument</span>&gt;(s <span class="code-operator">=&gt;</span> s</span>
+<span class="code-line">    .<span class="code-function">Index</span>(<span class="code-string">"catalog-products"</span>)</span>
+<span class="code-line">    .<span class="code-function">Query</span>(q <span class="code-operator">=&gt;</span> q</span>
+<span class="code-line">        .<span class="code-function">Bool</span>(b <span class="code-operator">=&gt;</span> b</span>
+<span class="code-line">            .<span class="code-function">Must</span>(m <span class="code-operator">=&gt;</span> m</span>
+<span class="code-line">                .<span class="code-function">MultiMatch</span>(mm <span class="code-operator">=&gt;</span> mm</span>
+<span class="code-line">                    .<span class="code-function">Fields</span>(f <span class="code-operator">=&gt;</span> f</span>
+<span class="code-line">                        .<span class="code-function">Field</span>(p <span class="code-operator">=&gt;</span> p.<span class="code-property">Name</span>)</span>
+<span class="code-line">                        .<span class="code-function">Field</span>(p <span class="code-operator">=&gt;</span> p.<span class="code-property">Description</span>))</span>
+<span class="code-line">                    .<span class="code-function">Query</span>(searchTerm)))</span>
+<span class="code-line">            .<span class="code-function">Filter</span>(f <span class="code-operator">=&gt;</span> f</span>
+<span class="code-line">                .<span class="code-function">Term</span>(t <span class="code-operator">=&gt;</span> t</span>
+<span class="code-line">                    .<span class="code-function">Field</span>(p <span class="code-operator">=&gt;</span> p.<span class="code-property">IsActive</span>)</span>
+<span class="code-line">                    .<span class="code-function">Value</span>(<span class="code-keyword">true</span>)))))</span>
+<span class="code-line">    .<span class="code-function">From</span>((page <span class="code-operator">-</span> <span class="code-number">1</span>) <span class="code-operator">*</span> pageSize)</span>
+<span class="code-line">    .<span class="code-function">Size</span>(pageSize));</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Search the catalog-products Elasticsearch index (not the PostgreSQL database).</p>
+              <p class="tl">Use a Bool query — like combining conditions in a SQL WHERE clause.</p>
+              <p class="tl">Must: the search term must appear somewhere in this product.</p>
+              <p class="tl">MultiMatch: look in BOTH the name field AND the description — find partial matches too.</p>
+              <p class="tl">Filter: only show products where IsActive=true — hidden products never appear in search.</p>
+              <p class="tl">From/Size: pagination — skip the first N results, return the next batch.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 4: Product write translation -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">How a write triggers the sync pipeline</h2>
+        <p>
+          Notice what is <em>not</em> in this code: Elasticsearch is never called here.
+          The write side only knows about PostgreSQL. Elasticsearch is updated asynchronously, later, via Kafka.
+          This is the CQRS split in action.
+        </p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line">app.<span class="code-function">MapPut</span>(<span class="code-string">"/api/products/{id}"</span>, <span class="code-keyword">async</span> (<span class="code-function">Guid</span> id, <span class="code-function">UpdateProductRequest</span> req, <span class="code-function">AppDbContext</span> db) <span class="code-operator">=&gt;</span></span>
+<span class="code-line">{</span>
+<span class="code-line">    <span class="code-keyword">var</span> product <span class="code-operator">=</span> <span class="code-keyword">await</span> db.<span class="code-property">Products</span>.<span class="code-function">FindAsync</span>(id);</span>
+<span class="code-line">    <span class="code-keyword">if</span> (product <span class="code-keyword">is null</span>) <span class="code-keyword">return</span> <span class="code-function">Results</span>.<span class="code-function">NotFound</span>();</span>
+<span class="code-line"></span>
+<span class="code-line">    product.<span class="code-property">Name</span>        <span class="code-operator">=</span> req.<span class="code-property">Name</span>;</span>
+<span class="code-line">    product.<span class="code-property">Description</span> <span class="code-operator">=</span> req.<span class="code-property">Description</span>;</span>
+<span class="code-line">    product.<span class="code-property">Price</span>       <span class="code-operator">=</span> req.<span class="code-property">Price</span>;</span>
+<span class="code-line">    product.<span class="code-property">UpdatedAt</span>   <span class="code-operator">=</span> <span class="code-function">DateTime</span>.<span class="code-property">UtcNow</span>;</span>
+<span class="code-line"></span>
+<span class="code-line">    <span class="code-keyword">await</span> db.<span class="code-property">OutboxMessages</span>.<span class="code-function">AddAsync</span>(<span class="code-keyword">new</span> <span class="code-function">OutboxMessage</span></span>
+<span class="code-line">    {</span>
+<span class="code-line">        <span class="code-property">EventType</span> <span class="code-operator">=</span> <span class="code-string">"ProductUpdated"</span>,</span>
+<span class="code-line">        <span class="code-property">Payload</span>   <span class="code-operator">=</span> <span class="code-function">JsonSerializer</span>.<span class="code-function">Serialize</span>(<span class="code-keyword">new</span> <span class="code-function">ProductEvent</span>(product))</span>
+<span class="code-line">    });</span>
+<span class="code-line"></span>
+<span class="code-line">    <span class="code-keyword">await</span> db.<span class="code-function">SaveChangesAsync</span>();</span>
+<span class="code-line">    <span class="code-keyword">return</span> <span class="code-function">Results</span>.<span class="code-function">Ok</span>(product);</span>
+<span class="code-line">});</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Update the product fields in PostgreSQL.</p>
+              <p class="tl">In the same transaction, write a ProductUpdated event to the Outbox.</p>
+              <p class="tl">SaveChangesAsync commits both changes atomically.</p>
+              <p class="tl">The Outbox Relay will pick this up and publish to catalog.products within 5 seconds.</p>
+              <p class="tl">Note: Elasticsearch is NOT updated here — it is updated asynchronously via Kafka.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 5: The sync consumer + callouts -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The Kafka consumer that updates Elasticsearch</h2>
+        <p>
+          On the read side, a Kafka consumer watches the <code>catalog.products</code> topic.
+          Each time a <code>ProductUpdated</code> event arrives, it rebuilds the
+          <span class="term" data-definition="Data stored in a form optimized for reading, with duplication accepted. The opposite of the normalized database design taught in SQL courses. Read models are usually denormalized.">denormalized</span>
+          search document and pushes it to Elasticsearch.
+        </p>
+
+        <div class="badge-list animate-in">
+          <div class="badge-item">
+            <span class="badge-code">ProductDocument</span>
+            <span class="badge-desc">A flat, search-optimized representation of a product — only the fields needed for search queries. No foreign keys, no joins.</span>
+          </div>
+          <div class="badge-item">
+            <span class="badge-code">IndexAsync(document)</span>
+            <span class="badge-desc">Replaces the existing document in Elasticsearch with the new version. If it does not exist yet, it is created.</span>
+          </div>
+          <div class="badge-item">
+            <span class="badge-code">consumer.Commit(result)</span>
+            <span class="badge-desc">Tells Kafka that this message has been successfully processed. Only called after the index is updated — guarantees at-least-once delivery.</span>
+          </div>
+        </div>
+
+        <div class="callout callout-info animate-in">
+          <div class="callout-icon">ℹ️</div>
+          <div class="callout-content">
+            <strong class="callout-title">The trade-off you accept with CQRS</strong>
+            <p>A product updated right now might show the old name in search results for up to ~10 seconds. Engineers call this eventual consistency. For a product catalog, this is completely fine. For a bank balance, it would not be. Choosing CQRS means accepting this trade-off consciously — and it is almost always the right call for search features.</p>
+          </div>
+        </div>
+
+        <div class="callout callout-accent animate-in">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">The same pattern, used twice</strong>
+            <p>UrbanX uses Kafka for two completely different purposes: the Order Saga (coordinating services) and CQRS (syncing databases). Same infrastructure, two distinct use cases. This is why Kafka is described as the "backbone" of the architecture.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 6: Quiz -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Check your understanding</h2>
+
+        <div class="quiz-container animate-in" id="quiz-module6">
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="This is expected behavior in a CQRS system. The Elasticsearch index lags the PostgreSQL database by a few seconds. For a product catalog, this is an acceptable trade-off. The price will update within ~10 seconds."
+               data-explanation-wrong="This is intentional by design. CQRS accepts a brief window where read and write models are out of sync — called eventual consistency. For search features, a few seconds of lag is a worthwhile trade-off for Elasticsearch-powered search.">
+            <h3 class="quiz-question">A customer searches for "bluetooth speaker" and sees a product with an old price ($49) even though a merchant updated it to $59 three seconds ago. Is this a bug?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Yes — data should always be consistent, this is a critical bug</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>No — this is expected eventual consistency and will resolve in a few seconds</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Yes — the Outbox pattern should prevent this</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>No — search results always show cached data permanently</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="CQRS thinking: read-optimized data belongs in the read model. Pre-compute the aggregation when data changes, store it in Elasticsearch (or a read-optimized store), serve it instantly on every page load."
+               data-explanation-wrong="Think CQRS: heavy read operations do not belong in PostgreSQL queries on every request. The read model (Elasticsearch) should be shaped for what consumers need — pre-computed aggregations updated via Kafka events.">
+            <h3 class="quiz-question">You want to add a feature: show the "lowest price in each category" on the homepage. Which approach is better?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Query PostgreSQL with GROUP BY on every page load</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Pre-compute and store the lowest price in Elasticsearch when products are updated</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Calculate it in the React frontend from all product data</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Add a new microservice that queries PostgreSQL every 30 seconds</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module6')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module6')">Try Again</button>
+        </div>
+      </section>
+
+      <!-- SCREEN 7: Completion block -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">You Made It Through the Whole Course 🎉</h2>
+        <p>You have now seen every major distributed systems pattern in UrbanX in action.</p>
+
+        <div class="pattern-cards stagger-children">
+          <div class="pattern-card animate-in" style="border-top-color: var(--color-actor-1)">
+            <div class="pattern-icon" style="background: var(--color-accent-light)">📬</div>
+            <h4 class="pattern-title">Transactional Outbox</h4>
+            <p class="pattern-desc">Events saved to the database before Kafka — never lost even on crashes.</p>
+          </div>
+          <div class="pattern-card animate-in" style="border-top-color: var(--color-actor-2)">
+            <div class="pattern-icon" style="background: var(--color-info-light)">🎭</div>
+            <h4 class="pattern-title">Choreography Saga</h4>
+            <p class="pattern-desc">Multi-service coordination via events, with compensation on failure.</p>
+          </div>
+          <div class="pattern-card animate-in" style="border-top-color: var(--color-actor-3)">
+            <div class="pattern-icon" style="background: #EDE9F6">✂️</div>
+            <h4 class="pattern-title">CQRS</h4>
+            <p class="pattern-desc">Separate databases for writes (PostgreSQL) and reads (Elasticsearch).</p>
+          </div>
+          <div class="pattern-card animate-in" style="border-top-color: var(--color-actor-4)">
+            <div class="pattern-icon" style="background: var(--color-surface-warm)">📡</div>
+            <h4 class="pattern-title">Event-Driven Architecture</h4>
+            <p class="pattern-desc">Services talk by broadcasting events — never by calling each other directly.</p>
+          </div>
+        </div>
+
+        <p style="margin-top: var(--space-8); color: var(--color-text-secondary)">
+          Explore the full source code at
+          <a href="https://github.com/daohainam/urbanx-sample" style="color: var(--color-accent); font-weight: 600">github.com/daohainam/urbanx-sample</a>
+        </p>
+      </section>
+
+    </div>
+  </div>
+</section>

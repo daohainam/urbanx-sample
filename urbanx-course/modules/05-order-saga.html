@@ -1,0 +1,348 @@
+<section class="module" id="module-5" style="background: var(--color-bg)">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">05</span>
+      <h1 class="module-title">The Order Saga</h1>
+      <p class="module-subtitle">Three databases. One order. If any step fails, the others must undo their work. Normal database transactions cannot do this — so we use a Saga.</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- SCREEN 1: The Problem -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Why a normal transaction is not enough</h2>
+        <p>
+          Fulfilling an order requires three things to happen across three different services:
+          <strong>reserve inventory</strong>, <strong>charge payment</strong>, and
+          <strong>confirm the order</strong>. If any one fails, the others must undo their work.
+        </p>
+        <p>
+          That is not possible with a normal
+          <span class="term" data-definition="An operation that must be atomic across multiple separate databases or services — notoriously hard to implement correctly, which is why Sagas exist.">distributed transaction</span>.
+          PostgreSQL cannot reach into Stripe. Inventory cannot lock Payment. Each service owns its own database.
+        </p>
+
+        <div class="icon-rows animate-in">
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-accent-light)">🏃</div>
+            <div>
+              <strong>Think of it as a relay race.</strong>
+              <p>Order passes the baton to Inventory ("reserve the stock"), which passes it to Payment ("charge the card"), which passes it back to Order ("you are confirmed"). If a runner drops the baton, the team runs the race in reverse to undo what was done.</p>
+            </div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-info-light)">🎭</div>
+            <div>
+              <strong>This pattern is called a
+                <span class="term" data-definition="A way to manage multi-step operations across separate services. Each step publishes an event; if a step fails, previous steps are undone via compensating transactions.">Saga pattern</span>.
+              </strong>
+              <p>UrbanX uses
+                <span class="term" data-definition="Each service reacts to events independently, with no central coordinator. Like a flock of birds that moves together without a leader.">choreography</span>
+                — each service reacts to Kafka events on its own. There is no central controller.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 2: Happy-path flow animation -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The happy path — step by step</h2>
+        <p>When everything goes right, four actors cooperate via Kafka events. Click through each step to see the full saga unfold.</p>
+
+        <div class="flow-animation animate-in" id="flow-saga" data-steps='[
+          {"highlight":"flow-actor-1","label":"Customer places order. Order Service saves it (Status: Pending) and writes OrderCreated to the Outbox in the same transaction."},
+          {"highlight":"flow-actor-2","label":"Outbox Relay publishes OrderCreated to the order.created Kafka topic.","packet":true,"from":"actor-1","to":"actor-2"},
+          {"highlight":"flow-actor-3","label":"Inventory Service reads the event. Checks stock — 15 available. Reserves 2. Publishes InventoryReserved to inventory.events.","packet":true,"from":"actor-2","to":"actor-3"},
+          {"highlight":"flow-actor-2","label":"Kafka holds the InventoryReserved event for the Order Service.","packet":true,"from":"actor-3","to":"actor-2"},
+          {"highlight":"flow-actor-1","label":"Order Service reads InventoryReserved. Order still Pending — waiting for payment.","packet":true,"from":"actor-2","to":"actor-1"},
+          {"highlight":"flow-actor-4","label":"Customer submits payment. Payment Service calls Stripe API. Card approved. Publishes PaymentCompleted to payment.events."},
+          {"highlight":"flow-actor-2","label":"Kafka holds PaymentCompleted for the Order Service.","packet":true,"from":"actor-4","to":"actor-2"},
+          {"highlight":"flow-actor-1","label":"Order Service reads PaymentCompleted. Updates status to PaymentReceived. Saga complete — the merchant will fulfill the order.","packet":true,"from":"actor-2","to":"actor-1"}
+        ]'>
+          <div class="flow-actors">
+            <div class="flow-actor" id="flow-actor-1">
+              <div class="flow-actor-icon" style="background: var(--color-accent-light); border-color: var(--color-actor-1); color: var(--color-actor-1)">📋</div>
+              <span>Order Service</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-2">
+              <div class="flow-actor-icon" style="background: #1E1E2E; border-color: #45475A; color: #CDD6F4">📡</div>
+              <span>Kafka</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-3">
+              <div class="flow-actor-icon" style="background: #EDE9F6; border-color: var(--color-actor-3); color: var(--color-actor-3)">📦</div>
+              <span>Inventory</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-4">
+              <div class="flow-actor-icon" style="background: #E8F5EE; border-color: var(--color-actor-5); color: var(--color-actor-5)">💳</div>
+              <span>Payment</span>
+            </div>
+          </div>
+          <div class="flow-packet"></div>
+          <div class="flow-step-label">Click "Next Step" to begin</div>
+          <div class="flow-controls">
+            <button class="btn btn-primary flow-next-btn">Next Step</button>
+            <button class="btn flow-reset-btn">Restart</button>
+            <span class="flow-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 3: State machine translation block -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The order
+          <span class="term" data-definition="A system that can only be in one defined state at a time, with explicit rules about which transitions are allowed. Prevents objects from entering impossible states.">state machine</span>
+        </h2>
+        <p>An order cannot jump from <em>Confirmed</em> straight to <em>Delivered</em>. This code enforces every legal transition and rejects all others.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">public static readonly</span> <span class="code-function">IReadOnlyDictionary</span>&lt;<span class="code-function">OrderStatus</span>, <span class="code-function">IReadOnlySet</span>&lt;<span class="code-function">OrderStatus</span>&gt;&gt; Allowed =</span>
+<span class="code-line">    <span class="code-keyword">new</span> <span class="code-function">Dictionary</span>&lt;<span class="code-function">OrderStatus</span>, <span class="code-function">IReadOnlySet</span>&lt;<span class="code-function">OrderStatus</span>&gt;&gt;</span>
+<span class="code-line">{</span>
+<span class="code-line">    [<span class="code-function">OrderStatus</span>.<span class="code-property">Confirmed</span>]      = <span class="code-keyword">new</span> <span class="code-function">HashSet</span>&lt;<span class="code-function">OrderStatus</span>&gt; { <span class="code-function">OrderStatus</span>.<span class="code-property">Preparing</span>,      <span class="code-function">OrderStatus</span>.<span class="code-property">Cancelled</span> },</span>
+<span class="code-line">    [<span class="code-function">OrderStatus</span>.<span class="code-property">Preparing</span>]      = <span class="code-keyword">new</span> <span class="code-function">HashSet</span>&lt;<span class="code-function">OrderStatus</span>&gt; { <span class="code-function">OrderStatus</span>.<span class="code-property">ReadyForPickup</span>, <span class="code-function">OrderStatus</span>.<span class="code-property">Cancelled</span> },</span>
+<span class="code-line">    [<span class="code-function">OrderStatus</span>.<span class="code-property">ReadyForPickup</span>] = <span class="code-keyword">new</span> <span class="code-function">HashSet</span>&lt;<span class="code-function">OrderStatus</span>&gt; { <span class="code-function">OrderStatus</span>.<span class="code-property">InTransit</span>,      <span class="code-function">OrderStatus</span>.<span class="code-property">Cancelled</span> },</span>
+<span class="code-line">    [<span class="code-function">OrderStatus</span>.<span class="code-property">InTransit</span>]      = <span class="code-keyword">new</span> <span class="code-function">HashSet</span>&lt;<span class="code-function">OrderStatus</span>&gt; { <span class="code-function">OrderStatus</span>.<span class="code-property">Delivered</span>,      <span class="code-function">OrderStatus</span>.<span class="code-property">Cancelled</span> },</span>
+<span class="code-line">};</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">This is a whitelist: only these status transitions are allowed.</p>
+              <p class="tl">Confirmed can go to Preparing or Cancelled — nothing else.</p>
+              <p class="tl">You cannot skip from Confirmed directly to Delivered.</p>
+              <p class="tl">Every service update checks this table before changing status.</p>
+              <p class="tl">Invalid transitions throw an error — protecting the order from entering impossible states.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 4: Failure path chat -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The failure path — card declined</h2>
+        <p>
+          When payment fails, the saga does not just stop — it runs backwards.
+          This is called <span class="term" data-definition="Undoing the effects of a previous successful step when a later step fails. The distributed equivalent of a database rollback — but done via events.">compensation</span>.
+          Watch how the system gracefully unwinds.
+        </p>
+
+        <div class="chat-window animate-in" id="chat-saga-fail">
+          <div class="chat-messages">
+            <div class="chat-message" data-msg="0" data-sender="order" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">OR</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Order Service</span>
+                <p>Card submitted. Waiting for Payment Service result...</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="1" data-sender="payment" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-5)">PY</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-5)">Payment Service</span>
+                <p>Called Stripe. Card declined: insufficient funds. Publishing PaymentFailed to payment.events.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="2" data-sender="order" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">OR</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Order Service</span>
+                <p>PaymentFailed received. Setting order status to Cancelled. Publishing OrderCancelled to order.cancelled.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="3" data-sender="inventory" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">IN</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Inventory Service</span>
+                <p>OrderCancelled received for order #abc123. Finding Reserved reservations...</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="4" data-sender="inventory" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">IN</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Inventory Service</span>
+                <p>Found 2x Wireless Headphones reserved. Releasing. QuantityReserved back to 0.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="5" data-sender="inventory" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">IN</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Inventory Service</span>
+                <p>Done. Stock is available again for other customers.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="6" data-sender="order" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">OR</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Order Service</span>
+                <p>Compensation complete. The system is back to exactly the state it was before the order. No stock locked, no charge made.</p>
+              </div>
+            </div>
+          </div>
+          <div class="chat-typing" style="display:none">
+            <div class="chat-avatar" id="chat-saga-fail-typing-avatar"></div>
+            <div class="chat-typing-dots">
+              <span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>
+            </div>
+          </div>
+          <div class="chat-controls">
+            <button class="btn chat-next-btn">Next Message</button>
+            <button class="btn chat-all-btn">Play All</button>
+            <button class="btn chat-reset-btn">Replay</button>
+            <span class="chat-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 5: Payment failure code translation -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">How compensation is triggered in code</h2>
+        <p>When the Order Service receives a payment failure event, it cancels the order <em>and</em> writes an <code>OrderCancelled</code> event to the Outbox — all in a single database transaction.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">if</span> (paymentEvent.<span class="code-property">EventType</span> <span class="code-operator">==</span> <span class="code-string">"Failed"</span>)</span>
+<span class="code-line">{</span>
+<span class="code-line">    order.<span class="code-property">Status</span> <span class="code-operator">=</span> <span class="code-function">OrderStatus</span>.<span class="code-property">Cancelled</span>;</span>
+<span class="code-line">    order.<span class="code-function">AddStatusHistory</span>(<span class="code-function">OrderStatus</span>.<span class="code-property">Cancelled</span>, <span class="code-string">"Payment failed"</span>);</span>
+<span class="code-line"></span>
+<span class="code-line">    <span class="code-keyword">await</span> db.<span class="code-property">OutboxMessages</span>.<span class="code-function">AddAsync</span>(<span class="code-keyword">new</span> <span class="code-function">OutboxMessage</span></span>
+<span class="code-line">    {</span>
+<span class="code-line">        <span class="code-property">EventType</span> <span class="code-operator">=</span> <span class="code-string">"OrderCancelled"</span>,</span>
+<span class="code-line">        <span class="code-property">Payload</span>   <span class="code-operator">=</span> <span class="code-function">JsonSerializer</span>.<span class="code-function">Serialize</span>(<span class="code-keyword">new</span> <span class="code-function">OrderCancelledEvent</span></span>
+<span class="code-line">        {</span>
+<span class="code-line">            <span class="code-property">OrderId</span>    <span class="code-operator">=</span> order.<span class="code-property">Id</span>,</span>
+<span class="code-line">            <span class="code-property">OccurredAt</span> <span class="code-operator">=</span> <span class="code-function">DateTime</span>.<span class="code-property">UtcNow</span></span>
+<span class="code-line">        })</span>
+<span class="code-line">    });</span>
+<span class="code-line"></span>
+<span class="code-line">    <span class="code-keyword">await</span> db.<span class="code-function">SaveChangesAsync</span>();</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Payment event type is Failed — the card was declined or an error occurred.</p>
+              <p class="tl">Update the order status to Cancelled.</p>
+              <p class="tl">Record this in the status history: when it happened and why.</p>
+              <p class="tl">Write an OrderCancelled event to the Outbox — in the same transaction as the status update.</p>
+              <p class="tl">The Outbox guarantees Inventory will hear about this cancellation, even if the server restarts now.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 6: Choreography callout + extensibility -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Why choreography makes extension easy</h2>
+        <p>
+          In UrbanX, there is no central service that says "Inventory, reserve stock. Payment, charge the card."
+          Instead, each service listens for the right Kafka event and reacts independently. This is
+          <span class="term" data-definition="Each service reacts to events independently, with no central coordinator. Like a flock of birds that moves together without a leader.">choreography</span>
+          — as opposed to
+          <span class="term" data-definition="A central coordinator tells each service what to do and in what order. Like a conductor directing an orchestra. More control but a single point of failure.">orchestration</span>.
+        </p>
+
+        <div class="step-cards animate-in">
+          <div class="step-card">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>Add a new service</strong>
+              <p>Say you need to notify a warehouse system when an order is confirmed. Create a new Warehouse Service.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>Subscribe to the right event</strong>
+              <p>The Warehouse Service subscribes to <code>order.confirmed</code> on Kafka. That topic already exists.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>Zero changes to existing services</strong>
+              <p>Order Service, Inventory Service, Payment Service — none of them change at all. The saga grows naturally.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent animate-in">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">Choreography vs. Orchestration</strong>
+            <p>In choreography (UrbanX's approach), each service reacts to events independently — like a jazz ensemble improvising together. In orchestration, a central "order manager" service tells each service what to do — like a conductor. Choreography is more resilient (no single point of failure) but harder to visualize. That is what this animation is for.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 7: Quiz -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Check your understanding</h2>
+
+        <div class="quiz-container animate-in" id="quiz-module5">
+
+          <div class="quiz-question-block"
+               data-correct="option-c"
+               data-explanation-right="This is the extensibility win of choreography. A new Tax Notification Service subscribes to payment.events — zero changes to Payment Service, zero changes to Order Service. Clean separation."
+               data-explanation-wrong="Think about what the saga pattern buys you. Any service can subscribe to payment.events without changing the Payment Service. A dedicated Tax Service is the clean, decoupled answer.">
+            <h3 class="quiz-question">A new government regulation requires UrbanX to notify a tax authority every time a payment completes. Where should this code live?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>In the Payment Service — it knows about payments</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>In the Order Service — it manages the saga</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>In a new Tax Notification Service that subscribes to payment.events</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>In the API Gateway — it sees all transactions</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-c"
+               data-explanation-right="The state machine prevents impossible jumps. This protects data integrity — if Preparing jumped directly to Delivered, the shipment and transit tracking would be skipped entirely."
+               data-explanation-wrong="Check the state machine. Preparing can only go to ReadyForPickup or Cancelled. The code throws an error for any other transition — even from admin users.">
+            <h3 class="quiz-question">An order is stuck in Preparing status. The merchant wants to move it directly to Delivered to skip the other steps. Will the code allow this?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Yes — the merchant has admin access</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Yes — status updates are unrestricted for merchants</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>No — the state machine only allows Preparing → ReadyForPickup → InTransit → Delivered</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>No — only the system can change order status</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module5')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module5')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>

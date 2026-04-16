@@ -1,0 +1,349 @@
+<section class="module" id="module-2" style="background: var(--color-bg-warm)">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">02</span>
+      <h1 class="module-title">Seven Specialists</h1>
+      <p class="module-subtitle">UrbanX is not one big app. It is seven small programs — and that specialization is a deliberate, powerful decision.</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- Screen 1: The Hospital Metaphor -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">One Doctor Does Everything — What Could Go Wrong?</h2>
+        <p>
+          Imagine a hospital where a single doctor handles cardiology, ophthalmology, and surgery simultaneously.
+          Exhausted, error-prone, and impossible to scale. Instead, hospitals hire specialists: each expert in
+          one domain, accountable for one set of outcomes.
+        </p>
+        <p>
+          UrbanX works the same way. If the Payment Service crashes, your shopping cart still works.
+          If the Catalog Service is overloaded with search queries, orders keep processing. Specialization
+          buys you independence — and independence buys you resilience.
+        </p>
+
+        <div class="callout callout-accent animate-in">
+          <div class="callout-icon">🏥</div>
+          <div class="callout-content">
+            <strong class="callout-title">The Key Insight</strong>
+            <p>Each service owns its own database. No service can reach into another service&apos;s data directly.
+            They only communicate via <span class="term" data-definition="A message broker — like a postal service for software. Services publish messages to named channels (topics), and other services subscribe to read them.">Kafka</span>
+            events or the HTTP API they expose.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Screen 2: Architecture Diagram -->
+      <section class="screen">
+        <h2 class="screen-heading animate-in">The Cast — Click to Learn Each Role</h2>
+        <p class="animate-in">
+          Seven services, two infrastructure zones. Click any component to see exactly what it owns and why
+          it exists as a separate specialist.
+        </p>
+
+        <div class="arch-diagram animate-in">
+          <div class="arch-zone">
+            <h4 class="arch-zone-label">Frontend &amp; Gateway</h4>
+            <div class="arch-component"
+                 data-desc="The React 19 SPA running in the user's browser. Communicates only through the API Gateway — never calls any service directly. All it knows is one address: port 5000.">
+              <div class="arch-icon">🌐</div>
+              <span>Browser / React</span>
+            </div>
+            <div class="arch-component"
+                 data-desc="The API Gateway (port 5000) — built with YARP reverse proxy. It is the single front door: validates JWT tokens, enforces rate limits (100 requests/min), and routes each URL path to the correct specialist service.">
+              <div class="arch-icon">🚪</div>
+              <span>API Gateway :5000</span>
+            </div>
+          </div>
+
+          <div class="arch-zone">
+            <h4 class="arch-zone-label">Backend Services</h4>
+            <div class="arch-component"
+                 data-desc="Identity Service (port 5005) — runs Duende IdentityServer. Issues and validates JWT login tokens using OAuth 2.0 / OIDC. This is the &quot;bouncer&quot; of the system — every other service trusts tokens it signs.">
+              <div class="arch-icon">🔐</div>
+              <span>Identity :5005</span>
+            </div>
+            <div class="arch-component"
+                 data-desc="Catalog Service (port 5001) — owns the product catalogue. Writes go to PostgreSQL; a Kafka consumer syncs changes to Elasticsearch for fast full-text search. This is CQRS in action.">
+              <div class="arch-icon">🛒</div>
+              <span>Catalog :5001</span>
+            </div>
+            <div class="arch-component"
+                 data-desc="Order Service (port 5002) — owns shopping carts and orders. Also acts as Saga coordinator: emits OrderCreated, listens for InventoryReserved and PaymentCompleted to advance the order state machine.">
+              <div class="arch-icon">📋</div>
+              <span>Order :5002</span>
+            </div>
+            <div class="arch-component"
+                 data-desc="Merchant Service (port 5003) — owns merchant registration and profile data. The simplest service: no Kafka, no outbox — just a REST API over a PostgreSQL database.">
+              <div class="arch-icon">🏪</div>
+              <span>Merchant :5003</span>
+            </div>
+            <div class="arch-component"
+                 data-desc="Payment Service (port 5004) — the only service that holds Stripe credentials. Talks to Stripe, records results in its own PostgreSQL database, and publishes PaymentCompleted events via the Transactional Outbox.">
+              <div class="arch-icon">💳</div>
+              <span>Payment :5004</span>
+            </div>
+            <div class="arch-component"
+                 data-desc="Inventory Service — runs on a dynamic port assigned by Aspire. Tracks stock levels. Listens for OrderCreated to reserve items, and releases reservations if payment fails — this is Saga compensation.">
+              <div class="arch-icon">📦</div>
+              <span>Inventory :dynamic</span>
+            </div>
+          </div>
+
+          <div class="arch-description">Click any component to learn what it does</div>
+        </div>
+      </section>
+
+      <!-- Screen 3: Gateway routing — Code Translation -->
+      <section class="screen">
+        <h2 class="screen-heading animate-in">How the Gateway Decides Where to Send Requests</h2>
+        <p class="animate-in">
+          The API Gateway uses <span class="term" data-definition="Yet Another Reverse Proxy — a Microsoft library that turns an ASP.NET app into a configurable API gateway with routing, load balancing, and rate limiting.">YARP</span>
+          (a <span class="term" data-definition="A server that sits in front of your real servers and forwards requests to them — invisible to the caller but essential for routing, security, and load balancing.">reverse proxy</span>
+          library) configured via JSON. Each route maps a URL pattern to one specialist service.
+          The Gateway itself never processes business logic — it only forwards.
+        </p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-string">"Routes"</span><span class="code-operator">:</span> <span class="code-operator">{</span></span>
+<span class="code-line">  <span class="code-string">"catalog-route"</span><span class="code-operator">:</span> <span class="code-operator">{</span></span>
+<span class="code-line">    <span class="code-property">"ClusterId"</span><span class="code-operator">:</span> <span class="code-string">"catalog"</span><span class="code-operator">,</span></span>
+<span class="code-line">    <span class="code-property">"Match"</span><span class="code-operator">:</span> <span class="code-operator">{</span> <span class="code-string">"Path"</span><span class="code-operator">:</span> <span class="code-string">"/api/products/{**catch-all}"</span> <span class="code-operator">}</span></span>
+<span class="code-line">  <span class="code-operator">},</span></span>
+<span class="code-line">  <span class="code-string">"order-route"</span><span class="code-operator">:</span> <span class="code-operator">{</span></span>
+<span class="code-line">    <span class="code-property">"ClusterId"</span><span class="code-operator">:</span> <span class="code-string">"order"</span><span class="code-operator">,</span></span>
+<span class="code-line">    <span class="code-property">"Match"</span><span class="code-operator">:</span> <span class="code-operator">{</span> <span class="code-string">"Path"</span><span class="code-operator">:</span> <span class="code-string">"/api/orders/{**catch-all}"</span> <span class="code-operator">}</span></span>
+<span class="code-line">  <span class="code-operator">},</span></span>
+<span class="code-line">  <span class="code-string">"payment-route"</span><span class="code-operator">:</span> <span class="code-operator">{</span></span>
+<span class="code-line">    <span class="code-property">"ClusterId"</span><span class="code-operator">:</span> <span class="code-string">"payment"</span><span class="code-operator">,</span></span>
+<span class="code-line">    <span class="code-property">"Match"</span><span class="code-operator">:</span> <span class="code-operator">{</span> <span class="code-string">"Path"</span><span class="code-operator">:</span> <span class="code-string">"/api/payments/{**catch-all}"</span> <span class="code-operator">}</span></span>
+<span class="code-line">  <span class="code-operator">},</span></span>
+<span class="code-line">  <span class="code-string">"identity-route"</span><span class="code-operator">:</span> <span class="code-operator">{</span></span>
+<span class="code-line">    <span class="code-property">"ClusterId"</span><span class="code-operator">:</span> <span class="code-string">"identity"</span><span class="code-operator">,</span></span>
+<span class="code-line">    <span class="code-property">"Match"</span><span class="code-operator">:</span> <span class="code-operator">{</span> <span class="code-string">"Path"</span><span class="code-operator">:</span> <span class="code-string">"/connect/{**catch-all}"</span> <span class="code-operator">}</span></span>
+<span class="code-line">  <span class="code-operator">}</span></span>
+<span class="code-line"><span class="code-operator">}</span></span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Any URL starting with <code>/api/products</code> goes to the Catalog Service — the product specialist.</p>
+              <p class="tl">Anything under <code>/api/orders</code> or <code>/api/cart</code> goes to the Order Service — carts and orders live together.</p>
+              <p class="tl">Payment requests under <code>/api/payments</code> go to the Payment Service — the only one that knows about Stripe.</p>
+              <p class="tl">The <code>/connect/</code> path is for login — it goes to the Identity Service running Duende IdentityServer.</p>
+              <p class="tl">The Gateway itself never processes business logic — it just reads this map and forwards.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-info animate-in">
+          <div class="callout-icon">🔒</div>
+          <div class="callout-content">
+            <strong class="callout-title">Rate Limiting at the Gate</strong>
+            <p>The Gateway also enforces <span class="term" data-definition="Capping how many requests a client can make in a time window. Like a nightclub with a 100-person capacity — once full, new arrivals wait outside.">rate limiting</span>
+            — 100 requests per minute per client. This single rule protects all seven services at once.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Screen 4: JWT Validation — Code Translation -->
+      <section class="screen">
+        <h2 class="screen-heading animate-in">How Every Service Checks Your Identity</h2>
+        <p class="animate-in">
+          The Identity Service uses <span class="term" data-definition="OpenID Connect — a login standard built on top of OAuth 2.0. It is the technology behind Sign in with Google buttons.">OIDC</span>
+          via <span class="term" data-definition="A .NET library that implements a full OAuth 2.0 / OpenID Connect server — the software that issues and validates login tokens.">Duende IdentityServer</span>.
+          After login, every service independently validates the
+          <span class="term" data-definition="JSON Web Token — a compact, cryptographically signed credential. Contains your user ID, role, and expiry time. Like a tamper-proof wristband.">JWT</span>
+          using a cached public key — they do not call Identity on every request.
+        </p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">builder</span>.<span class="code-property">Services</span></span>
+<span class="code-line">  .<span class="code-function">AddAuthentication</span>(</span>
+<span class="code-line">    <span class="code-function">JwtBearerDefaults</span>.<span class="code-property">AuthenticationScheme</span>)</span>
+<span class="code-line">  .<span class="code-function">AddJwtBearer</span>(<span class="code-keyword">options</span> <span class="code-operator">=&gt;</span></span>
+<span class="code-line">  <span class="code-operator">{</span></span>
+<span class="code-line">    <span class="code-keyword">options</span>.<span class="code-property">Authority</span> <span class="code-operator">=</span></span>
+<span class="code-line">      <span class="code-string">"http://identity:5005"</span><span class="code-operator">;</span></span>
+<span class="code-line">    <span class="code-keyword">options</span>.<span class="code-property">Audience</span> <span class="code-operator">=</span></span>
+<span class="code-line">      <span class="code-string">"urbanx-api"</span><span class="code-operator">;</span></span>
+<span class="code-line">    <span class="code-keyword">options</span>.<span class="code-property">RequireHttpsMetadata</span></span>
+<span class="code-line">      <span class="code-operator">=</span> <span class="code-keyword">false</span><span class="code-operator">;</span></span>
+<span class="code-line">  <span class="code-operator">});</span></span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Every service validates tokens by checking with the Identity Service — they all share this exact configuration.</p>
+              <p class="tl"><strong>Authority</strong> — the Identity Service URL. Go here to fetch the public key used to verify token signatures.</p>
+              <p class="tl"><strong>Audience</strong> — only accept tokens issued specifically for this API. Tokens from other systems are rejected.</p>
+              <p class="tl"><strong>RequireHttpsMetadata = false</strong> — development only. In production, HTTPS would be required for all token traffic.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-info animate-in">
+          <div class="callout-icon">📜</div>
+          <div class="callout-content">
+            <strong class="callout-title">Authorization Policies</strong>
+            <p>Beyond authentication, services also define
+            <span class="term" data-definition="A named rule that defines who can access an endpoint. CustomerOnly means only users with the customer role can call this API.">authorization policies</span>:
+            <code>CustomerOnly</code>, <code>MerchantOnly</code>, and <code>CustomerOrMerchant</code>.
+            An endpoint decorated with <code>[Authorize(Policy = "MerchantOnly")]</code> will reject a
+            customer&apos;s request even if their token is valid.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Screen 5: Group Chat — Services Introduce Themselves -->
+      <section class="screen">
+        <h2 class="screen-heading animate-in">The Services, In Their Own Words</h2>
+        <p class="animate-in">
+          Imagine the seven specialists in a group chat. Each one introduces itself — what it owns,
+          what it does not touch, and how it fits into the wider system.
+        </p>
+
+        <div class="chat-window animate-in" id="chat-services">
+          <div class="chat-messages">
+
+            <div class="chat-message" data-msg="0" data-sender="identity" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">ID</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Identity Service</span>
+                <p>I handle logins. Give me a username and password, I will give you a JWT token valid for 60 minutes.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="1" data-sender="catalog" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-5)">CA</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-5)">Catalog Service</span>
+                <p>I manage the product catalogue. Writes go to PostgreSQL, searches go to Elasticsearch. I keep them in sync via Kafka events.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="2" data-sender="order" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-2)">OR</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-2)">Order Service</span>
+                <p>Shopping carts and orders live with me. I also run the Saga — coordinating inventory and payment so the whole checkout stays consistent.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="3" data-sender="inventory" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">IN</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Inventory Service</span>
+                <p>I track stock. When Order tells me a new order was placed, I reserve the items. If payment fails, I release them — that is Saga compensation.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="4" data-sender="payment" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-4)">PA</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-4)">Payment Service</span>
+                <p>I talk to Stripe. I never share those credentials with anyone else. My job is to charge and report results — nothing more.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="5" data-sender="identity" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">ID</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Identity Service</span>
+                <p>And none of us call each other directly. We talk through Kafka — that is next module.</p>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="chat-typing" style="display:none">
+            <div class="chat-avatar" id="chat-services-typing-avatar"></div>
+            <div class="chat-typing-dots">
+              <span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>
+            </div>
+          </div>
+
+          <div class="chat-controls">
+            <button class="btn chat-next-btn">Next Message</button>
+            <button class="btn chat-all-btn">Play All</button>
+            <button class="btn chat-reset-btn">Replay</button>
+            <span class="chat-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Screen 6: Quiz -->
+      <section class="screen">
+        <h2 class="screen-heading animate-in">Architecture Decision Practice</h2>
+        <p class="animate-in">
+          Good architecture is about decisions — specifically, which service should own which data. These two
+          questions test that judgement. Think about <em>domain ownership</em> before selecting.
+        </p>
+
+        <div class="quiz-container animate-in" id="quiz-module2">
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="Favorites are about products, so they belong with the Catalog Service — the specialist that owns the product domain."
+               data-explanation-wrong="Think about which service owns the related data. Favorites are about products, so the product specialist — Catalog — is the right home.">
+            <h3 class="quiz-question">You want to add a "Favorite Products" feature where customers save products. Which service should own this data?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>The API Gateway — it already sees all requests</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>The Catalog Service — it owns the product domain</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>The Identity Service — it already knows who the user is</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>A brand new Favorites microservice</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="Services validate JWT tokens themselves using a cached public key — they do not call Identity on every request. Already-logged-in users have valid tokens and can keep using the app."
+               data-explanation-wrong="Here is the key: services cache the Identity public key and validate tokens locally. They only need Identity when users log in fresh.">
+            <h3 class="quiz-question">The Identity Service goes down for 5 minutes. Which of these still works?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>Nothing works — all services need auth</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>Existing logged-in users can still browse and place orders</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>New users can log in but existing ones cannot</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>Only the API Gateway keeps working</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module2')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module2')">Try Again</button>
+        </div>
+
+        <div class="callout callout-info animate-in">
+          <div class="callout-icon">➡️</div>
+          <div class="callout-content">
+            <strong class="callout-title">Up Next: The Messaging Backbone</strong>
+            <p>You now know the seven specialists and their boundaries. Module 3 dives into Kafka — the messaging layer that lets them coordinate without ever calling each other directly.</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>

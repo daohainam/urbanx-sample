@@ -1,0 +1,237 @@
+<section class="module" id="module-1" style="background: var(--color-bg)">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">01</span>
+      <h1 class="module-title">The Shopping Journey</h1>
+      <p class="module-subtitle">You clicked "Buy." Here is exactly what happened next — six programs, one second, zero magic.</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- Screen 1: The Hook -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Behind the Scenes of a Single Click</h2>
+        <p>
+          You have placed orders before. You clicked "Buy," got a confirmation email, and a package showed up.
+          Simple, right? Under the hood, placing one order silently triggers six different specialist programs
+          working together — each one expert at its single job, none of them aware of the others' internals.
+        </p>
+        <p>
+          UrbanX is built as a <span class="term" data-definition="Small, independent programs that each do one job. Instead of one big app that does everything, you have specialists that work together.">microservices</span>
+          application. Think of it like a documentary crew at a restaurant: front-of-house, kitchen, sommelier,
+          pastry chef — all coordinating seamlessly, each invisible to the guest. This module is that documentary.
+        </p>
+
+        <div class="callout callout-accent animate-in">
+          <div class="callout-icon">🎬</div>
+          <div class="callout-content">
+            <strong class="callout-title">Why This Matters for You</strong>
+            <p>When you tell an AI assistant to "add a checkout feature," you now know it touches the Order Service,
+            kicks off an inventory check, and triggers a payment flow — so you can describe <em>exactly</em> what you want built.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Screen 2: The Flow Animation -->
+      <section class="screen">
+        <h2 class="screen-heading animate-in">The Order in Real Time</h2>
+        <p class="animate-in">
+          Step through the journey below. Each click advances one stage of the order — watch how control moves
+          from your browser all the way through to a confirmed delivery.
+        </p>
+
+        <div class="flow-animation animate-in" data-steps='[
+          {"highlight":"flow-actor-1","label":"You click Place Order in the React app. Your browser sends POST /api/orders to port 5000."},
+          {"highlight":"flow-actor-2","label":"The API Gateway receives the request, checks your JWT login token, and routes it to the Order Service at port 5002.","packet":true,"from":"actor-1","to":"actor-2"},
+          {"highlight":"flow-actor-3","label":"Order Service saves a new Order (status: Pending) to its PostgreSQL database. At the same time it writes an OrderCreated event to its Outbox table — same transaction, never lost.","packet":true,"from":"actor-2","to":"actor-3"},
+          {"highlight":"flow-actor-4","label":"The Outbox Relay worker picks up the event and publishes it to the order.created Kafka topic within 5 seconds.","packet":true,"from":"actor-3","to":"actor-4"},
+          {"highlight":"flow-actor-5","label":"Inventory Service reads the event and reserves the stock. Payment Service waits for you to submit payment.","packet":true,"from":"actor-4","to":"actor-5"},
+          {"highlight":"flow-actor-3","label":"Order status updates to PaymentReceived. The saga is complete. Your order is confirmed.","packet":true,"from":"actor-5","to":"actor-3"}
+        ]'>
+          <div class="flow-actors">
+            <div class="flow-actor" id="flow-actor-1">
+              <div class="flow-actor-icon">🌐</div>
+              <span>Browser</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-2">
+              <div class="flow-actor-icon">🚪</div>
+              <span>API Gateway</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-3">
+              <div class="flow-actor-icon">📋</div>
+              <span>Order Service</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-4">
+              <div class="flow-actor-icon">📨</div>
+              <span>Kafka</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-5">
+              <div class="flow-actor-icon">📦</div>
+              <span>Inventory</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-6">
+              <div class="flow-actor-icon">💳</div>
+              <span>Payment</span>
+            </div>
+          </div>
+          <div class="flow-packet" id="flow-packet"></div>
+          <div class="flow-step-label">Click "Next Step" to begin</div>
+          <div class="flow-controls">
+            <button class="btn btn-primary flow-next-btn">Next Step</button>
+            <button class="btn flow-reset-btn">Restart</button>
+            <span class="flow-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Screen 3: Key Concepts Broken Down -->
+      <section class="screen">
+        <h2 class="screen-heading animate-in">Three Details Worth Pausing On</h2>
+        <p class="animate-in">
+          The flow above hides some clever engineering. Here are three moments in the journey that are more
+          interesting than they first appear.
+        </p>
+
+        <div class="step-cards stagger-children">
+          <div class="step-card animate-in">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>The Gateway checks your identity</strong>
+              <p>Every request carries a <span class="term" data-definition="JSON Web Token — a cryptographically signed credential that proves who you are and what you are allowed to do. Like a wristband at a concert.">JWT token</span>
+              issued by the Identity Service. The <span class="term" data-definition="The single front door to your whole system. Every request goes through here first, so you can add security, routing, and rate limiting in one place.">API Gateway</span>
+              validates this token before forwarding the request. No valid token, no access.</p>
+            </div>
+          </div>
+          <div class="step-card animate-in">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>Two writes, one transaction</strong>
+              <p>When the Order Service saves your order to <span class="term" data-definition="A powerful relational database — like a very organized spreadsheet system. Great for structured data that needs to stay consistent.">PostgreSQL</span>,
+              it also writes to an <span class="term" data-definition="A special database table that stores events-to-be-sent alongside business data in the same transaction — guaranteeing they are never lost.">Outbox table</span>
+              in the very same database transaction. If the server crashes right after, the event is still there — never lost.</p>
+            </div>
+          </div>
+          <div class="step-card animate-in">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>Services never call each other directly</strong>
+              <p>The Order Service does not phone the Inventory Service. Instead it publishes an event to
+              <span class="term" data-definition="A message broker — like a postal service for software. Services publish messages to named channels (topics), and other services subscribe to read them.">Kafka</span>.
+              Inventory subscribes and reacts on its own schedule. This loose coupling means services can be
+              updated, restarted, or scaled independently.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Screen 4: The Four Big Patterns -->
+      <section class="screen">
+        <h2 class="screen-heading animate-in">Four Patterns Powering the Journey</h2>
+        <p class="animate-in">
+          The shopping flow you just traced is built on four architectural patterns. This course covers each in
+          depth — here is a preview of what each one solves.
+        </p>
+
+        <div class="pattern-cards stagger-children">
+          <div class="pattern-card animate-in" style="border-top-color: var(--color-actor-1)">
+            <div class="pattern-icon" style="background: var(--color-accent-light)">📬</div>
+            <h4 class="pattern-title">Transactional Outbox</h4>
+            <p class="pattern-desc">Events are saved to the database before being sent, so they are never lost even if the server crashes mid-operation.</p>
+          </div>
+          <div class="pattern-card animate-in" style="border-top-color: var(--color-actor-2)">
+            <div class="pattern-icon" style="background: var(--color-info-light)">🎭</div>
+            <h4 class="pattern-title">Choreography Saga</h4>
+            <p class="pattern-desc">Multiple services coordinate without a conductor — each reacts to events and passes the baton to the next specialist.</p>
+          </div>
+          <div class="pattern-card animate-in" style="border-top-color: var(--color-actor-3)">
+            <div class="pattern-icon" style="background: #F0EDF8">✂️</div>
+            <h4 class="pattern-title">CQRS</h4>
+            <p class="pattern-desc">Reading and writing use separate databases optimized for each job — fast writes in PostgreSQL, fast searches in
+            <span class="term" data-definition="A database built for search. While PostgreSQL stores data accurately, Elasticsearch finds it fast — even with typos or partial words.">Elasticsearch</span>.</p>
+          </div>
+          <div class="pattern-card animate-in" style="border-top-color: var(--color-actor-4)">
+            <div class="pattern-icon" style="background: #FEF8E7">📡</div>
+            <h4 class="pattern-title">Event-Driven Architecture</h4>
+            <p class="pattern-desc">Services talk by broadcasting events, not by calling each other directly — making the whole system resilient and decoupled.</p>
+          </div>
+        </div>
+
+        <div class="callout callout-info animate-in">
+          <div class="callout-icon">🗺️</div>
+          <div class="callout-content">
+            <strong class="callout-title">Course Roadmap</strong>
+            <p>Module 2 dives into each service specialist. Modules 3–4 cover Kafka and the Outbox pattern. Module 5 walks through the Saga step by step. Module 6 explains CQRS with dual storage.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Screen 5: Quiz -->
+      <section class="screen">
+        <h2 class="screen-heading animate-in">Check Your Understanding</h2>
+        <p class="animate-in">
+          Two quick questions to confirm the key ideas have landed. Trace the flow in your head before selecting an answer.
+        </p>
+
+        <div class="quiz-container animate-in" id="quiz-module1">
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="The cart lives in the Order Service — it manages both carts and orders because they share the same domain. Catalog only handles product listings and search."
+               data-explanation-wrong="The Catalog Service handles product search and listings, but the shopping cart belongs to the Order Service — carts and orders are the same domain.">
+            <h3 class="quiz-question">You add a product to your cart. Which service handles that request?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>Catalog Service — it owns the product data</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>Order Service — carts and orders live together</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>Payment Service — it needs to know what to charge</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>Identity Service — it knows who is logged in</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-c"
+               data-explanation-right="PostgreSQL is always the source of truth. Elasticsearch is updated a few seconds later via Kafka — this is called eventual consistency."
+               data-explanation-wrong="PostgreSQL is the write database — it always gets changes first. Elasticsearch catches up via Kafka events a few seconds later.">
+            <h3 class="quiz-question">A merchant updates a product name. Which database gets updated first?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>Elasticsearch — it is optimized for fast reads</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>Both at exactly the same time</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>PostgreSQL first, then Elasticsearch via Kafka</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>The API Gateway cache — it sits closest to the client</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module1')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module1')">Try Again</button>
+        </div>
+
+        <div class="callout callout-accent animate-in">
+          <div class="callout-icon">➡️</div>
+          <div class="callout-content">
+            <strong class="callout-title">Up Next: Seven Specialists</strong>
+            <p>Now that you understand the big picture flow, Module 2 introduces each service up close — who they are, what they own, and why those boundaries exist.</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>

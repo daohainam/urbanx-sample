@@ -1,0 +1,274 @@
+<section class="module" id="module-3" style="background: var(--color-bg)">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">03</span>
+      <h1 class="module-title">The Messaging Backbone</h1>
+      <p class="module-subtitle">How seven specialists talk to each other — without ever interrupting each other.</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- ── SCREEN 1: The Bulletin Board Metaphor ── -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The Office Bulletin Board</h2>
+        <p>Imagine a shared office with seven specialists. The clumsy way to coordinate is to tap everyone on the shoulder — every time, for every update. They get interrupted, they have to drop what they&apos;re doing, and if one person is out sick, your whole plan stalls.</p>
+        <p>UrbanX does something smarter: it uses a <span class="term" data-definition="Software that receives messages from senders (producers) and delivers them to receivers (consumers). Like a postal sorting office — it handles routing so the sender and receiver do not need to be connected at the same time.">message broker</span> called <strong>Kafka</strong> — the shared bulletin board. Instead of calling Inventory directly, the Order Service pins a note. Inventory reads it when it&apos;s ready. Nobody is interrupted. Nobody misses it.</p>
+
+        <div class="callout callout-info animate-in">
+          <div class="callout-icon">📌</div>
+          <div class="callout-content">
+            <strong class="callout-title">Opening Hook</strong>
+            <p>What if the Inventory Service crashes while you are checking out? In a direct-call system, your order fails instantly. With Kafka, the order message just waits on the board until Inventory comes back — and then it catches up.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SCREEN 2: Topics — The Named Channels ── -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Topics: Named Channels on the Board</h2>
+        <p>Every note on the bulletin board goes into a named slot called a <span class="term" data-definition="A named, ordered log of messages in Kafka. Producers write to it; consumers read from it. Like a TV channel — producers broadcast, consumers tune in.">topic</span>. UrbanX has five topics — one for each important event type that crosses service boundaries.</p>
+
+        <div class="badge-list animate-in">
+          <div class="badge-item">
+            <code class="badge-code">order.created</code>
+            <span class="badge-desc">Order Service → Inventory Service: triggers stock reservation for new orders</span>
+          </div>
+          <div class="badge-item">
+            <code class="badge-code">inventory.events</code>
+            <span class="badge-desc">Inventory Service → Order Service: carries Reserved or ReservationFailed results</span>
+          </div>
+          <div class="badge-item">
+            <code class="badge-code">payment.events</code>
+            <span class="badge-desc">Payment Service → Order Service: carries Completed or Failed payment results</span>
+          </div>
+          <div class="badge-item">
+            <code class="badge-code">order.cancelled</code>
+            <span class="badge-desc">Order Service → Inventory Service: triggers stock release when payment fails</span>
+          </div>
+          <div class="badge-item">
+            <code class="badge-code">catalog.products</code>
+            <span class="badge-desc">Catalog Service → Catalog Service: syncs product writes to Elasticsearch</span>
+          </div>
+        </div>
+
+        <div class="callout callout-accent animate-in">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">Why Should I Care?</strong>
+            <p>Understanding topics means you can tell an AI &ldquo;add a new service that listens to payment events&rdquo; and know exactly what that means: subscribe to the <code>payment.events</code> topic. No changes needed to the Payment Service whatsoever.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SCREEN 3: Reading Code — The Consumer ── -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Reading the Code: The Inventory Consumer</h2>
+        <p>Here is how the Inventory Service listens for new orders. Every line has a purpose — let&apos;s decode it together.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">var</span> config = <span class="code-keyword">new</span> <span class="code-function">ConsumerConfig</span></span>
+<span class="code-line">{</span>
+<span class="code-line">  <span class="code-property">BootstrapServers</span> = _kafkaSettings.<span class="code-property">BootstrapServers</span>,</span>
+<span class="code-line">  <span class="code-property">GroupId</span>          = <span class="code-string">"inventory-service"</span>,</span>
+<span class="code-line">  <span class="code-property">AutoOffsetReset</span>  = <span class="code-property">AutoOffsetReset</span>.<span class="code-property">Earliest</span>,</span>
+<span class="code-line">  <span class="code-property">EnableAutoCommit</span> = <span class="code-keyword">false</span></span>
+<span class="code-line">};</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-keyword">using var</span> consumer = <span class="code-keyword">new</span> <span class="code-function">ConsumerBuilder</span>&lt;<span class="code-keyword">string</span>, <span class="code-keyword">string</span>&gt;(config).<span class="code-function">Build</span>();</span>
+<span class="code-line">consumer.<span class="code-function">Subscribe</span>(<span class="code-string">"order.created"</span>);</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-keyword">while</span> (!stoppingToken.<span class="code-property">IsCancellationRequested</span>)</span>
+<span class="code-line">{</span>
+<span class="code-line">  <span class="code-keyword">var</span> result     = consumer.<span class="code-function">Consume</span>(stoppingToken);</span>
+<span class="code-line">  <span class="code-keyword">var</span> orderEvent = <span class="code-function">JsonSerializer</span>.<span class="code-function">Deserialize</span>&lt;<span class="code-function">OrderEvent</span>&gt;(result.<span class="code-property">Message</span>.<span class="code-property">Value</span>);</span>
+<span class="code-line">  <span class="code-keyword">await</span> <span class="code-function">ProcessOrderAsync</span>(orderEvent, stoppingToken);</span>
+<span class="code-line">  consumer.<span class="code-function">Commit</span>(result);</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Connect to the Kafka server and join the <span class="term" data-definition="A set of service instances that share the work of reading from a topic. Each message goes to exactly one member of the group — enabling load balancing.">consumer group</span> called &ldquo;inventory-service&rdquo;.</p>
+              <p class="tl"><strong>GroupId</strong> means: if multiple Inventory instances run at the same time, they share the work — no message is processed twice.</p>
+              <p class="tl"><strong>EnableAutoCommit=false</strong>: we manually confirm receipt only after successful processing — no lost messages if we crash mid-way.</p>
+              <p class="tl">Subscribe to the <code>order.created</code> topic — start listening for new orders.</p>
+              <p class="tl">Loop forever: wait for a message to arrive, deserialize it from JSON, process it (reserve stock), then manually <strong>commit</strong> the <span class="term" data-definition="A message&apos;s position in a topic. Like a bookmark in a book — Kafka tracks where each consumer group last read, so it can resume after a restart.">offset</span> to confirm it was handled.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SCREEN 4: Live Message Flow ── -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Watch a Real Order Flow</h2>
+        <p>Let&apos;s trace a complete order through the messaging backbone — from the moment a customer clicks &ldquo;Buy&rdquo; to when Inventory confirms the reservation. Click <strong>Next Message</strong> to step through it.</p>
+
+        <div class="chat-window animate-in" id="chat-kafka">
+          <div class="chat-messages">
+
+            <div class="chat-message" data-msg="0" data-sender="order" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1); color: #fff">OR</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Order Service</span>
+                <p>New order #abc123 placed! I am NOT calling Inventory directly. I will post to <code>order.created</code>.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="1" data-sender="order" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1); color: #fff">OR</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Order Service</span>
+                <p>Outbox entry saved to my database. The relay will pick it up in under 5 seconds.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="2" data-sender="kafka" style="display:none">
+              <div class="chat-avatar" style="background: #1E1E2E; color: #CDD6F4">KF</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-4)">Kafka</span>
+                <p>Message received. Stored at <span class="term" data-definition="A message&apos;s position in a topic. Like a bookmark in a book — Kafka tracks where each consumer group last read, so it can resume after a restart.">offset</span> 182, partition 0. All subscribers will get this — whenever they are ready.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="3" data-sender="inventory" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3); color: #fff">IN</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Inventory Service</span>
+                <p>Got it! Reading order #abc123... 2x Wireless Headphones. Checking stock now.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="4" data-sender="inventory" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3); color: #fff">IN</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Inventory Service</span>
+                <p>15 in stock, 0 reserved. Reserving 2. Publishing <code>InventoryReserved</code> to <code>inventory.events</code>.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="5" data-sender="kafka" style="display:none">
+              <div class="chat-avatar" style="background: #1E1E2E; color: #CDD6F4">KF</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-4)">Kafka</span>
+                <p><code>InventoryReserved</code> stored at offset 183. Order Service is subscribed — it will pick this up next.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="6" data-sender="order" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1); color: #fff">OR</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Order Service</span>
+                <p><code>InventoryReserved</code> received. Order status still Pending. Waiting for payment confirmation.</p>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="chat-typing" style="display:none">
+            <div class="chat-avatar" id="chat-kafka-typing-avatar"></div>
+            <div class="chat-typing-dots">
+              <span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>
+            </div>
+          </div>
+
+          <div class="chat-controls">
+            <button class="btn chat-next-btn">Next Message</button>
+            <button class="btn chat-all-btn">Play All</button>
+            <button class="btn chat-reset-btn">Replay</button>
+            <span class="chat-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SCREEN 5: Key Insight — At-Least-Once ── -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The Resilience Guarantee</h2>
+        <p>Kafka stores messages in an ordered log. When the Inventory Service goes offline, messages queue up at the exact <span class="term" data-definition="A message&apos;s position in a topic. Like a bookmark in a book — Kafka tracks where each consumer group last read, so it can resume after a restart.">offset</span> where it stopped reading. When it restarts, it resumes from that bookmark — no messages skipped, no messages lost.</p>
+        <p>This is what &ldquo;decoupled in time&rdquo; means: the publisher does not wait for the consumer. The consumer can catch up from any point in history.</p>
+
+        <div class="callout callout-accent animate-in">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">At-least-once delivery</strong>
+            <p><span class="term" data-definition="The guarantee that every message will be delivered at least once. The downside: it might be delivered more than once, so consumers must handle duplicates safely.">At-least-once delivery</span>: Kafka guarantees every message is delivered at least once. If the consumer crashes mid-processing, it gets the message again on restart. Services must handle duplicates gracefully — this is called being <span class="term" data-definition="Safe to repeat. An idempotent operation has the same result whether you do it once or ten times. Releasing a stock reservation that is already released does nothing — that is idempotent.">idempotent</span>. The <strong>Transactional Outbox</strong> pattern (Module 4) and the <strong>Order Saga</strong> (Module 5) show exactly how UrbanX achieves this.</p>
+          </div>
+        </div>
+
+        <div class="callout callout-info animate-in">
+          <div class="callout-icon">🔗</div>
+          <div class="callout-content">
+            <strong class="callout-title">pub-sub in one sentence</strong>
+            <p><span class="term" data-definition="Publish-Subscribe: a messaging pattern where publishers send to a topic without knowing who reads it, and subscribers read without knowing who sent it. Complete decoupling.">Pub-sub</span> means the Payment Service never needs to know that an Analytics Service exists — Analytics simply subscribes to <code>payment.events</code> and the Payment Service is never touched.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SCREEN 6: Quiz ── -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Check Your Understanding</h2>
+
+        <div class="quiz-container animate-in" id="quiz-module3">
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="Kafka stores messages until each consumer group has confirmed reading them. The consumer group offset tracks exactly where Inventory last read — it resumes from there."
+               data-explanation-wrong="Kafka&apos;s key superpower is durability. Messages are not lost when a consumer is offline — they wait in the topic log until the consumer comes back and reads them.">
+            <h3 class="quiz-question">The Inventory Service restarts after a 10-minute outage. What happens to order events that arrived during the outage?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>They are lost — Kafka only holds messages for connected consumers</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Kafka held them in the topic — Inventory catches up from where it left off</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The Order Service automatically retries sending them</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The API Gateway queued them</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="This is the beauty of event-driven architecture — you can add new consumers without touching the producer. The Payment Service never needs to know analytics exists."
+               data-explanation-wrong="Kafka&apos;s pub-sub model means anyone can subscribe to a topic without the producer knowing. No code changes needed in Payment Service — just add a new consumer.">
+            <h3 class="quiz-question">You want a new analytics service to track every payment without changing the Payment Service at all. How?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Add logging code directly to the Payment Service</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Subscribe the analytics service to the <code>payment.events</code> Kafka topic</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Poll the Payment Service database every minute</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Add a new endpoint to the Payment Service for analytics</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module3')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module3')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>

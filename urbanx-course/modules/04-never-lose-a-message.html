@@ -1,0 +1,297 @@
+<section class="module" id="module-4" style="background: var(--color-bg-warm)">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">04</span>
+      <h1 class="module-title">Never Lose a Message</h1>
+      <p class="module-subtitle">The Transactional Outbox pattern — why writing to two systems at once is impossible, and how UrbanX solves it.</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- ── SCREEN 1: The Dangerous Moment ── -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The Dangerous Moment</h2>
+        <p>Imagine your order gets saved to the database — and then the server crashes before the message reaches Kafka. The order exists, but Inventory never heard about it. Stock is never reserved. The customer expects delivery that will never come.</p>
+        <p>This is not a hypothetical. In any distributed system, a crash, network timeout, or even a routine deployment can happen between two separate writes. Without a safety net, that window is catastrophic.</p>
+
+        <div class="step-cards stagger-children animate-in">
+
+          <div class="step-card animate-in">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>Order saved to database ✓</strong>
+              <p>The Order record is written to PostgreSQL successfully.</p>
+            </div>
+          </div>
+
+          <div class="step-card animate-in" style="border-left-color: var(--color-error); background: var(--color-error-light)">
+            <div class="step-num" style="background: var(--color-error)">💥</div>
+            <div class="step-body">
+              <strong>Server crashes here</strong>
+              <p>A power failure, OOM kill, deployment restart — any crash at this exact moment is catastrophic.</p>
+            </div>
+          </div>
+
+          <div class="step-card animate-in">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>Kafka message never sent ✗</strong>
+              <p>The code that publishes to Kafka never runs.</p>
+            </div>
+          </div>
+
+          <div class="step-card animate-in">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <strong>Order exists, Inventory never knew ✗</strong>
+              <p>The order is confirmed but stock is never reserved. The customer expects delivery that will never come.</p>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="callout callout-warning animate-in">
+          <div class="callout-icon">⚠️</div>
+          <div class="callout-content">
+            <strong class="callout-title">The Core Problem</strong>
+            <p>Writing to two different systems — a database and a message broker — can never be <span class="term" data-definition="A database operation where everything succeeds or everything fails together — no partial results. Like a bank transfer: both debit and credit happen or neither does.">atomic</span>. There is always a gap. The <span class="term" data-definition="A pattern where you write an event to a table in the same database transaction as your business data — then a background worker publishes it to the message broker. Guarantees events are never lost.">Transactional Outbox</span> pattern closes that gap.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SCREEN 2: The Surgeon&apos;s Checklist ── -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The Surgeon&apos;s Checklist Solution</h2>
+        <p>Before surgery, every step is written on a form — even if the power goes out mid-operation, staff know exactly what was done and what comes next. The Outbox table is that checklist.</p>
+        <p>Instead of calling Kafka directly, the Order Service writes the event into its <em>own database</em>, in the same transaction as the order itself. A separate <span class="term" data-definition="A program that runs continuously in the background, doing work on a schedule or in response to events — without being directly called by a user request.">background service</span> (the <code>OutboxRelayService</code>) then reads those pending entries and publishes them to Kafka.</p>
+
+        <div class="step-cards stagger-children animate-in">
+
+          <div class="step-card animate-in">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>Single database transaction</strong>
+              <p>Order record + Outbox entry are written together. Both succeed, or neither does. The crash window is eliminated.</p>
+            </div>
+          </div>
+
+          <div class="step-card animate-in">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>Background relay polls every 5 seconds</strong>
+              <p>The <code>OutboxRelayService</code> scans for unprocessed entries and publishes each one to Kafka.</p>
+            </div>
+          </div>
+
+          <div class="step-card animate-in">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>Mark as processed</strong>
+              <p>After a successful publish, <code>ProcessedAt</code> is set to now. The entry is never published again.</p>
+            </div>
+          </div>
+
+          <div class="step-card animate-in">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <strong>Retry on failure</strong>
+              <p>If Kafka is temporarily unavailable, <code>RetryCount</code> increments. The relay will try again on the next poll. Up to 5 attempts.</p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ── SCREEN 3: Code — The Atomic Write ── -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Code: The Atomic Write</h2>
+        <p>Here is the exact code in the Order Service that makes the crash-safe write. Notice that both the order and the outbox entry are saved in one <code>SaveChangesAsync</code> call.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">await</span> db.<span class="code-property">Orders</span>.<span class="code-function">AddAsync</span>(order);</span>
+<span class="code-line"><span class="code-keyword">await</span> db.<span class="code-property">OutboxMessages</span>.<span class="code-function">AddAsync</span>(<span class="code-keyword">new</span> <span class="code-function">OutboxMessage</span></span>
+<span class="code-line">{</span>
+<span class="code-line">  <span class="code-property">Id</span>          = <span class="code-function">Guid</span>.<span class="code-function">NewGuid</span>(),</span>
+<span class="code-line">  <span class="code-property">EventType</span>   = <span class="code-string">"OrderCreated"</span>,</span>
+<span class="code-line">  <span class="code-property">Payload</span>     = <span class="code-function">JsonSerializer</span>.<span class="code-function">Serialize</span>(orderEvent),</span>
+<span class="code-line">  <span class="code-property">CreatedAt</span>   = <span class="code-function">DateTime</span>.<span class="code-property">UtcNow</span>,</span>
+<span class="code-line">  <span class="code-property">ProcessedAt</span> = <span class="code-keyword">null</span>,</span>
+<span class="code-line">  <span class="code-property">RetryCount</span>  = <span class="code-number">0</span></span>
+<span class="code-line">});</span>
+<span class="code-line"><span class="code-keyword">await</span> db.<span class="code-function">SaveChangesAsync</span>();</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Save the new Order entity to the Orders table.</p>
+              <p class="tl">In the same database transaction, save a new <code>OutboxMessage</code> — a record of the event that needs to be published.</p>
+              <p class="tl"><strong>ProcessedAt=null</strong> means: not yet published to Kafka.</p>
+              <p class="tl"><strong>RetryCount=0</strong>: no delivery attempts yet.</p>
+              <p class="tl"><code>SaveChangesAsync</code> commits BOTH the order AND the outbox entry <span class="term" data-definition="A database operation where everything succeeds or everything fails together — no partial results. Like a bank transfer: both debit and credit happen or neither does.">atomically</span> — either both succeed or neither does.</p>
+              <p class="tl">If the server crashes after this line: both records exist in the database. The relay will pick up and publish to Kafka on restart.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SCREEN 4: Code — The Relay Loop ── -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Code: The Relay Loop</h2>
+        <p>The <code>OutboxRelayService</code> is a <span class="term" data-definition="A program that runs continuously in the background, doing work on a schedule or in response to events — without being directly called by a user request.">background service</span> that runs forever. Every 5 seconds it scans for unpublished messages and sends them to Kafka.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">protected override async</span> <span class="code-function">Task</span> <span class="code-function">ExecuteAsync</span>(<span class="code-function">CancellationToken</span> stoppingToken)</span>
+<span class="code-line">{</span>
+<span class="code-line">  <span class="code-keyword">while</span> (!stoppingToken.<span class="code-property">IsCancellationRequested</span>)</span>
+<span class="code-line">  {</span>
+<span class="code-line">    <span class="code-keyword">var</span> pending = <span class="code-keyword">await</span> _db.<span class="code-property">OutboxMessages</span></span>
+<span class="code-line">      .<span class="code-function">Where</span>(m =&gt; m.<span class="code-property">ProcessedAt</span> == <span class="code-keyword">null</span> &amp;&amp; m.<span class="code-property">RetryCount</span> &lt; <span class="code-number">5</span>)</span>
+<span class="code-line">      .<span class="code-function">Take</span>(<span class="code-number">50</span>)</span>
+<span class="code-line">      .<span class="code-function">ToListAsync</span>(stoppingToken);</span>
+<span class="code-line"></span>
+<span class="code-line">    <span class="code-keyword">foreach</span> (<span class="code-keyword">var</span> msg <span class="code-keyword">in</span> pending)</span>
+<span class="code-line">    {</span>
+<span class="code-line">      <span class="code-keyword">try</span></span>
+<span class="code-line">      {</span>
+<span class="code-line">        <span class="code-keyword">await</span> _producer.<span class="code-function">ProduceAsync</span>(msg.<span class="code-property">EventType</span>, msg.<span class="code-property">Payload</span>);</span>
+<span class="code-line">        msg.<span class="code-property">ProcessedAt</span> = <span class="code-function">DateTime</span>.<span class="code-property">UtcNow</span>;</span>
+<span class="code-line">      }</span>
+<span class="code-line">      <span class="code-keyword">catch</span> (<span class="code-function">Exception</span> ex)</span>
+<span class="code-line">      {</span>
+<span class="code-line">        _logger.<span class="code-function">LogError</span>(ex, <span class="code-string">"Failed to publish outbox message {Id}"</span>, msg.<span class="code-property">Id</span>);</span>
+<span class="code-line">        msg.<span class="code-property">RetryCount</span>++;</span>
+<span class="code-line">      }</span>
+<span class="code-line">    }</span>
+<span class="code-line"></span>
+<span class="code-line">    <span class="code-keyword">await</span> _db.<span class="code-function">SaveChangesAsync</span>(stoppingToken);</span>
+<span class="code-line">    <span class="code-keyword">await</span> <span class="code-function">Task</span>.<span class="code-function">Delay</span>(<span class="code-function">TimeSpan</span>.<span class="code-function">FromSeconds</span>(<span class="code-number">5</span>), stoppingToken);</span>
+<span class="code-line">  }</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">This background service runs forever until the app stops.</p>
+              <p class="tl">Find messages not yet published (<code>ProcessedAt=null</code>) with fewer than 5 failed attempts — these are the ones still waiting to be sent.</p>
+              <p class="tl">Take up to 50 at a time — process in batches for efficiency.</p>
+              <p class="tl">Publish each one to Kafka, using <code>EventType</code> as the topic name.</p>
+              <p class="tl">Mark as processed by setting <code>ProcessedAt</code> to now — it will never be picked up again.</p>
+              <p class="tl">If publishing fails: increment <code>RetryCount</code> — the message will be retried on the next poll cycle.</p>
+              <p class="tl">Wait 5 seconds, then poll again — repeat forever.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent animate-in">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">At-least-once, handled gracefully</strong>
+            <p>If the relay publishes to Kafka but crashes before marking <code>ProcessedAt</code>, the message will be published again on restart. The consumer receives a duplicate. That is why consumers must be <span class="term" data-definition="Safe to repeat. If you run an idempotent operation twice, the second run has no effect. Essential for handling duplicate messages in distributed systems.">idempotent</span> — the next code snippet shows exactly how.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SCREEN 5: Code — The Idempotent Consumer ── -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Code: The Idempotent Consumer</h2>
+        <p>What happens if Inventory receives the same <code>order.cancelled</code> event twice? Without protection, it would try to release stock that was already released — corrupting your inventory counts. This code makes that safe.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">var</span> reservations = <span class="code-keyword">await</span> db.<span class="code-property">InventoryReservations</span></span>
+<span class="code-line">  .<span class="code-function">Where</span>(r =&gt; r.<span class="code-property">OrderId</span> == orderId</span>
+<span class="code-line">            &amp;&amp; r.<span class="code-property">Status</span>  == <span class="code-property">ReservationStatus</span>.<span class="code-property">Reserved</span>)</span>
+<span class="code-line">  .<span class="code-function">ToListAsync</span>();</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-keyword">if</span> (reservations.<span class="code-property">Count</span> == <span class="code-number">0</span>) <span class="code-keyword">return</span>;</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-keyword">foreach</span> (<span class="code-keyword">var</span> r <span class="code-keyword">in</span> reservations)</span>
+<span class="code-line">{</span>
+<span class="code-line">  r.<span class="code-property">Status</span> = <span class="code-property">ReservationStatus</span>.<span class="code-property">Released</span>;</span>
+<span class="code-line">  item.<span class="code-property">QuantityReserved</span> -= r.<span class="code-property">Quantity</span>;</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Find all reservations for this order that are still in <code>Reserved</code> status — the ones that actually need releasing.</p>
+              <p class="tl"><strong>If there are none — they were already released — exit immediately. Do nothing.</strong></p>
+              <p class="tl">This single check makes the whole operation <span class="term" data-definition="Safe to repeat. If you run an idempotent operation twice, the second run has no effect. Essential for handling duplicate messages in distributed systems.">idempotent</span>: processing the same message 10 times has the same result as processing it once.</p>
+              <p class="tl">Only if reservations exist: release each one — set status to Released and reduce the reserved quantity count.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SCREEN 6: Quiz ── -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Check Your Understanding</h2>
+
+        <div class="quiz-container animate-in" id="quiz-module4">
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="RetryCount tracks delivery failures. At 5, the relay stops trying. This record needs investigation — check your Kafka connection or message format."
+               data-explanation-wrong="RetryCount counts failures, not successes. ProcessedAt=null means it has never been successfully published. RetryCount=4 means it has failed 4 times and has one attempt left.">
+            <h3 class="quiz-question">The OutboxRelayService has been publishing messages. You notice an outbox record with RetryCount=4 and ProcessedAt=null. What does this mean?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The message was successfully published 4 times</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Kafka delivery has failed 4 times — one more failure and this message is abandoned</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The message is still being processed right now</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The record is being held for audit purposes</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="This is exactly the dangerous moment the Outbox pattern prevents. A temporary Kafka hiccup or network glitch between SaveChanges and ProduceAsync silently drops the event — with no retry."
+               data-explanation-wrong="The problem is time. Between SaveChangesAsync and ProduceAsync, anything can go wrong: server restart, Kafka timeout, network blip. Without the Outbox, that event is gone forever.">
+            <h3 class="quiz-question">A developer removes the Outbox pattern and instead publishes to Kafka directly after SaveChangesAsync. It works fine in testing. When would this break in production?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>It would never break — SaveChangesAsync and ProduceAsync are both reliable</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>When Kafka is temporarily unavailable, the order is saved but the event is never published</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Only if the database is under high load</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>It would break immediately — direct publishing is not allowed</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module4')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module4')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>

@@ -1,0 +1,1880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How UrbanX Works</title>
+
+  <!-- Google Fonts: Bricolage Grotesque · DM Sans · JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Vermillion accent palette -->
+  <style>
+    :root {
+      --color-accent:       #D94F30;
+      --color-accent-hover: #C4432A;
+      --color-accent-light: #FDEEE9;
+      --color-accent-muted: #E8836C;
+    }
+  </style>
+
+  <script src="main.js" defer></script>
+</head>
+<body>
+
+  <nav class="nav" id="nav">
+    <div class="progress-bar" id="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+    <div class="nav-inner">
+      <span class="nav-title">How UrbanX Works</span>
+      <div class="nav-dots" id="nav-dots" role="tablist">
+        <button class="nav-dot" data-target="module-1" data-tooltip="The Shopping Journey" role="tab" aria-label="Module 1: The Shopping Journey"></button>
+        <button class="nav-dot" data-target="module-2" data-tooltip="Seven Specialists" role="tab" aria-label="Module 2: Seven Specialists"></button>
+        <button class="nav-dot" data-target="module-3" data-tooltip="The Messaging Backbone" role="tab" aria-label="Module 3: The Messaging Backbone"></button>
+        <button class="nav-dot" data-target="module-4" data-tooltip="Never Lose a Message" role="tab" aria-label="Module 4: Never Lose a Message"></button>
+        <button class="nav-dot" data-target="module-5" data-tooltip="The Order Saga" role="tab" aria-label="Module 5: The Order Saga"></button>
+        <button class="nav-dot" data-target="module-6" data-tooltip="Two Databases, One Truth" role="tab" aria-label="Module 6: Two Databases, One Truth"></button>
+      </div>
+    </div>
+  </nav>
+
+  <main id="main">
+<section class="module" id="module-1" style="background: var(--color-bg)">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">01</span>
+      <h1 class="module-title">The Shopping Journey</h1>
+      <p class="module-subtitle">You clicked "Buy." Here is exactly what happened next — six programs, one second, zero magic.</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- Screen 1: The Hook -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Behind the Scenes of a Single Click</h2>
+        <p>
+          You have placed orders before. You clicked "Buy," got a confirmation email, and a package showed up.
+          Simple, right? Under the hood, placing one order silently triggers six different specialist programs
+          working together — each one expert at its single job, none of them aware of the others' internals.
+        </p>
+        <p>
+          UrbanX is built as a <span class="term" data-definition="Small, independent programs that each do one job. Instead of one big app that does everything, you have specialists that work together.">microservices</span>
+          application. Think of it like a documentary crew at a restaurant: front-of-house, kitchen, sommelier,
+          pastry chef — all coordinating seamlessly, each invisible to the guest. This module is that documentary.
+        </p>
+
+        <div class="callout callout-accent animate-in">
+          <div class="callout-icon">🎬</div>
+          <div class="callout-content">
+            <strong class="callout-title">Why This Matters for You</strong>
+            <p>When you tell an AI assistant to "add a checkout feature," you now know it touches the Order Service,
+            kicks off an inventory check, and triggers a payment flow — so you can describe <em>exactly</em> what you want built.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Screen 2: The Flow Animation -->
+      <section class="screen">
+        <h2 class="screen-heading animate-in">The Order in Real Time</h2>
+        <p class="animate-in">
+          Step through the journey below. Each click advances one stage of the order — watch how control moves
+          from your browser all the way through to a confirmed delivery.
+        </p>
+
+        <div class="flow-animation animate-in" data-steps='[
+          {"highlight":"flow-actor-1","label":"You click Place Order in the React app. Your browser sends POST /api/orders to port 5000."},
+          {"highlight":"flow-actor-2","label":"The API Gateway receives the request, checks your JWT login token, and routes it to the Order Service at port 5002.","packet":true,"from":"actor-1","to":"actor-2"},
+          {"highlight":"flow-actor-3","label":"Order Service saves a new Order (status: Pending) to its PostgreSQL database. At the same time it writes an OrderCreated event to its Outbox table — same transaction, never lost.","packet":true,"from":"actor-2","to":"actor-3"},
+          {"highlight":"flow-actor-4","label":"The Outbox Relay worker picks up the event and publishes it to the order.created Kafka topic within 5 seconds.","packet":true,"from":"actor-3","to":"actor-4"},
+          {"highlight":"flow-actor-5","label":"Inventory Service reads the event and reserves the stock. Payment Service waits for you to submit payment.","packet":true,"from":"actor-4","to":"actor-5"},
+          {"highlight":"flow-actor-3","label":"Order status updates to PaymentReceived. The saga is complete. Your order is confirmed.","packet":true,"from":"actor-5","to":"actor-3"}
+        ]'>
+          <div class="flow-actors">
+            <div class="flow-actor" id="flow-actor-1">
+              <div class="flow-actor-icon">🌐</div>
+              <span>Browser</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-2">
+              <div class="flow-actor-icon">🚪</div>
+              <span>API Gateway</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-3">
+              <div class="flow-actor-icon">📋</div>
+              <span>Order Service</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-4">
+              <div class="flow-actor-icon">📨</div>
+              <span>Kafka</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-5">
+              <div class="flow-actor-icon">📦</div>
+              <span>Inventory</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-6">
+              <div class="flow-actor-icon">💳</div>
+              <span>Payment</span>
+            </div>
+          </div>
+          <div class="flow-packet" id="flow-packet"></div>
+          <div class="flow-step-label">Click "Next Step" to begin</div>
+          <div class="flow-controls">
+            <button class="btn btn-primary flow-next-btn">Next Step</button>
+            <button class="btn flow-reset-btn">Restart</button>
+            <span class="flow-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Screen 3: Key Concepts Broken Down -->
+      <section class="screen">
+        <h2 class="screen-heading animate-in">Three Details Worth Pausing On</h2>
+        <p class="animate-in">
+          The flow above hides some clever engineering. Here are three moments in the journey that are more
+          interesting than they first appear.
+        </p>
+
+        <div class="step-cards stagger-children">
+          <div class="step-card animate-in">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>The Gateway checks your identity</strong>
+              <p>Every request carries a <span class="term" data-definition="JSON Web Token — a cryptographically signed credential that proves who you are and what you are allowed to do. Like a wristband at a concert.">JWT token</span>
+              issued by the Identity Service. The <span class="term" data-definition="The single front door to your whole system. Every request goes through here first, so you can add security, routing, and rate limiting in one place.">API Gateway</span>
+              validates this token before forwarding the request. No valid token, no access.</p>
+            </div>
+          </div>
+          <div class="step-card animate-in">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>Two writes, one transaction</strong>
+              <p>When the Order Service saves your order to <span class="term" data-definition="A powerful relational database — like a very organized spreadsheet system. Great for structured data that needs to stay consistent.">PostgreSQL</span>,
+              it also writes to an <span class="term" data-definition="A special database table that stores events-to-be-sent alongside business data in the same transaction — guaranteeing they are never lost.">Outbox table</span>
+              in the very same database transaction. If the server crashes right after, the event is still there — never lost.</p>
+            </div>
+          </div>
+          <div class="step-card animate-in">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>Services never call each other directly</strong>
+              <p>The Order Service does not phone the Inventory Service. Instead it publishes an event to
+              <span class="term" data-definition="A message broker — like a postal service for software. Services publish messages to named channels (topics), and other services subscribe to read them.">Kafka</span>.
+              Inventory subscribes and reacts on its own schedule. This loose coupling means services can be
+              updated, restarted, or scaled independently.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Screen 4: The Four Big Patterns -->
+      <section class="screen">
+        <h2 class="screen-heading animate-in">Four Patterns Powering the Journey</h2>
+        <p class="animate-in">
+          The shopping flow you just traced is built on four architectural patterns. This course covers each in
+          depth — here is a preview of what each one solves.
+        </p>
+
+        <div class="pattern-cards stagger-children">
+          <div class="pattern-card animate-in" style="border-top-color: var(--color-actor-1)">
+            <div class="pattern-icon" style="background: var(--color-accent-light)">📬</div>
+            <h4 class="pattern-title">Transactional Outbox</h4>
+            <p class="pattern-desc">Events are saved to the database before being sent, so they are never lost even if the server crashes mid-operation.</p>
+          </div>
+          <div class="pattern-card animate-in" style="border-top-color: var(--color-actor-2)">
+            <div class="pattern-icon" style="background: var(--color-info-light)">🎭</div>
+            <h4 class="pattern-title">Choreography Saga</h4>
+            <p class="pattern-desc">Multiple services coordinate without a conductor — each reacts to events and passes the baton to the next specialist.</p>
+          </div>
+          <div class="pattern-card animate-in" style="border-top-color: var(--color-actor-3)">
+            <div class="pattern-icon" style="background: #F0EDF8">✂️</div>
+            <h4 class="pattern-title">CQRS</h4>
+            <p class="pattern-desc">Reading and writing use separate databases optimized for each job — fast writes in PostgreSQL, fast searches in
+            <span class="term" data-definition="A database built for search. While PostgreSQL stores data accurately, Elasticsearch finds it fast — even with typos or partial words.">Elasticsearch</span>.</p>
+          </div>
+          <div class="pattern-card animate-in" style="border-top-color: var(--color-actor-4)">
+            <div class="pattern-icon" style="background: #FEF8E7">📡</div>
+            <h4 class="pattern-title">Event-Driven Architecture</h4>
+            <p class="pattern-desc">Services talk by broadcasting events, not by calling each other directly — making the whole system resilient and decoupled.</p>
+          </div>
+        </div>
+
+        <div class="callout callout-info animate-in">
+          <div class="callout-icon">🗺️</div>
+          <div class="callout-content">
+            <strong class="callout-title">Course Roadmap</strong>
+            <p>Module 2 dives into each service specialist. Modules 3–4 cover Kafka and the Outbox pattern. Module 5 walks through the Saga step by step. Module 6 explains CQRS with dual storage.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Screen 5: Quiz -->
+      <section class="screen">
+        <h2 class="screen-heading animate-in">Check Your Understanding</h2>
+        <p class="animate-in">
+          Two quick questions to confirm the key ideas have landed. Trace the flow in your head before selecting an answer.
+        </p>
+
+        <div class="quiz-container animate-in" id="quiz-module1">
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="The cart lives in the Order Service — it manages both carts and orders because they share the same domain. Catalog only handles product listings and search."
+               data-explanation-wrong="The Catalog Service handles product search and listings, but the shopping cart belongs to the Order Service — carts and orders are the same domain.">
+            <h3 class="quiz-question">You add a product to your cart. Which service handles that request?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>Catalog Service — it owns the product data</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>Order Service — carts and orders live together</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>Payment Service — it needs to know what to charge</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>Identity Service — it knows who is logged in</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-c"
+               data-explanation-right="PostgreSQL is always the source of truth. Elasticsearch is updated a few seconds later via Kafka — this is called eventual consistency."
+               data-explanation-wrong="PostgreSQL is the write database — it always gets changes first. Elasticsearch catches up via Kafka events a few seconds later.">
+            <h3 class="quiz-question">A merchant updates a product name. Which database gets updated first?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>Elasticsearch — it is optimized for fast reads</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>Both at exactly the same time</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>PostgreSQL first, then Elasticsearch via Kafka</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>The API Gateway cache — it sits closest to the client</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module1')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module1')">Try Again</button>
+        </div>
+
+        <div class="callout callout-accent animate-in">
+          <div class="callout-icon">➡️</div>
+          <div class="callout-content">
+            <strong class="callout-title">Up Next: Seven Specialists</strong>
+            <p>Now that you understand the big picture flow, Module 2 introduces each service up close — who they are, what they own, and why those boundaries exist.</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-2" style="background: var(--color-bg-warm)">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">02</span>
+      <h1 class="module-title">Seven Specialists</h1>
+      <p class="module-subtitle">UrbanX is not one big app. It is seven small programs — and that specialization is a deliberate, powerful decision.</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- Screen 1: The Hospital Metaphor -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">One Doctor Does Everything — What Could Go Wrong?</h2>
+        <p>
+          Imagine a hospital where a single doctor handles cardiology, ophthalmology, and surgery simultaneously.
+          Exhausted, error-prone, and impossible to scale. Instead, hospitals hire specialists: each expert in
+          one domain, accountable for one set of outcomes.
+        </p>
+        <p>
+          UrbanX works the same way. If the Payment Service crashes, your shopping cart still works.
+          If the Catalog Service is overloaded with search queries, orders keep processing. Specialization
+          buys you independence — and independence buys you resilience.
+        </p>
+
+        <div class="callout callout-accent animate-in">
+          <div class="callout-icon">🏥</div>
+          <div class="callout-content">
+            <strong class="callout-title">The Key Insight</strong>
+            <p>Each service owns its own database. No service can reach into another service&apos;s data directly.
+            They only communicate via <span class="term" data-definition="A message broker — like a postal service for software. Services publish messages to named channels (topics), and other services subscribe to read them.">Kafka</span>
+            events or the HTTP API they expose.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Screen 2: Architecture Diagram -->
+      <section class="screen">
+        <h2 class="screen-heading animate-in">The Cast — Click to Learn Each Role</h2>
+        <p class="animate-in">
+          Seven services, two infrastructure zones. Click any component to see exactly what it owns and why
+          it exists as a separate specialist.
+        </p>
+
+        <div class="arch-diagram animate-in">
+          <div class="arch-zone">
+            <h4 class="arch-zone-label">Frontend &amp; Gateway</h4>
+            <div class="arch-component"
+                 data-desc="The React 19 SPA running in the user's browser. Communicates only through the API Gateway — never calls any service directly. All it knows is one address: port 5000.">
+              <div class="arch-icon">🌐</div>
+              <span>Browser / React</span>
+            </div>
+            <div class="arch-component"
+                 data-desc="The API Gateway (port 5000) — built with YARP reverse proxy. It is the single front door: validates JWT tokens, enforces rate limits (100 requests/min), and routes each URL path to the correct specialist service.">
+              <div class="arch-icon">🚪</div>
+              <span>API Gateway :5000</span>
+            </div>
+          </div>
+
+          <div class="arch-zone">
+            <h4 class="arch-zone-label">Backend Services</h4>
+            <div class="arch-component"
+                 data-desc="Identity Service (port 5005) — runs Duende IdentityServer. Issues and validates JWT login tokens using OAuth 2.0 / OIDC. This is the &quot;bouncer&quot; of the system — every other service trusts tokens it signs.">
+              <div class="arch-icon">🔐</div>
+              <span>Identity :5005</span>
+            </div>
+            <div class="arch-component"
+                 data-desc="Catalog Service (port 5001) — owns the product catalogue. Writes go to PostgreSQL; a Kafka consumer syncs changes to Elasticsearch for fast full-text search. This is CQRS in action.">
+              <div class="arch-icon">🛒</div>
+              <span>Catalog :5001</span>
+            </div>
+            <div class="arch-component"
+                 data-desc="Order Service (port 5002) — owns shopping carts and orders. Also acts as Saga coordinator: emits OrderCreated, listens for InventoryReserved and PaymentCompleted to advance the order state machine.">
+              <div class="arch-icon">📋</div>
+              <span>Order :5002</span>
+            </div>
+            <div class="arch-component"
+                 data-desc="Merchant Service (port 5003) — owns merchant registration and profile data. The simplest service: no Kafka, no outbox — just a REST API over a PostgreSQL database.">
+              <div class="arch-icon">🏪</div>
+              <span>Merchant :5003</span>
+            </div>
+            <div class="arch-component"
+                 data-desc="Payment Service (port 5004) — the only service that holds Stripe credentials. Talks to Stripe, records results in its own PostgreSQL database, and publishes PaymentCompleted events via the Transactional Outbox.">
+              <div class="arch-icon">💳</div>
+              <span>Payment :5004</span>
+            </div>
+            <div class="arch-component"
+                 data-desc="Inventory Service — runs on a dynamic port assigned by Aspire. Tracks stock levels. Listens for OrderCreated to reserve items, and releases reservations if payment fails — this is Saga compensation.">
+              <div class="arch-icon">📦</div>
+              <span>Inventory :dynamic</span>
+            </div>
+          </div>
+
+          <div class="arch-description">Click any component to learn what it does</div>
+        </div>
+      </section>
+
+      <!-- Screen 3: Gateway routing — Code Translation -->
+      <section class="screen">
+        <h2 class="screen-heading animate-in">How the Gateway Decides Where to Send Requests</h2>
+        <p class="animate-in">
+          The API Gateway uses <span class="term" data-definition="Yet Another Reverse Proxy — a Microsoft library that turns an ASP.NET app into a configurable API gateway with routing, load balancing, and rate limiting.">YARP</span>
+          (a <span class="term" data-definition="A server that sits in front of your real servers and forwards requests to them — invisible to the caller but essential for routing, security, and load balancing.">reverse proxy</span>
+          library) configured via JSON. Each route maps a URL pattern to one specialist service.
+          The Gateway itself never processes business logic — it only forwards.
+        </p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-string">"Routes"</span><span class="code-operator">:</span> <span class="code-operator">{</span></span>
+<span class="code-line">  <span class="code-string">"catalog-route"</span><span class="code-operator">:</span> <span class="code-operator">{</span></span>
+<span class="code-line">    <span class="code-property">"ClusterId"</span><span class="code-operator">:</span> <span class="code-string">"catalog"</span><span class="code-operator">,</span></span>
+<span class="code-line">    <span class="code-property">"Match"</span><span class="code-operator">:</span> <span class="code-operator">{</span> <span class="code-string">"Path"</span><span class="code-operator">:</span> <span class="code-string">"/api/products/{**catch-all}"</span> <span class="code-operator">}</span></span>
+<span class="code-line">  <span class="code-operator">},</span></span>
+<span class="code-line">  <span class="code-string">"order-route"</span><span class="code-operator">:</span> <span class="code-operator">{</span></span>
+<span class="code-line">    <span class="code-property">"ClusterId"</span><span class="code-operator">:</span> <span class="code-string">"order"</span><span class="code-operator">,</span></span>
+<span class="code-line">    <span class="code-property">"Match"</span><span class="code-operator">:</span> <span class="code-operator">{</span> <span class="code-string">"Path"</span><span class="code-operator">:</span> <span class="code-string">"/api/orders/{**catch-all}"</span> <span class="code-operator">}</span></span>
+<span class="code-line">  <span class="code-operator">},</span></span>
+<span class="code-line">  <span class="code-string">"payment-route"</span><span class="code-operator">:</span> <span class="code-operator">{</span></span>
+<span class="code-line">    <span class="code-property">"ClusterId"</span><span class="code-operator">:</span> <span class="code-string">"payment"</span><span class="code-operator">,</span></span>
+<span class="code-line">    <span class="code-property">"Match"</span><span class="code-operator">:</span> <span class="code-operator">{</span> <span class="code-string">"Path"</span><span class="code-operator">:</span> <span class="code-string">"/api/payments/{**catch-all}"</span> <span class="code-operator">}</span></span>
+<span class="code-line">  <span class="code-operator">},</span></span>
+<span class="code-line">  <span class="code-string">"identity-route"</span><span class="code-operator">:</span> <span class="code-operator">{</span></span>
+<span class="code-line">    <span class="code-property">"ClusterId"</span><span class="code-operator">:</span> <span class="code-string">"identity"</span><span class="code-operator">,</span></span>
+<span class="code-line">    <span class="code-property">"Match"</span><span class="code-operator">:</span> <span class="code-operator">{</span> <span class="code-string">"Path"</span><span class="code-operator">:</span> <span class="code-string">"/connect/{**catch-all}"</span> <span class="code-operator">}</span></span>
+<span class="code-line">  <span class="code-operator">}</span></span>
+<span class="code-line"><span class="code-operator">}</span></span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Any URL starting with <code>/api/products</code> goes to the Catalog Service — the product specialist.</p>
+              <p class="tl">Anything under <code>/api/orders</code> or <code>/api/cart</code> goes to the Order Service — carts and orders live together.</p>
+              <p class="tl">Payment requests under <code>/api/payments</code> go to the Payment Service — the only one that knows about Stripe.</p>
+              <p class="tl">The <code>/connect/</code> path is for login — it goes to the Identity Service running Duende IdentityServer.</p>
+              <p class="tl">The Gateway itself never processes business logic — it just reads this map and forwards.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-info animate-in">
+          <div class="callout-icon">🔒</div>
+          <div class="callout-content">
+            <strong class="callout-title">Rate Limiting at the Gate</strong>
+            <p>The Gateway also enforces <span class="term" data-definition="Capping how many requests a client can make in a time window. Like a nightclub with a 100-person capacity — once full, new arrivals wait outside.">rate limiting</span>
+            — 100 requests per minute per client. This single rule protects all seven services at once.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Screen 4: JWT Validation — Code Translation -->
+      <section class="screen">
+        <h2 class="screen-heading animate-in">How Every Service Checks Your Identity</h2>
+        <p class="animate-in">
+          The Identity Service uses <span class="term" data-definition="OpenID Connect — a login standard built on top of OAuth 2.0. It is the technology behind Sign in with Google buttons.">OIDC</span>
+          via <span class="term" data-definition="A .NET library that implements a full OAuth 2.0 / OpenID Connect server — the software that issues and validates login tokens.">Duende IdentityServer</span>.
+          After login, every service independently validates the
+          <span class="term" data-definition="JSON Web Token — a compact, cryptographically signed credential. Contains your user ID, role, and expiry time. Like a tamper-proof wristband.">JWT</span>
+          using a cached public key — they do not call Identity on every request.
+        </p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">builder</span>.<span class="code-property">Services</span></span>
+<span class="code-line">  .<span class="code-function">AddAuthentication</span>(</span>
+<span class="code-line">    <span class="code-function">JwtBearerDefaults</span>.<span class="code-property">AuthenticationScheme</span>)</span>
+<span class="code-line">  .<span class="code-function">AddJwtBearer</span>(<span class="code-keyword">options</span> <span class="code-operator">=&gt;</span></span>
+<span class="code-line">  <span class="code-operator">{</span></span>
+<span class="code-line">    <span class="code-keyword">options</span>.<span class="code-property">Authority</span> <span class="code-operator">=</span></span>
+<span class="code-line">      <span class="code-string">"http://identity:5005"</span><span class="code-operator">;</span></span>
+<span class="code-line">    <span class="code-keyword">options</span>.<span class="code-property">Audience</span> <span class="code-operator">=</span></span>
+<span class="code-line">      <span class="code-string">"urbanx-api"</span><span class="code-operator">;</span></span>
+<span class="code-line">    <span class="code-keyword">options</span>.<span class="code-property">RequireHttpsMetadata</span></span>
+<span class="code-line">      <span class="code-operator">=</span> <span class="code-keyword">false</span><span class="code-operator">;</span></span>
+<span class="code-line">  <span class="code-operator">});</span></span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Every service validates tokens by checking with the Identity Service — they all share this exact configuration.</p>
+              <p class="tl"><strong>Authority</strong> — the Identity Service URL. Go here to fetch the public key used to verify token signatures.</p>
+              <p class="tl"><strong>Audience</strong> — only accept tokens issued specifically for this API. Tokens from other systems are rejected.</p>
+              <p class="tl"><strong>RequireHttpsMetadata = false</strong> — development only. In production, HTTPS would be required for all token traffic.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-info animate-in">
+          <div class="callout-icon">📜</div>
+          <div class="callout-content">
+            <strong class="callout-title">Authorization Policies</strong>
+            <p>Beyond authentication, services also define
+            <span class="term" data-definition="A named rule that defines who can access an endpoint. CustomerOnly means only users with the customer role can call this API.">authorization policies</span>:
+            <code>CustomerOnly</code>, <code>MerchantOnly</code>, and <code>CustomerOrMerchant</code>.
+            An endpoint decorated with <code>[Authorize(Policy = "MerchantOnly")]</code> will reject a
+            customer&apos;s request even if their token is valid.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Screen 5: Group Chat — Services Introduce Themselves -->
+      <section class="screen">
+        <h2 class="screen-heading animate-in">The Services, In Their Own Words</h2>
+        <p class="animate-in">
+          Imagine the seven specialists in a group chat. Each one introduces itself — what it owns,
+          what it does not touch, and how it fits into the wider system.
+        </p>
+
+        <div class="chat-window animate-in" id="chat-services">
+          <div class="chat-messages">
+
+            <div class="chat-message" data-msg="0" data-sender="identity" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">ID</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Identity Service</span>
+                <p>I handle logins. Give me a username and password, I will give you a JWT token valid for 60 minutes.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="1" data-sender="catalog" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-5)">CA</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-5)">Catalog Service</span>
+                <p>I manage the product catalogue. Writes go to PostgreSQL, searches go to Elasticsearch. I keep them in sync via Kafka events.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="2" data-sender="order" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-2)">OR</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-2)">Order Service</span>
+                <p>Shopping carts and orders live with me. I also run the Saga — coordinating inventory and payment so the whole checkout stays consistent.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="3" data-sender="inventory" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">IN</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Inventory Service</span>
+                <p>I track stock. When Order tells me a new order was placed, I reserve the items. If payment fails, I release them — that is Saga compensation.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="4" data-sender="payment" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-4)">PA</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-4)">Payment Service</span>
+                <p>I talk to Stripe. I never share those credentials with anyone else. My job is to charge and report results — nothing more.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="5" data-sender="identity" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">ID</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Identity Service</span>
+                <p>And none of us call each other directly. We talk through Kafka — that is next module.</p>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="chat-typing" style="display:none">
+            <div class="chat-avatar" id="chat-services-typing-avatar"></div>
+            <div class="chat-typing-dots">
+              <span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>
+            </div>
+          </div>
+
+          <div class="chat-controls">
+            <button class="btn chat-next-btn">Next Message</button>
+            <button class="btn chat-all-btn">Play All</button>
+            <button class="btn chat-reset-btn">Replay</button>
+            <span class="chat-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Screen 6: Quiz -->
+      <section class="screen">
+        <h2 class="screen-heading animate-in">Architecture Decision Practice</h2>
+        <p class="animate-in">
+          Good architecture is about decisions — specifically, which service should own which data. These two
+          questions test that judgement. Think about <em>domain ownership</em> before selecting.
+        </p>
+
+        <div class="quiz-container animate-in" id="quiz-module2">
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="Favorites are about products, so they belong with the Catalog Service — the specialist that owns the product domain."
+               data-explanation-wrong="Think about which service owns the related data. Favorites are about products, so the product specialist — Catalog — is the right home.">
+            <h3 class="quiz-question">You want to add a "Favorite Products" feature where customers save products. Which service should own this data?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>The API Gateway — it already sees all requests</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>The Catalog Service — it owns the product domain</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>The Identity Service — it already knows who the user is</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>A brand new Favorites microservice</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="Services validate JWT tokens themselves using a cached public key — they do not call Identity on every request. Already-logged-in users have valid tokens and can keep using the app."
+               data-explanation-wrong="Here is the key: services cache the Identity public key and validate tokens locally. They only need Identity when users log in fresh.">
+            <h3 class="quiz-question">The Identity Service goes down for 5 minutes. Which of these still works?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>Nothing works — all services need auth</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>Existing logged-in users can still browse and place orders</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>New users can log in but existing ones cannot</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>Only the API Gateway keeps working</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module2')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module2')">Try Again</button>
+        </div>
+
+        <div class="callout callout-info animate-in">
+          <div class="callout-icon">➡️</div>
+          <div class="callout-content">
+            <strong class="callout-title">Up Next: The Messaging Backbone</strong>
+            <p>You now know the seven specialists and their boundaries. Module 3 dives into Kafka — the messaging layer that lets them coordinate without ever calling each other directly.</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-3" style="background: var(--color-bg)">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">03</span>
+      <h1 class="module-title">The Messaging Backbone</h1>
+      <p class="module-subtitle">How seven specialists talk to each other — without ever interrupting each other.</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- ── SCREEN 1: The Bulletin Board Metaphor ── -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The Office Bulletin Board</h2>
+        <p>Imagine a shared office with seven specialists. The clumsy way to coordinate is to tap everyone on the shoulder — every time, for every update. They get interrupted, they have to drop what they&apos;re doing, and if one person is out sick, your whole plan stalls.</p>
+        <p>UrbanX does something smarter: it uses a <span class="term" data-definition="Software that receives messages from senders (producers) and delivers them to receivers (consumers). Like a postal sorting office — it handles routing so the sender and receiver do not need to be connected at the same time.">message broker</span> called <strong>Kafka</strong> — the shared bulletin board. Instead of calling Inventory directly, the Order Service pins a note. Inventory reads it when it&apos;s ready. Nobody is interrupted. Nobody misses it.</p>
+
+        <div class="callout callout-info animate-in">
+          <div class="callout-icon">📌</div>
+          <div class="callout-content">
+            <strong class="callout-title">Opening Hook</strong>
+            <p>What if the Inventory Service crashes while you are checking out? In a direct-call system, your order fails instantly. With Kafka, the order message just waits on the board until Inventory comes back — and then it catches up.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SCREEN 2: Topics — The Named Channels ── -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Topics: Named Channels on the Board</h2>
+        <p>Every note on the bulletin board goes into a named slot called a <span class="term" data-definition="A named, ordered log of messages in Kafka. Producers write to it; consumers read from it. Like a TV channel — producers broadcast, consumers tune in.">topic</span>. UrbanX has five topics — one for each important event type that crosses service boundaries.</p>
+
+        <div class="badge-list animate-in">
+          <div class="badge-item">
+            <code class="badge-code">order.created</code>
+            <span class="badge-desc">Order Service → Inventory Service: triggers stock reservation for new orders</span>
+          </div>
+          <div class="badge-item">
+            <code class="badge-code">inventory.events</code>
+            <span class="badge-desc">Inventory Service → Order Service: carries Reserved or ReservationFailed results</span>
+          </div>
+          <div class="badge-item">
+            <code class="badge-code">payment.events</code>
+            <span class="badge-desc">Payment Service → Order Service: carries Completed or Failed payment results</span>
+          </div>
+          <div class="badge-item">
+            <code class="badge-code">order.cancelled</code>
+            <span class="badge-desc">Order Service → Inventory Service: triggers stock release when payment fails</span>
+          </div>
+          <div class="badge-item">
+            <code class="badge-code">catalog.products</code>
+            <span class="badge-desc">Catalog Service → Catalog Service: syncs product writes to Elasticsearch</span>
+          </div>
+        </div>
+
+        <div class="callout callout-accent animate-in">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">Why Should I Care?</strong>
+            <p>Understanding topics means you can tell an AI &ldquo;add a new service that listens to payment events&rdquo; and know exactly what that means: subscribe to the <code>payment.events</code> topic. No changes needed to the Payment Service whatsoever.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SCREEN 3: Reading Code — The Consumer ── -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Reading the Code: The Inventory Consumer</h2>
+        <p>Here is how the Inventory Service listens for new orders. Every line has a purpose — let&apos;s decode it together.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">var</span> config = <span class="code-keyword">new</span> <span class="code-function">ConsumerConfig</span></span>
+<span class="code-line">{</span>
+<span class="code-line">  <span class="code-property">BootstrapServers</span> = _kafkaSettings.<span class="code-property">BootstrapServers</span>,</span>
+<span class="code-line">  <span class="code-property">GroupId</span>          = <span class="code-string">"inventory-service"</span>,</span>
+<span class="code-line">  <span class="code-property">AutoOffsetReset</span>  = <span class="code-property">AutoOffsetReset</span>.<span class="code-property">Earliest</span>,</span>
+<span class="code-line">  <span class="code-property">EnableAutoCommit</span> = <span class="code-keyword">false</span></span>
+<span class="code-line">};</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-keyword">using var</span> consumer = <span class="code-keyword">new</span> <span class="code-function">ConsumerBuilder</span>&lt;<span class="code-keyword">string</span>, <span class="code-keyword">string</span>&gt;(config).<span class="code-function">Build</span>();</span>
+<span class="code-line">consumer.<span class="code-function">Subscribe</span>(<span class="code-string">"order.created"</span>);</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-keyword">while</span> (!stoppingToken.<span class="code-property">IsCancellationRequested</span>)</span>
+<span class="code-line">{</span>
+<span class="code-line">  <span class="code-keyword">var</span> result     = consumer.<span class="code-function">Consume</span>(stoppingToken);</span>
+<span class="code-line">  <span class="code-keyword">var</span> orderEvent = <span class="code-function">JsonSerializer</span>.<span class="code-function">Deserialize</span>&lt;<span class="code-function">OrderEvent</span>&gt;(result.<span class="code-property">Message</span>.<span class="code-property">Value</span>);</span>
+<span class="code-line">  <span class="code-keyword">await</span> <span class="code-function">ProcessOrderAsync</span>(orderEvent, stoppingToken);</span>
+<span class="code-line">  consumer.<span class="code-function">Commit</span>(result);</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Connect to the Kafka server and join the <span class="term" data-definition="A set of service instances that share the work of reading from a topic. Each message goes to exactly one member of the group — enabling load balancing.">consumer group</span> called &ldquo;inventory-service&rdquo;.</p>
+              <p class="tl"><strong>GroupId</strong> means: if multiple Inventory instances run at the same time, they share the work — no message is processed twice.</p>
+              <p class="tl"><strong>EnableAutoCommit=false</strong>: we manually confirm receipt only after successful processing — no lost messages if we crash mid-way.</p>
+              <p class="tl">Subscribe to the <code>order.created</code> topic — start listening for new orders.</p>
+              <p class="tl">Loop forever: wait for a message to arrive, deserialize it from JSON, process it (reserve stock), then manually <strong>commit</strong> the <span class="term" data-definition="A message&apos;s position in a topic. Like a bookmark in a book — Kafka tracks where each consumer group last read, so it can resume after a restart.">offset</span> to confirm it was handled.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SCREEN 4: Live Message Flow ── -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Watch a Real Order Flow</h2>
+        <p>Let&apos;s trace a complete order through the messaging backbone — from the moment a customer clicks &ldquo;Buy&rdquo; to when Inventory confirms the reservation. Click <strong>Next Message</strong> to step through it.</p>
+
+        <div class="chat-window animate-in" id="chat-kafka">
+          <div class="chat-messages">
+
+            <div class="chat-message" data-msg="0" data-sender="order" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1); color: #fff">OR</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Order Service</span>
+                <p>New order #abc123 placed! I am NOT calling Inventory directly. I will post to <code>order.created</code>.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="1" data-sender="order" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1); color: #fff">OR</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Order Service</span>
+                <p>Outbox entry saved to my database. The relay will pick it up in under 5 seconds.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="2" data-sender="kafka" style="display:none">
+              <div class="chat-avatar" style="background: #1E1E2E; color: #CDD6F4">KF</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-4)">Kafka</span>
+                <p>Message received. Stored at <span class="term" data-definition="A message&apos;s position in a topic. Like a bookmark in a book — Kafka tracks where each consumer group last read, so it can resume after a restart.">offset</span> 182, partition 0. All subscribers will get this — whenever they are ready.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="3" data-sender="inventory" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3); color: #fff">IN</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Inventory Service</span>
+                <p>Got it! Reading order #abc123... 2x Wireless Headphones. Checking stock now.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="4" data-sender="inventory" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3); color: #fff">IN</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Inventory Service</span>
+                <p>15 in stock, 0 reserved. Reserving 2. Publishing <code>InventoryReserved</code> to <code>inventory.events</code>.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="5" data-sender="kafka" style="display:none">
+              <div class="chat-avatar" style="background: #1E1E2E; color: #CDD6F4">KF</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-4)">Kafka</span>
+                <p><code>InventoryReserved</code> stored at offset 183. Order Service is subscribed — it will pick this up next.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="6" data-sender="order" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1); color: #fff">OR</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Order Service</span>
+                <p><code>InventoryReserved</code> received. Order status still Pending. Waiting for payment confirmation.</p>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="chat-typing" style="display:none">
+            <div class="chat-avatar" id="chat-kafka-typing-avatar"></div>
+            <div class="chat-typing-dots">
+              <span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>
+            </div>
+          </div>
+
+          <div class="chat-controls">
+            <button class="btn chat-next-btn">Next Message</button>
+            <button class="btn chat-all-btn">Play All</button>
+            <button class="btn chat-reset-btn">Replay</button>
+            <span class="chat-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SCREEN 5: Key Insight — At-Least-Once ── -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The Resilience Guarantee</h2>
+        <p>Kafka stores messages in an ordered log. When the Inventory Service goes offline, messages queue up at the exact <span class="term" data-definition="A message&apos;s position in a topic. Like a bookmark in a book — Kafka tracks where each consumer group last read, so it can resume after a restart.">offset</span> where it stopped reading. When it restarts, it resumes from that bookmark — no messages skipped, no messages lost.</p>
+        <p>This is what &ldquo;decoupled in time&rdquo; means: the publisher does not wait for the consumer. The consumer can catch up from any point in history.</p>
+
+        <div class="callout callout-accent animate-in">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">At-least-once delivery</strong>
+            <p><span class="term" data-definition="The guarantee that every message will be delivered at least once. The downside: it might be delivered more than once, so consumers must handle duplicates safely.">At-least-once delivery</span>: Kafka guarantees every message is delivered at least once. If the consumer crashes mid-processing, it gets the message again on restart. Services must handle duplicates gracefully — this is called being <span class="term" data-definition="Safe to repeat. An idempotent operation has the same result whether you do it once or ten times. Releasing a stock reservation that is already released does nothing — that is idempotent.">idempotent</span>. The <strong>Transactional Outbox</strong> pattern (Module 4) and the <strong>Order Saga</strong> (Module 5) show exactly how UrbanX achieves this.</p>
+          </div>
+        </div>
+
+        <div class="callout callout-info animate-in">
+          <div class="callout-icon">🔗</div>
+          <div class="callout-content">
+            <strong class="callout-title">pub-sub in one sentence</strong>
+            <p><span class="term" data-definition="Publish-Subscribe: a messaging pattern where publishers send to a topic without knowing who reads it, and subscribers read without knowing who sent it. Complete decoupling.">Pub-sub</span> means the Payment Service never needs to know that an Analytics Service exists — Analytics simply subscribes to <code>payment.events</code> and the Payment Service is never touched.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SCREEN 6: Quiz ── -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Check Your Understanding</h2>
+
+        <div class="quiz-container animate-in" id="quiz-module3">
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="Kafka stores messages until each consumer group has confirmed reading them. The consumer group offset tracks exactly where Inventory last read — it resumes from there."
+               data-explanation-wrong="Kafka&apos;s key superpower is durability. Messages are not lost when a consumer is offline — they wait in the topic log until the consumer comes back and reads them.">
+            <h3 class="quiz-question">The Inventory Service restarts after a 10-minute outage. What happens to order events that arrived during the outage?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>They are lost — Kafka only holds messages for connected consumers</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Kafka held them in the topic — Inventory catches up from where it left off</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The Order Service automatically retries sending them</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The API Gateway queued them</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="This is the beauty of event-driven architecture — you can add new consumers without touching the producer. The Payment Service never needs to know analytics exists."
+               data-explanation-wrong="Kafka&apos;s pub-sub model means anyone can subscribe to a topic without the producer knowing. No code changes needed in Payment Service — just add a new consumer.">
+            <h3 class="quiz-question">You want a new analytics service to track every payment without changing the Payment Service at all. How?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Add logging code directly to the Payment Service</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Subscribe the analytics service to the <code>payment.events</code> Kafka topic</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Poll the Payment Service database every minute</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Add a new endpoint to the Payment Service for analytics</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module3')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module3')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-4" style="background: var(--color-bg-warm)">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">04</span>
+      <h1 class="module-title">Never Lose a Message</h1>
+      <p class="module-subtitle">The Transactional Outbox pattern — why writing to two systems at once is impossible, and how UrbanX solves it.</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- ── SCREEN 1: The Dangerous Moment ── -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The Dangerous Moment</h2>
+        <p>Imagine your order gets saved to the database — and then the server crashes before the message reaches Kafka. The order exists, but Inventory never heard about it. Stock is never reserved. The customer expects delivery that will never come.</p>
+        <p>This is not a hypothetical. In any distributed system, a crash, network timeout, or even a routine deployment can happen between two separate writes. Without a safety net, that window is catastrophic.</p>
+
+        <div class="step-cards stagger-children animate-in">
+
+          <div class="step-card animate-in">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>Order saved to database ✓</strong>
+              <p>The Order record is written to PostgreSQL successfully.</p>
+            </div>
+          </div>
+
+          <div class="step-card animate-in" style="border-left-color: var(--color-error); background: var(--color-error-light)">
+            <div class="step-num" style="background: var(--color-error)">💥</div>
+            <div class="step-body">
+              <strong>Server crashes here</strong>
+              <p>A power failure, OOM kill, deployment restart — any crash at this exact moment is catastrophic.</p>
+            </div>
+          </div>
+
+          <div class="step-card animate-in">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>Kafka message never sent ✗</strong>
+              <p>The code that publishes to Kafka never runs.</p>
+            </div>
+          </div>
+
+          <div class="step-card animate-in">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <strong>Order exists, Inventory never knew ✗</strong>
+              <p>The order is confirmed but stock is never reserved. The customer expects delivery that will never come.</p>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="callout callout-warning animate-in">
+          <div class="callout-icon">⚠️</div>
+          <div class="callout-content">
+            <strong class="callout-title">The Core Problem</strong>
+            <p>Writing to two different systems — a database and a message broker — can never be <span class="term" data-definition="A database operation where everything succeeds or everything fails together — no partial results. Like a bank transfer: both debit and credit happen or neither does.">atomic</span>. There is always a gap. The <span class="term" data-definition="A pattern where you write an event to a table in the same database transaction as your business data — then a background worker publishes it to the message broker. Guarantees events are never lost.">Transactional Outbox</span> pattern closes that gap.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SCREEN 2: The Surgeon&apos;s Checklist ── -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The Surgeon&apos;s Checklist Solution</h2>
+        <p>Before surgery, every step is written on a form — even if the power goes out mid-operation, staff know exactly what was done and what comes next. The Outbox table is that checklist.</p>
+        <p>Instead of calling Kafka directly, the Order Service writes the event into its <em>own database</em>, in the same transaction as the order itself. A separate <span class="term" data-definition="A program that runs continuously in the background, doing work on a schedule or in response to events — without being directly called by a user request.">background service</span> (the <code>OutboxRelayService</code>) then reads those pending entries and publishes them to Kafka.</p>
+
+        <div class="step-cards stagger-children animate-in">
+
+          <div class="step-card animate-in">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>Single database transaction</strong>
+              <p>Order record + Outbox entry are written together. Both succeed, or neither does. The crash window is eliminated.</p>
+            </div>
+          </div>
+
+          <div class="step-card animate-in">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>Background relay polls every 5 seconds</strong>
+              <p>The <code>OutboxRelayService</code> scans for unprocessed entries and publishes each one to Kafka.</p>
+            </div>
+          </div>
+
+          <div class="step-card animate-in">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>Mark as processed</strong>
+              <p>After a successful publish, <code>ProcessedAt</code> is set to now. The entry is never published again.</p>
+            </div>
+          </div>
+
+          <div class="step-card animate-in">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <strong>Retry on failure</strong>
+              <p>If Kafka is temporarily unavailable, <code>RetryCount</code> increments. The relay will try again on the next poll. Up to 5 attempts.</p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ── SCREEN 3: Code — The Atomic Write ── -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Code: The Atomic Write</h2>
+        <p>Here is the exact code in the Order Service that makes the crash-safe write. Notice that both the order and the outbox entry are saved in one <code>SaveChangesAsync</code> call.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">await</span> db.<span class="code-property">Orders</span>.<span class="code-function">AddAsync</span>(order);</span>
+<span class="code-line"><span class="code-keyword">await</span> db.<span class="code-property">OutboxMessages</span>.<span class="code-function">AddAsync</span>(<span class="code-keyword">new</span> <span class="code-function">OutboxMessage</span></span>
+<span class="code-line">{</span>
+<span class="code-line">  <span class="code-property">Id</span>          = <span class="code-function">Guid</span>.<span class="code-function">NewGuid</span>(),</span>
+<span class="code-line">  <span class="code-property">EventType</span>   = <span class="code-string">"OrderCreated"</span>,</span>
+<span class="code-line">  <span class="code-property">Payload</span>     = <span class="code-function">JsonSerializer</span>.<span class="code-function">Serialize</span>(orderEvent),</span>
+<span class="code-line">  <span class="code-property">CreatedAt</span>   = <span class="code-function">DateTime</span>.<span class="code-property">UtcNow</span>,</span>
+<span class="code-line">  <span class="code-property">ProcessedAt</span> = <span class="code-keyword">null</span>,</span>
+<span class="code-line">  <span class="code-property">RetryCount</span>  = <span class="code-number">0</span></span>
+<span class="code-line">});</span>
+<span class="code-line"><span class="code-keyword">await</span> db.<span class="code-function">SaveChangesAsync</span>();</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Save the new Order entity to the Orders table.</p>
+              <p class="tl">In the same database transaction, save a new <code>OutboxMessage</code> — a record of the event that needs to be published.</p>
+              <p class="tl"><strong>ProcessedAt=null</strong> means: not yet published to Kafka.</p>
+              <p class="tl"><strong>RetryCount=0</strong>: no delivery attempts yet.</p>
+              <p class="tl"><code>SaveChangesAsync</code> commits BOTH the order AND the outbox entry <span class="term" data-definition="A database operation where everything succeeds or everything fails together — no partial results. Like a bank transfer: both debit and credit happen or neither does.">atomically</span> — either both succeed or neither does.</p>
+              <p class="tl">If the server crashes after this line: both records exist in the database. The relay will pick up and publish to Kafka on restart.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SCREEN 4: Code — The Relay Loop ── -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Code: The Relay Loop</h2>
+        <p>The <code>OutboxRelayService</code> is a <span class="term" data-definition="A program that runs continuously in the background, doing work on a schedule or in response to events — without being directly called by a user request.">background service</span> that runs forever. Every 5 seconds it scans for unpublished messages and sends them to Kafka.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">protected override async</span> <span class="code-function">Task</span> <span class="code-function">ExecuteAsync</span>(<span class="code-function">CancellationToken</span> stoppingToken)</span>
+<span class="code-line">{</span>
+<span class="code-line">  <span class="code-keyword">while</span> (!stoppingToken.<span class="code-property">IsCancellationRequested</span>)</span>
+<span class="code-line">  {</span>
+<span class="code-line">    <span class="code-keyword">var</span> pending = <span class="code-keyword">await</span> _db.<span class="code-property">OutboxMessages</span></span>
+<span class="code-line">      .<span class="code-function">Where</span>(m =&gt; m.<span class="code-property">ProcessedAt</span> == <span class="code-keyword">null</span> &amp;&amp; m.<span class="code-property">RetryCount</span> &lt; <span class="code-number">5</span>)</span>
+<span class="code-line">      .<span class="code-function">Take</span>(<span class="code-number">50</span>)</span>
+<span class="code-line">      .<span class="code-function">ToListAsync</span>(stoppingToken);</span>
+<span class="code-line"></span>
+<span class="code-line">    <span class="code-keyword">foreach</span> (<span class="code-keyword">var</span> msg <span class="code-keyword">in</span> pending)</span>
+<span class="code-line">    {</span>
+<span class="code-line">      <span class="code-keyword">try</span></span>
+<span class="code-line">      {</span>
+<span class="code-line">        <span class="code-keyword">await</span> _producer.<span class="code-function">ProduceAsync</span>(msg.<span class="code-property">EventType</span>, msg.<span class="code-property">Payload</span>);</span>
+<span class="code-line">        msg.<span class="code-property">ProcessedAt</span> = <span class="code-function">DateTime</span>.<span class="code-property">UtcNow</span>;</span>
+<span class="code-line">      }</span>
+<span class="code-line">      <span class="code-keyword">catch</span> (<span class="code-function">Exception</span> ex)</span>
+<span class="code-line">      {</span>
+<span class="code-line">        _logger.<span class="code-function">LogError</span>(ex, <span class="code-string">"Failed to publish outbox message {Id}"</span>, msg.<span class="code-property">Id</span>);</span>
+<span class="code-line">        msg.<span class="code-property">RetryCount</span>++;</span>
+<span class="code-line">      }</span>
+<span class="code-line">    }</span>
+<span class="code-line"></span>
+<span class="code-line">    <span class="code-keyword">await</span> _db.<span class="code-function">SaveChangesAsync</span>(stoppingToken);</span>
+<span class="code-line">    <span class="code-keyword">await</span> <span class="code-function">Task</span>.<span class="code-function">Delay</span>(<span class="code-function">TimeSpan</span>.<span class="code-function">FromSeconds</span>(<span class="code-number">5</span>), stoppingToken);</span>
+<span class="code-line">  }</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">This background service runs forever until the app stops.</p>
+              <p class="tl">Find messages not yet published (<code>ProcessedAt=null</code>) with fewer than 5 failed attempts — these are the ones still waiting to be sent.</p>
+              <p class="tl">Take up to 50 at a time — process in batches for efficiency.</p>
+              <p class="tl">Publish each one to Kafka, using <code>EventType</code> as the topic name.</p>
+              <p class="tl">Mark as processed by setting <code>ProcessedAt</code> to now — it will never be picked up again.</p>
+              <p class="tl">If publishing fails: increment <code>RetryCount</code> — the message will be retried on the next poll cycle.</p>
+              <p class="tl">Wait 5 seconds, then poll again — repeat forever.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent animate-in">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">At-least-once, handled gracefully</strong>
+            <p>If the relay publishes to Kafka but crashes before marking <code>ProcessedAt</code>, the message will be published again on restart. The consumer receives a duplicate. That is why consumers must be <span class="term" data-definition="Safe to repeat. If you run an idempotent operation twice, the second run has no effect. Essential for handling duplicate messages in distributed systems.">idempotent</span> — the next code snippet shows exactly how.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SCREEN 5: Code — The Idempotent Consumer ── -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Code: The Idempotent Consumer</h2>
+        <p>What happens if Inventory receives the same <code>order.cancelled</code> event twice? Without protection, it would try to release stock that was already released — corrupting your inventory counts. This code makes that safe.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">var</span> reservations = <span class="code-keyword">await</span> db.<span class="code-property">InventoryReservations</span></span>
+<span class="code-line">  .<span class="code-function">Where</span>(r =&gt; r.<span class="code-property">OrderId</span> == orderId</span>
+<span class="code-line">            &amp;&amp; r.<span class="code-property">Status</span>  == <span class="code-property">ReservationStatus</span>.<span class="code-property">Reserved</span>)</span>
+<span class="code-line">  .<span class="code-function">ToListAsync</span>();</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-keyword">if</span> (reservations.<span class="code-property">Count</span> == <span class="code-number">0</span>) <span class="code-keyword">return</span>;</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-keyword">foreach</span> (<span class="code-keyword">var</span> r <span class="code-keyword">in</span> reservations)</span>
+<span class="code-line">{</span>
+<span class="code-line">  r.<span class="code-property">Status</span> = <span class="code-property">ReservationStatus</span>.<span class="code-property">Released</span>;</span>
+<span class="code-line">  item.<span class="code-property">QuantityReserved</span> -= r.<span class="code-property">Quantity</span>;</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Find all reservations for this order that are still in <code>Reserved</code> status — the ones that actually need releasing.</p>
+              <p class="tl"><strong>If there are none — they were already released — exit immediately. Do nothing.</strong></p>
+              <p class="tl">This single check makes the whole operation <span class="term" data-definition="Safe to repeat. If you run an idempotent operation twice, the second run has no effect. Essential for handling duplicate messages in distributed systems.">idempotent</span>: processing the same message 10 times has the same result as processing it once.</p>
+              <p class="tl">Only if reservations exist: release each one — set status to Released and reduce the reserved quantity count.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SCREEN 6: Quiz ── -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Check Your Understanding</h2>
+
+        <div class="quiz-container animate-in" id="quiz-module4">
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="RetryCount tracks delivery failures. At 5, the relay stops trying. This record needs investigation — check your Kafka connection or message format."
+               data-explanation-wrong="RetryCount counts failures, not successes. ProcessedAt=null means it has never been successfully published. RetryCount=4 means it has failed 4 times and has one attempt left.">
+            <h3 class="quiz-question">The OutboxRelayService has been publishing messages. You notice an outbox record with RetryCount=4 and ProcessedAt=null. What does this mean?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The message was successfully published 4 times</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Kafka delivery has failed 4 times — one more failure and this message is abandoned</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The message is still being processed right now</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The record is being held for audit purposes</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="This is exactly the dangerous moment the Outbox pattern prevents. A temporary Kafka hiccup or network glitch between SaveChanges and ProduceAsync silently drops the event — with no retry."
+               data-explanation-wrong="The problem is time. Between SaveChangesAsync and ProduceAsync, anything can go wrong: server restart, Kafka timeout, network blip. Without the Outbox, that event is gone forever.">
+            <h3 class="quiz-question">A developer removes the Outbox pattern and instead publishes to Kafka directly after SaveChangesAsync. It works fine in testing. When would this break in production?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>It would never break — SaveChangesAsync and ProduceAsync are both reliable</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>When Kafka is temporarily unavailable, the order is saved but the event is never published</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Only if the database is under high load</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>It would break immediately — direct publishing is not allowed</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module4')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module4')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-5" style="background: var(--color-bg)">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">05</span>
+      <h1 class="module-title">The Order Saga</h1>
+      <p class="module-subtitle">Three databases. One order. If any step fails, the others must undo their work. Normal database transactions cannot do this — so we use a Saga.</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- SCREEN 1: The Problem -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Why a normal transaction is not enough</h2>
+        <p>
+          Fulfilling an order requires three things to happen across three different services:
+          <strong>reserve inventory</strong>, <strong>charge payment</strong>, and
+          <strong>confirm the order</strong>. If any one fails, the others must undo their work.
+        </p>
+        <p>
+          That is not possible with a normal
+          <span class="term" data-definition="An operation that must be atomic across multiple separate databases or services — notoriously hard to implement correctly, which is why Sagas exist.">distributed transaction</span>.
+          PostgreSQL cannot reach into Stripe. Inventory cannot lock Payment. Each service owns its own database.
+        </p>
+
+        <div class="icon-rows animate-in">
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-accent-light)">🏃</div>
+            <div>
+              <strong>Think of it as a relay race.</strong>
+              <p>Order passes the baton to Inventory ("reserve the stock"), which passes it to Payment ("charge the card"), which passes it back to Order ("you are confirmed"). If a runner drops the baton, the team runs the race in reverse to undo what was done.</p>
+            </div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-info-light)">🎭</div>
+            <div>
+              <strong>This pattern is called a
+                <span class="term" data-definition="A way to manage multi-step operations across separate services. Each step publishes an event; if a step fails, previous steps are undone via compensating transactions.">Saga pattern</span>.
+              </strong>
+              <p>UrbanX uses
+                <span class="term" data-definition="Each service reacts to events independently, with no central coordinator. Like a flock of birds that moves together without a leader.">choreography</span>
+                — each service reacts to Kafka events on its own. There is no central controller.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 2: Happy-path flow animation -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The happy path — step by step</h2>
+        <p>When everything goes right, four actors cooperate via Kafka events. Click through each step to see the full saga unfold.</p>
+
+        <div class="flow-animation animate-in" id="flow-saga" data-steps='[
+          {"highlight":"flow-actor-1","label":"Customer places order. Order Service saves it (Status: Pending) and writes OrderCreated to the Outbox in the same transaction."},
+          {"highlight":"flow-actor-2","label":"Outbox Relay publishes OrderCreated to the order.created Kafka topic.","packet":true,"from":"actor-1","to":"actor-2"},
+          {"highlight":"flow-actor-3","label":"Inventory Service reads the event. Checks stock — 15 available. Reserves 2. Publishes InventoryReserved to inventory.events.","packet":true,"from":"actor-2","to":"actor-3"},
+          {"highlight":"flow-actor-2","label":"Kafka holds the InventoryReserved event for the Order Service.","packet":true,"from":"actor-3","to":"actor-2"},
+          {"highlight":"flow-actor-1","label":"Order Service reads InventoryReserved. Order still Pending — waiting for payment.","packet":true,"from":"actor-2","to":"actor-1"},
+          {"highlight":"flow-actor-4","label":"Customer submits payment. Payment Service calls Stripe API. Card approved. Publishes PaymentCompleted to payment.events."},
+          {"highlight":"flow-actor-2","label":"Kafka holds PaymentCompleted for the Order Service.","packet":true,"from":"actor-4","to":"actor-2"},
+          {"highlight":"flow-actor-1","label":"Order Service reads PaymentCompleted. Updates status to PaymentReceived. Saga complete — the merchant will fulfill the order.","packet":true,"from":"actor-2","to":"actor-1"}
+        ]'>
+          <div class="flow-actors">
+            <div class="flow-actor" id="flow-actor-1">
+              <div class="flow-actor-icon" style="background: var(--color-accent-light); border-color: var(--color-actor-1); color: var(--color-actor-1)">📋</div>
+              <span>Order Service</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-2">
+              <div class="flow-actor-icon" style="background: #1E1E2E; border-color: #45475A; color: #CDD6F4">📡</div>
+              <span>Kafka</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-3">
+              <div class="flow-actor-icon" style="background: #EDE9F6; border-color: var(--color-actor-3); color: var(--color-actor-3)">📦</div>
+              <span>Inventory</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-4">
+              <div class="flow-actor-icon" style="background: #E8F5EE; border-color: var(--color-actor-5); color: var(--color-actor-5)">💳</div>
+              <span>Payment</span>
+            </div>
+          </div>
+          <div class="flow-packet"></div>
+          <div class="flow-step-label">Click "Next Step" to begin</div>
+          <div class="flow-controls">
+            <button class="btn btn-primary flow-next-btn">Next Step</button>
+            <button class="btn flow-reset-btn">Restart</button>
+            <span class="flow-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 3: State machine translation block -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The order
+          <span class="term" data-definition="A system that can only be in one defined state at a time, with explicit rules about which transitions are allowed. Prevents objects from entering impossible states.">state machine</span>
+        </h2>
+        <p>An order cannot jump from <em>Confirmed</em> straight to <em>Delivered</em>. This code enforces every legal transition and rejects all others.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">public static readonly</span> <span class="code-function">IReadOnlyDictionary</span>&lt;<span class="code-function">OrderStatus</span>, <span class="code-function">IReadOnlySet</span>&lt;<span class="code-function">OrderStatus</span>&gt;&gt; Allowed =</span>
+<span class="code-line">    <span class="code-keyword">new</span> <span class="code-function">Dictionary</span>&lt;<span class="code-function">OrderStatus</span>, <span class="code-function">IReadOnlySet</span>&lt;<span class="code-function">OrderStatus</span>&gt;&gt;</span>
+<span class="code-line">{</span>
+<span class="code-line">    [<span class="code-function">OrderStatus</span>.<span class="code-property">Confirmed</span>]      = <span class="code-keyword">new</span> <span class="code-function">HashSet</span>&lt;<span class="code-function">OrderStatus</span>&gt; { <span class="code-function">OrderStatus</span>.<span class="code-property">Preparing</span>,      <span class="code-function">OrderStatus</span>.<span class="code-property">Cancelled</span> },</span>
+<span class="code-line">    [<span class="code-function">OrderStatus</span>.<span class="code-property">Preparing</span>]      = <span class="code-keyword">new</span> <span class="code-function">HashSet</span>&lt;<span class="code-function">OrderStatus</span>&gt; { <span class="code-function">OrderStatus</span>.<span class="code-property">ReadyForPickup</span>, <span class="code-function">OrderStatus</span>.<span class="code-property">Cancelled</span> },</span>
+<span class="code-line">    [<span class="code-function">OrderStatus</span>.<span class="code-property">ReadyForPickup</span>] = <span class="code-keyword">new</span> <span class="code-function">HashSet</span>&lt;<span class="code-function">OrderStatus</span>&gt; { <span class="code-function">OrderStatus</span>.<span class="code-property">InTransit</span>,      <span class="code-function">OrderStatus</span>.<span class="code-property">Cancelled</span> },</span>
+<span class="code-line">    [<span class="code-function">OrderStatus</span>.<span class="code-property">InTransit</span>]      = <span class="code-keyword">new</span> <span class="code-function">HashSet</span>&lt;<span class="code-function">OrderStatus</span>&gt; { <span class="code-function">OrderStatus</span>.<span class="code-property">Delivered</span>,      <span class="code-function">OrderStatus</span>.<span class="code-property">Cancelled</span> },</span>
+<span class="code-line">};</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">This is a whitelist: only these status transitions are allowed.</p>
+              <p class="tl">Confirmed can go to Preparing or Cancelled — nothing else.</p>
+              <p class="tl">You cannot skip from Confirmed directly to Delivered.</p>
+              <p class="tl">Every service update checks this table before changing status.</p>
+              <p class="tl">Invalid transitions throw an error — protecting the order from entering impossible states.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 4: Failure path chat -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The failure path — card declined</h2>
+        <p>
+          When payment fails, the saga does not just stop — it runs backwards.
+          This is called <span class="term" data-definition="Undoing the effects of a previous successful step when a later step fails. The distributed equivalent of a database rollback — but done via events.">compensation</span>.
+          Watch how the system gracefully unwinds.
+        </p>
+
+        <div class="chat-window animate-in" id="chat-saga-fail">
+          <div class="chat-messages">
+            <div class="chat-message" data-msg="0" data-sender="order" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">OR</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Order Service</span>
+                <p>Card submitted. Waiting for Payment Service result...</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="1" data-sender="payment" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-5)">PY</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-5)">Payment Service</span>
+                <p>Called Stripe. Card declined: insufficient funds. Publishing PaymentFailed to payment.events.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="2" data-sender="order" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">OR</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Order Service</span>
+                <p>PaymentFailed received. Setting order status to Cancelled. Publishing OrderCancelled to order.cancelled.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="3" data-sender="inventory" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">IN</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Inventory Service</span>
+                <p>OrderCancelled received for order #abc123. Finding Reserved reservations...</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="4" data-sender="inventory" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">IN</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Inventory Service</span>
+                <p>Found 2x Wireless Headphones reserved. Releasing. QuantityReserved back to 0.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="5" data-sender="inventory" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">IN</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Inventory Service</span>
+                <p>Done. Stock is available again for other customers.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="6" data-sender="order" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">OR</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Order Service</span>
+                <p>Compensation complete. The system is back to exactly the state it was before the order. No stock locked, no charge made.</p>
+              </div>
+            </div>
+          </div>
+          <div class="chat-typing" style="display:none">
+            <div class="chat-avatar" id="chat-saga-fail-typing-avatar"></div>
+            <div class="chat-typing-dots">
+              <span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>
+            </div>
+          </div>
+          <div class="chat-controls">
+            <button class="btn chat-next-btn">Next Message</button>
+            <button class="btn chat-all-btn">Play All</button>
+            <button class="btn chat-reset-btn">Replay</button>
+            <span class="chat-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 5: Payment failure code translation -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">How compensation is triggered in code</h2>
+        <p>When the Order Service receives a payment failure event, it cancels the order <em>and</em> writes an <code>OrderCancelled</code> event to the Outbox — all in a single database transaction.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">if</span> (paymentEvent.<span class="code-property">EventType</span> <span class="code-operator">==</span> <span class="code-string">"Failed"</span>)</span>
+<span class="code-line">{</span>
+<span class="code-line">    order.<span class="code-property">Status</span> <span class="code-operator">=</span> <span class="code-function">OrderStatus</span>.<span class="code-property">Cancelled</span>;</span>
+<span class="code-line">    order.<span class="code-function">AddStatusHistory</span>(<span class="code-function">OrderStatus</span>.<span class="code-property">Cancelled</span>, <span class="code-string">"Payment failed"</span>);</span>
+<span class="code-line"></span>
+<span class="code-line">    <span class="code-keyword">await</span> db.<span class="code-property">OutboxMessages</span>.<span class="code-function">AddAsync</span>(<span class="code-keyword">new</span> <span class="code-function">OutboxMessage</span></span>
+<span class="code-line">    {</span>
+<span class="code-line">        <span class="code-property">EventType</span> <span class="code-operator">=</span> <span class="code-string">"OrderCancelled"</span>,</span>
+<span class="code-line">        <span class="code-property">Payload</span>   <span class="code-operator">=</span> <span class="code-function">JsonSerializer</span>.<span class="code-function">Serialize</span>(<span class="code-keyword">new</span> <span class="code-function">OrderCancelledEvent</span></span>
+<span class="code-line">        {</span>
+<span class="code-line">            <span class="code-property">OrderId</span>    <span class="code-operator">=</span> order.<span class="code-property">Id</span>,</span>
+<span class="code-line">            <span class="code-property">OccurredAt</span> <span class="code-operator">=</span> <span class="code-function">DateTime</span>.<span class="code-property">UtcNow</span></span>
+<span class="code-line">        })</span>
+<span class="code-line">    });</span>
+<span class="code-line"></span>
+<span class="code-line">    <span class="code-keyword">await</span> db.<span class="code-function">SaveChangesAsync</span>();</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Payment event type is Failed — the card was declined or an error occurred.</p>
+              <p class="tl">Update the order status to Cancelled.</p>
+              <p class="tl">Record this in the status history: when it happened and why.</p>
+              <p class="tl">Write an OrderCancelled event to the Outbox — in the same transaction as the status update.</p>
+              <p class="tl">The Outbox guarantees Inventory will hear about this cancellation, even if the server restarts now.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 6: Choreography callout + extensibility -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Why choreography makes extension easy</h2>
+        <p>
+          In UrbanX, there is no central service that says "Inventory, reserve stock. Payment, charge the card."
+          Instead, each service listens for the right Kafka event and reacts independently. This is
+          <span class="term" data-definition="Each service reacts to events independently, with no central coordinator. Like a flock of birds that moves together without a leader.">choreography</span>
+          — as opposed to
+          <span class="term" data-definition="A central coordinator tells each service what to do and in what order. Like a conductor directing an orchestra. More control but a single point of failure.">orchestration</span>.
+        </p>
+
+        <div class="step-cards animate-in">
+          <div class="step-card">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>Add a new service</strong>
+              <p>Say you need to notify a warehouse system when an order is confirmed. Create a new Warehouse Service.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>Subscribe to the right event</strong>
+              <p>The Warehouse Service subscribes to <code>order.confirmed</code> on Kafka. That topic already exists.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>Zero changes to existing services</strong>
+              <p>Order Service, Inventory Service, Payment Service — none of them change at all. The saga grows naturally.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent animate-in">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">Choreography vs. Orchestration</strong>
+            <p>In choreography (UrbanX's approach), each service reacts to events independently — like a jazz ensemble improvising together. In orchestration, a central "order manager" service tells each service what to do — like a conductor. Choreography is more resilient (no single point of failure) but harder to visualize. That is what this animation is for.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 7: Quiz -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Check your understanding</h2>
+
+        <div class="quiz-container animate-in" id="quiz-module5">
+
+          <div class="quiz-question-block"
+               data-correct="option-c"
+               data-explanation-right="This is the extensibility win of choreography. A new Tax Notification Service subscribes to payment.events — zero changes to Payment Service, zero changes to Order Service. Clean separation."
+               data-explanation-wrong="Think about what the saga pattern buys you. Any service can subscribe to payment.events without changing the Payment Service. A dedicated Tax Service is the clean, decoupled answer.">
+            <h3 class="quiz-question">A new government regulation requires UrbanX to notify a tax authority every time a payment completes. Where should this code live?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>In the Payment Service — it knows about payments</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>In the Order Service — it manages the saga</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>In a new Tax Notification Service that subscribes to payment.events</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>In the API Gateway — it sees all transactions</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-c"
+               data-explanation-right="The state machine prevents impossible jumps. This protects data integrity — if Preparing jumped directly to Delivered, the shipment and transit tracking would be skipped entirely."
+               data-explanation-wrong="Check the state machine. Preparing can only go to ReadyForPickup or Cancelled. The code throws an error for any other transition — even from admin users.">
+            <h3 class="quiz-question">An order is stuck in Preparing status. The merchant wants to move it directly to Delivered to skip the other steps. Will the code allow this?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Yes — the merchant has admin access</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Yes — status updates are unrestricted for merchants</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>No — the state machine only allows Preparing → ReadyForPickup → InTransit → Delivered</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>No — only the system can change order status</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module5')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module5')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-6" style="background: var(--color-bg-warm)">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">06</span>
+      <h1 class="module-title">Two Databases, One Truth</h1>
+      <p class="module-subtitle">PostgreSQL stores products accurately. Elasticsearch finds them instantly. Kafka keeps them in sync. This is CQRS.</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- SCREEN 1: The Problem & Metaphor -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The right database for the right job</h2>
+        <p>
+          PostgreSQL is brilliant at storing products accurately — every field, every constraint, every relationship.
+          But a
+          <span class="term" data-definition="Finding documents that contain words or phrases, even with typos or partial matches. Google uses it. Elasticsearch is built for it. PostgreSQL LIKE queries are not.">full-text search</span>
+          for "wireless headphones" across 10,000 products? That is not what relational databases are built for.
+          <span class="term" data-definition="A distributed search and analytics engine built for fast full-text search. Stores documents in an inverted index optimized for queries. Not a replacement for a relational database.">Elasticsearch</span>
+          is. So UrbanX uses both — each for what it does best.
+        </p>
+        <p>
+          This pattern is called
+          <span class="term" data-definition="Command Query Responsibility Segregation — a pattern where the database used for writing (commands) is separate from the database used for reading (queries). Each is optimized for its job.">CQRS</span>.
+          Writes go to the
+          <span class="term" data-definition="The authoritative database that handles all data mutations. In UrbanX, PostgreSQL is the write model — the source of truth.">write model</span>
+          (PostgreSQL). Reads come from the
+          <span class="term" data-definition="A database or data structure optimized for reading — often denormalized and pre-computed for specific queries. In UrbanX, Elasticsearch is the read model for the product catalog.">read model</span>
+          (Elasticsearch). Kafka bridges the gap.
+        </p>
+
+        <div class="icon-rows animate-in">
+          <div class="icon-row">
+            <div class="icon-circle" style="background: #E8F0F7">📚</div>
+            <div>
+              <strong>Think of a library with two card catalogs.</strong>
+              <p>The acquisitions desk uses a detailed ledger (PostgreSQL) — author, ISBN, condition, purchase date. The public search terminal (Elasticsearch) uses a fast index built for "find me books about dragons." When a new book arrives, the ledger is updated first, then the index is refreshed.</p>
+            </div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-info-light)">⚡</div>
+            <div>
+              <strong>The trade-off you accept consciously.</strong>
+              <p>The search index lags the database by a few seconds — called
+                <span class="term" data-definition="A guarantee that data across multiple stores will eventually agree, but there may be a brief window where they differ. Acceptable for most features; unacceptable for financial transactions.">eventual consistency</span>.
+                For a product catalog, this is completely fine. For a bank balance, it would not be.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 2: Write→Sync flow animation -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The full write-to-search pipeline</h2>
+        <p>When a merchant updates a product, the change flows through five actors before a customer sees it in search results. Click through to trace the path.</p>
+
+        <div class="flow-animation animate-in" id="flow-cqrs" data-steps='[
+          {"highlight":"flow-actor-1","label":"A merchant edits a product name via PUT /api/products/{id}."},
+          {"highlight":"flow-actor-2","label":"PostgreSQL is updated atomically. Product.Name = new value. An OutboxMessage is also saved in the same transaction.","packet":true,"from":"actor-1","to":"actor-2"},
+          {"highlight":"flow-actor-3","label":"Outbox Relay publishes ProductUpdated to the catalog.products Kafka topic within about 5 seconds.","packet":true,"from":"actor-2","to":"actor-3"},
+          {"highlight":"flow-actor-4","label":"The Catalog Service Kafka consumer receives the event and calls Elasticsearch.IndexAsync() to update the search document.","packet":true,"from":"actor-3","to":"actor-4"},
+          {"highlight":"flow-actor-5","label":"Customer searches for the product — Elasticsearch returns the updated name. Total lag: under 10 seconds. This is eventual consistency in action.","packet":true,"from":"actor-4","to":"actor-5"}
+        ]'>
+          <div class="flow-actors">
+            <div class="flow-actor" id="flow-actor-1">
+              <div class="flow-actor-icon" style="background: var(--color-accent-light); border-color: var(--color-actor-1); color: var(--color-actor-1)">🏪</div>
+              <span>Merchant</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-2">
+              <div class="flow-actor-icon" style="background: #336791; border-color: #1D4972; color: white; font-size: var(--text-sm)">PG</div>
+              <span>PostgreSQL</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-3">
+              <div class="flow-actor-icon" style="background: #1E1E2E; border-color: #45475A; color: #CDD6F4">📡</div>
+              <span>Outbox / Kafka</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-4">
+              <div class="flow-actor-icon" style="background: #FDE8F3; border-color: #F04E98; color: #F04E98; font-size: var(--text-sm)">ES</div>
+              <span>Elasticsearch</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-5">
+              <div class="flow-actor-icon" style="background: var(--color-success-light); border-color: var(--color-actor-5); color: var(--color-actor-5)">🛍️</div>
+              <span>Customer</span>
+            </div>
+          </div>
+          <div class="flow-packet"></div>
+          <div class="flow-step-label">Click "Next Step" to begin</div>
+          <div class="flow-controls">
+            <button class="btn btn-primary flow-next-btn">Next Step</button>
+            <button class="btn flow-reset-btn">Restart</button>
+            <span class="flow-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 3: Elasticsearch query translation -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">What a search query looks like in code</h2>
+        <p>
+          When a customer types "wireless headphones" into the search bar, this query runs against the
+          <span class="term" data-definition="A named collection of search documents in Elasticsearch — equivalent to a table in a relational database, but optimized for search queries.">index (Elasticsearch)</span>
+          — not against PostgreSQL.
+        </p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">var</span> response <span class="code-operator">=</span> <span class="code-keyword">await</span> _client.<span class="code-function">SearchAsync</span>&lt;<span class="code-function">ProductDocument</span>&gt;(s <span class="code-operator">=&gt;</span> s</span>
+<span class="code-line">    .<span class="code-function">Index</span>(<span class="code-string">"catalog-products"</span>)</span>
+<span class="code-line">    .<span class="code-function">Query</span>(q <span class="code-operator">=&gt;</span> q</span>
+<span class="code-line">        .<span class="code-function">Bool</span>(b <span class="code-operator">=&gt;</span> b</span>
+<span class="code-line">            .<span class="code-function">Must</span>(m <span class="code-operator">=&gt;</span> m</span>
+<span class="code-line">                .<span class="code-function">MultiMatch</span>(mm <span class="code-operator">=&gt;</span> mm</span>
+<span class="code-line">                    .<span class="code-function">Fields</span>(f <span class="code-operator">=&gt;</span> f</span>
+<span class="code-line">                        .<span class="code-function">Field</span>(p <span class="code-operator">=&gt;</span> p.<span class="code-property">Name</span>)</span>
+<span class="code-line">                        .<span class="code-function">Field</span>(p <span class="code-operator">=&gt;</span> p.<span class="code-property">Description</span>))</span>
+<span class="code-line">                    .<span class="code-function">Query</span>(searchTerm)))</span>
+<span class="code-line">            .<span class="code-function">Filter</span>(f <span class="code-operator">=&gt;</span> f</span>
+<span class="code-line">                .<span class="code-function">Term</span>(t <span class="code-operator">=&gt;</span> t</span>
+<span class="code-line">                    .<span class="code-function">Field</span>(p <span class="code-operator">=&gt;</span> p.<span class="code-property">IsActive</span>)</span>
+<span class="code-line">                    .<span class="code-function">Value</span>(<span class="code-keyword">true</span>)))))</span>
+<span class="code-line">    .<span class="code-function">From</span>((page <span class="code-operator">-</span> <span class="code-number">1</span>) <span class="code-operator">*</span> pageSize)</span>
+<span class="code-line">    .<span class="code-function">Size</span>(pageSize));</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Search the catalog-products Elasticsearch index (not the PostgreSQL database).</p>
+              <p class="tl">Use a Bool query — like combining conditions in a SQL WHERE clause.</p>
+              <p class="tl">Must: the search term must appear somewhere in this product.</p>
+              <p class="tl">MultiMatch: look in BOTH the name field AND the description — find partial matches too.</p>
+              <p class="tl">Filter: only show products where IsActive=true — hidden products never appear in search.</p>
+              <p class="tl">From/Size: pagination — skip the first N results, return the next batch.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 4: Product write translation -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">How a write triggers the sync pipeline</h2>
+        <p>
+          Notice what is <em>not</em> in this code: Elasticsearch is never called here.
+          The write side only knows about PostgreSQL. Elasticsearch is updated asynchronously, later, via Kafka.
+          This is the CQRS split in action.
+        </p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line">app.<span class="code-function">MapPut</span>(<span class="code-string">"/api/products/{id}"</span>, <span class="code-keyword">async</span> (<span class="code-function">Guid</span> id, <span class="code-function">UpdateProductRequest</span> req, <span class="code-function">AppDbContext</span> db) <span class="code-operator">=&gt;</span></span>
+<span class="code-line">{</span>
+<span class="code-line">    <span class="code-keyword">var</span> product <span class="code-operator">=</span> <span class="code-keyword">await</span> db.<span class="code-property">Products</span>.<span class="code-function">FindAsync</span>(id);</span>
+<span class="code-line">    <span class="code-keyword">if</span> (product <span class="code-keyword">is null</span>) <span class="code-keyword">return</span> <span class="code-function">Results</span>.<span class="code-function">NotFound</span>();</span>
+<span class="code-line"></span>
+<span class="code-line">    product.<span class="code-property">Name</span>        <span class="code-operator">=</span> req.<span class="code-property">Name</span>;</span>
+<span class="code-line">    product.<span class="code-property">Description</span> <span class="code-operator">=</span> req.<span class="code-property">Description</span>;</span>
+<span class="code-line">    product.<span class="code-property">Price</span>       <span class="code-operator">=</span> req.<span class="code-property">Price</span>;</span>
+<span class="code-line">    product.<span class="code-property">UpdatedAt</span>   <span class="code-operator">=</span> <span class="code-function">DateTime</span>.<span class="code-property">UtcNow</span>;</span>
+<span class="code-line"></span>
+<span class="code-line">    <span class="code-keyword">await</span> db.<span class="code-property">OutboxMessages</span>.<span class="code-function">AddAsync</span>(<span class="code-keyword">new</span> <span class="code-function">OutboxMessage</span></span>
+<span class="code-line">    {</span>
+<span class="code-line">        <span class="code-property">EventType</span> <span class="code-operator">=</span> <span class="code-string">"ProductUpdated"</span>,</span>
+<span class="code-line">        <span class="code-property">Payload</span>   <span class="code-operator">=</span> <span class="code-function">JsonSerializer</span>.<span class="code-function">Serialize</span>(<span class="code-keyword">new</span> <span class="code-function">ProductEvent</span>(product))</span>
+<span class="code-line">    });</span>
+<span class="code-line"></span>
+<span class="code-line">    <span class="code-keyword">await</span> db.<span class="code-function">SaveChangesAsync</span>();</span>
+<span class="code-line">    <span class="code-keyword">return</span> <span class="code-function">Results</span>.<span class="code-function">Ok</span>(product);</span>
+<span class="code-line">});</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Update the product fields in PostgreSQL.</p>
+              <p class="tl">In the same transaction, write a ProductUpdated event to the Outbox.</p>
+              <p class="tl">SaveChangesAsync commits both changes atomically.</p>
+              <p class="tl">The Outbox Relay will pick this up and publish to catalog.products within 5 seconds.</p>
+              <p class="tl">Note: Elasticsearch is NOT updated here — it is updated asynchronously via Kafka.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 5: The sync consumer + callouts -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The Kafka consumer that updates Elasticsearch</h2>
+        <p>
+          On the read side, a Kafka consumer watches the <code>catalog.products</code> topic.
+          Each time a <code>ProductUpdated</code> event arrives, it rebuilds the
+          <span class="term" data-definition="Data stored in a form optimized for reading, with duplication accepted. The opposite of the normalized database design taught in SQL courses. Read models are usually denormalized.">denormalized</span>
+          search document and pushes it to Elasticsearch.
+        </p>
+
+        <div class="badge-list animate-in">
+          <div class="badge-item">
+            <span class="badge-code">ProductDocument</span>
+            <span class="badge-desc">A flat, search-optimized representation of a product — only the fields needed for search queries. No foreign keys, no joins.</span>
+          </div>
+          <div class="badge-item">
+            <span class="badge-code">IndexAsync(document)</span>
+            <span class="badge-desc">Replaces the existing document in Elasticsearch with the new version. If it does not exist yet, it is created.</span>
+          </div>
+          <div class="badge-item">
+            <span class="badge-code">consumer.Commit(result)</span>
+            <span class="badge-desc">Tells Kafka that this message has been successfully processed. Only called after the index is updated — guarantees at-least-once delivery.</span>
+          </div>
+        </div>
+
+        <div class="callout callout-info animate-in">
+          <div class="callout-icon">ℹ️</div>
+          <div class="callout-content">
+            <strong class="callout-title">The trade-off you accept with CQRS</strong>
+            <p>A product updated right now might show the old name in search results for up to ~10 seconds. Engineers call this eventual consistency. For a product catalog, this is completely fine. For a bank balance, it would not be. Choosing CQRS means accepting this trade-off consciously — and it is almost always the right call for search features.</p>
+          </div>
+        </div>
+
+        <div class="callout callout-accent animate-in">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">The same pattern, used twice</strong>
+            <p>UrbanX uses Kafka for two completely different purposes: the Order Saga (coordinating services) and CQRS (syncing databases). Same infrastructure, two distinct use cases. This is why Kafka is described as the "backbone" of the architecture.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 6: Quiz -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Check your understanding</h2>
+
+        <div class="quiz-container animate-in" id="quiz-module6">
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="This is expected behavior in a CQRS system. The Elasticsearch index lags the PostgreSQL database by a few seconds. For a product catalog, this is an acceptable trade-off. The price will update within ~10 seconds."
+               data-explanation-wrong="This is intentional by design. CQRS accepts a brief window where read and write models are out of sync — called eventual consistency. For search features, a few seconds of lag is a worthwhile trade-off for Elasticsearch-powered search.">
+            <h3 class="quiz-question">A customer searches for "bluetooth speaker" and sees a product with an old price ($49) even though a merchant updated it to $59 three seconds ago. Is this a bug?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Yes — data should always be consistent, this is a critical bug</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>No — this is expected eventual consistency and will resolve in a few seconds</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Yes — the Outbox pattern should prevent this</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>No — search results always show cached data permanently</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="CQRS thinking: read-optimized data belongs in the read model. Pre-compute the aggregation when data changes, store it in Elasticsearch (or a read-optimized store), serve it instantly on every page load."
+               data-explanation-wrong="Think CQRS: heavy read operations do not belong in PostgreSQL queries on every request. The read model (Elasticsearch) should be shaped for what consumers need — pre-computed aggregations updated via Kafka events.">
+            <h3 class="quiz-question">You want to add a feature: show the "lowest price in each category" on the homepage. Which approach is better?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Query PostgreSQL with GROUP BY on every page load</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Pre-compute and store the lowest price in Elasticsearch when products are updated</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Calculate it in the React frontend from all product data</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Add a new microservice that queries PostgreSQL every 30 seconds</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module6')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module6')">Try Again</button>
+        </div>
+      </section>
+
+      <!-- SCREEN 7: Completion block -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">You Made It Through the Whole Course 🎉</h2>
+        <p>You have now seen every major distributed systems pattern in UrbanX in action.</p>
+
+        <div class="pattern-cards stagger-children">
+          <div class="pattern-card animate-in" style="border-top-color: var(--color-actor-1)">
+            <div class="pattern-icon" style="background: var(--color-accent-light)">📬</div>
+            <h4 class="pattern-title">Transactional Outbox</h4>
+            <p class="pattern-desc">Events saved to the database before Kafka — never lost even on crashes.</p>
+          </div>
+          <div class="pattern-card animate-in" style="border-top-color: var(--color-actor-2)">
+            <div class="pattern-icon" style="background: var(--color-info-light)">🎭</div>
+            <h4 class="pattern-title">Choreography Saga</h4>
+            <p class="pattern-desc">Multi-service coordination via events, with compensation on failure.</p>
+          </div>
+          <div class="pattern-card animate-in" style="border-top-color: var(--color-actor-3)">
+            <div class="pattern-icon" style="background: #EDE9F6">✂️</div>
+            <h4 class="pattern-title">CQRS</h4>
+            <p class="pattern-desc">Separate databases for writes (PostgreSQL) and reads (Elasticsearch).</p>
+          </div>
+          <div class="pattern-card animate-in" style="border-top-color: var(--color-actor-4)">
+            <div class="pattern-icon" style="background: var(--color-surface-warm)">📡</div>
+            <h4 class="pattern-title">Event-Driven Architecture</h4>
+            <p class="pattern-desc">Services talk by broadcasting events — never by calling each other directly.</p>
+          </div>
+        </div>
+
+        <p style="margin-top: var(--space-8); color: var(--color-text-secondary)">
+          Explore the full source code at
+          <a href="https://github.com/daohainam/urbanx-sample" style="color: var(--color-accent); font-weight: 600">github.com/daohainam/urbanx-sample</a>
+        </p>
+      </section>
+
+    </div>
+  </div>
+</section>
+  </main>
+
+</body>
+</html>

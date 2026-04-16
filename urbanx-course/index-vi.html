@@ -1,0 +1,1819 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UrbanX Hoạt Động Như Thế Nào</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+
+  <style>
+    :root {
+      --color-accent:       #D94F30;
+      --color-accent-hover: #C4432A;
+      --color-accent-light: #FDEEE9;
+      --color-accent-muted: #E8836C;
+    }
+  </style>
+
+  <script src="main.js" defer></script>
+</head>
+<body>
+
+  <nav class="nav" id="nav">
+    <div class="progress-bar" id="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+    <div class="nav-inner">
+      <span class="nav-title">Cách UrbanX Hoạt Động (<a href="index.html">en</a>)</span>
+      <div class="nav-dots" id="nav-dots" role="tablist">
+        <button class="nav-dot" data-target="module-1" data-tooltip="Hành trình Mua sắm" role="tab" aria-label="Module 1: Hành trình Mua sắm"></button>
+        <button class="nav-dot" data-target="module-2" data-tooltip="Bảy Chuyên gia" role="tab" aria-label="Module 2: Bảy Chuyên gia"></button>
+        <button class="nav-dot" data-target="module-3" data-tooltip="Xương sống Tin nhắn" role="tab" aria-label="Module 3: Xương sống Tin nhắn"></button>
+        <button class="nav-dot" data-target="module-4" data-tooltip="Không bao giờ Mất Tin nhắn" role="tab" aria-label="Module 4: Không bao giờ Mất Tin nhắn"></button>
+        <button class="nav-dot" data-target="module-5" data-tooltip="Saga Đơn hàng" role="tab" aria-label="Module 5: Saga Đơn hàng"></button>
+        <button class="nav-dot" data-target="module-6" data-tooltip="Hai Cơ sở Dữ liệu, Một Sự thật" role="tab" aria-label="Module 6: Hai Cơ sở Dữ liệu, Một Sự thật"></button>
+      </div>
+    </div>
+  </nav>
+
+  <main id="main">
+<section class="module" id="module-1" style="background: var(--color-bg)">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">01</span>
+      <h1 class="module-title">Hành trình Mua sắm</h1>
+      <p class="module-subtitle">Bạn nhấn "Mua". Đây là chính xác những gì xảy ra tiếp theo — 6 chương trình, 1 giây, không hề có phép thuật.</p>
+    </header>
+
+    <div class="module-body">
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Phía sau một cú nhấp chuột</h2>
+        <p>
+          Chắc hẳn bạn đã từng đặt hàng online. Bạn nhấn "Mua", nhận được email xác nhận, và món hàng xuất hiện tại cửa.
+          Đơn giản đúng không? Nhưng thực tế, việc đặt một đơn hàng sẽ âm thầm kích hoạt 6 chương trình chuyên biệt khác nhau
+          phối hợp cùng nhau — mỗi chương trình là một chuyên gia trong việc của nó, và không cái nào cần biết chi tiết bên trong của cái kia.
+        </p>
+        <p>
+          UrbanX được xây dựng dưới dạng ứng dụng <span class="term" data-definition="Các chương trình nhỏ, độc lập, mỗi chương trình đảm nhận một nhiệm vụ duy nhất. Thay vì một ứng dụng khổng lồ làm mọi thứ, bạn có các chuyên gia làm việc cùng nhau.">microservices</span>.
+          Hãy tưởng tượng nó giống như đội ngũ trong một nhà hàng: lễ tân, bếp trưởng, chuyên gia rượu, thợ làm bánh — tất cả phối hợp nhịp nhàng, nhưng khách hàng không cần thấy sự phức tạp đó. Module này chính là cuốn phim tư liệu về sự phối hợp đó.
+        </p>
+
+        <div class="callout callout-accent animate-in">
+          <div class="callout-icon">🎬</div>
+          <div class="callout-content">
+            <strong class="callout-title">Tại sao điều này quan trọng với bạn?</strong>
+            <p>Khi bạn yêu cầu một trợ lý AI "thêm tính năng thanh toán", giờ đây bạn biết rằng nó sẽ chạm đến Order Service,
+            kích hoạt kiểm tra kho hàng và luồng thanh toán — nhờ đó bạn có thể mô tả <em>chính xác</em> những gì mình muốn xây dựng.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen">
+        <h2 class="screen-heading animate-in">Đơn hàng trong Thời gian thực</h2>
+        <p class="animate-in">
+          Hãy bước qua từng giai đoạn của hành trình dưới đây. Mỗi cú nhấp chuột sẽ tiến thêm một bước trong quy trình — hãy xem cách quyền điều khiển di chuyển
+          từ trình duyệt của bạn đến tận lúc đơn hàng được xác nhận.
+        </p>
+
+        <div class="flow-animation animate-in" data-steps='[
+          {"highlight":"flow-actor-1","label":"Bạn nhấn Đặt hàng trong ứng dụng React. Trình duyệt gửi request POST /api/orders đến cổng 5000."},
+          {"highlight":"flow-actor-2","label":"API Gateway nhận request, kiểm tra mã JWT của bạn, và chuyển hướng nó đến Order Service tại cổng 5002.","packet":true,"from":"actor-1","to":"actor-2"},
+          {"highlight":"flow-actor-3","label":"Order Service lưu một Đơn hàng mới (trạng thái: Pending) vào database PostgreSQL. Đồng thời, nó ghi một sự kiện OrderCreated vào bảng Outbox — trong cùng một giao dịch, không bao giờ lo bị mất.","packet":true,"from":"actor-2","to":"actor-3"},
+          {"highlight":"flow-actor-4","label":"Worker Outbox Relay lấy sự kiện này và đẩy nó lên topic order.created của Kafka trong vòng 5 giây.","packet":true,"from":"actor-3","to":"actor-4"},
+          {"highlight":"flow-actor-5","label":"Inventory Service đọc sự kiện và giữ hàng trong kho. Payment Service đợi bạn thực hiện thanh toán.","packet":true,"from":"actor-4","to":"actor-5"},
+          {"highlight":"flow-actor-3","label":"Trạng thái đơn hàng cập nhật thành PaymentReceived. Quy trình Saga hoàn tất. Đơn hàng của bạn đã được xác nhận.","packet":true,"from":"actor-5","to":"actor-3"}
+        ]'>
+          <div class="flow-actors">
+            <div class="flow-actor" id="flow-actor-1">
+              <div class="flow-actor-icon">🌐</div>
+              <span>Trình duyệt</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-2">
+              <div class="flow-actor-icon">🚪</div>
+              <span>API Gateway</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-3">
+              <div class="flow-actor-icon">📋</div>
+              <span>Order Service</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-4">
+              <div class="flow-actor-icon">📨</div>
+              <span>Kafka</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-5">
+              <div class="flow-actor-icon">📦</div>
+              <span>Kho hàng</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-6">
+              <div class="flow-actor-icon">💳</div>
+              <span>Thanh toán</span>
+            </div>
+          </div>
+          <div class="flow-packet" id="flow-packet"></div>
+          <div class="flow-step-label">Nhấn "Bước tiếp theo" để bắt đầu</div>
+          <div class="flow-controls">
+            <button class="btn btn-primary flow-next-btn">Bước tiếp theo</button>
+            <button class="btn flow-reset-btn">Khởi động lại</button>
+            <span class="flow-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen">
+        <h2 class="screen-heading animate-in">Ba chi tiết đáng chú ý</h2>
+        <p class="animate-in">
+          Luồng xử lý ở trên ẩn chứa một số kỹ thuật thông minh. Đây là ba khoảnh khắc trong hành trình thú vị hơn những gì chúng ta thấy bên ngoài.
+        </p>
+
+        <div class="step-cards stagger-children">
+          <div class="step-card animate-in">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>Gateway kiểm tra danh tính của bạn</strong>
+              <p>Mỗi request đều mang theo một <span class="term" data-definition="JSON Web Token — một thông tin xác thực được ký bằng mã hóa để chứng minh bạn là ai và bạn được phép làm gì. Giống như một chiếc vòng tay tại một buổi hòa nhạc.">JWT token</span>
+              do Identity Service cấp. <span class="term" data-definition="Cổng chính duy nhất cho toàn bộ hệ thống của bạn. Mọi request đều đi qua đây đầu tiên, để bạn có thể thêm bảo mật, điều hướng và giới hạn lưu lượng tại một nơi tập trung.">API Gateway</span>
+              xác thực token này trước khi chuyển tiếp request. Không có token hợp lệ, không được truy cập.</p>
+            </div>
+          </div>
+          <div class="step-card animate-in">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>Hai lần ghi, một giao dịch</strong>
+              <p>Khi Order Service lưu đơn hàng vào <span class="term" data-definition="Một hệ quản trị cơ sở dữ liệu quan hệ mạnh mẽ — giống như một hệ thống bảng tính cực kỳ ngăn nắp. Rất tốt cho dữ liệu có cấu trúc cần duy trì tính nhất quán.">PostgreSQL</span>,
+              nó cũng ghi vào một <span class="term" data-definition="Một bảng database đặc biệt dùng để lưu các sự kiện sắp được gửi đi cùng với dữ liệu nghiệp vụ trong cùng một giao dịch — đảm bảo chúng không bao giờ bị mất.">bảng Outbox</span>
+              trong cùng một transaction. Nếu server sập ngay sau đó, sự kiện vẫn nằm đó — không bao giờ bị mất.</p>
+            </div>
+          </div>
+          <div class="step-card animate-in">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>Các Service không bao giờ gọi nhau trực tiếp</strong>
+              <p>Order Service không hề "gọi điện" cho Inventory Service. Thay vào đó, nó đăng một sự kiện lên
+              <span class="term" data-definition="Một message broker (bộ môi giới tin nhắn) — giống như một dịch vụ bưu điện cho phần mềm. Các service đăng tin nhắn vào các kênh (topic) và các service khác đăng ký để đọc chúng.">Kafka</span>.
+              Inventory tự đăng ký và phản ứng theo lịch trình của riêng nó. Sự tách rời này giúp các service có thể được
+              cập nhật, khởi động lại hoặc mở rộng một cách độc lập.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen">
+        <h2 class="screen-heading animate-in">Bốn Mô hình sức mạnh của hành trình</h2>
+        <p class="animate-in">
+          Luồng mua sắm bạn vừa theo dõi được xây dựng trên bốn mô hình kiến trúc. Khóa học này sẽ đi sâu vào từng mô hình — đây là bản xem trước về những gì chúng giải quyết.
+        </p>
+
+        <div class="pattern-cards stagger-children">
+          <div class="pattern-card animate-in" style="border-top-color: var(--color-actor-1)">
+            <div class="pattern-icon" style="background: var(--color-accent-light)">📬</div>
+            <h4 class="pattern-title">Transactional Outbox</h4>
+            <p class="pattern-desc">Sự kiện được lưu vào database trước khi gửi, vì vậy chúng không bao giờ bị mất ngay cả khi server sập giữa chừng.</p>
+          </div>
+          <div class="pattern-card animate-in" style="border-top-color: var(--color-actor-2)">
+            <div class="pattern-icon" style="background: var(--color-info-light)">🎭</div>
+            <h4 class="pattern-title">Choreography Saga</h4>
+            <p class="pattern-desc">Nhiều service phối hợp mà không cần một người chỉ huy — mỗi cái tự phản ứng với sự kiện và chuyển gậy tiếp sức cho chuyên gia tiếp theo.</p>
+          </div>
+          <div class="pattern-card animate-in" style="border-top-color: var(--color-actor-3)">
+            <div class="pattern-icon" style="background: #F0EDF8">✂️</div>
+            <h4 class="pattern-title">CQRS</h4>
+            <p class="pattern-desc">Việc đọc và ghi sử dụng các database riêng biệt được tối ưu cho từng việc — ghi nhanh trong PostgreSQL, tìm kiếm nhanh trong
+            <span class="term" data-definition="Một database được xây dựng để tìm kiếm. Trong khi PostgreSQL lưu trữ dữ liệu chính xác, Elasticsearch tìm kiếm nó cực nhanh — ngay cả khi gõ sai hoặc gõ thiếu từ.">Elasticsearch</span>.</p>
+          </div>
+          <div class="pattern-card animate-in" style="border-top-color: var(--color-actor-4)">
+            <div class="pattern-icon" style="background: #FEF8E7">📡</div>
+            <h4 class="pattern-title">Kiến trúc Hướng sự kiện</h4>
+            <p class="pattern-desc">Các service nói chuyện bằng cách phát đi các sự kiện, không phải gọi trực tiếp — giúp toàn bộ hệ thống linh hoạt và ít phụ thuộc lẫn nhau.</p>
+          </div>
+        </div>
+
+        <div class="callout callout-info animate-in">
+          <div class="callout-icon">🗺️</div>
+          <div class="callout-content">
+            <strong class="callout-title">Lộ trình Khóa học</strong>
+            <p>Module 2 sẽ đi sâu vào từng chuyên gia dịch vụ. Module 3–4 nói về Kafka và mô hình Outbox. Module 5 hướng dẫn về Saga từng bước một. Module 6 giải thích CQRS với kho lưu trữ kép.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen">
+        <h2 class="screen-heading animate-in">Kiểm tra mức độ hiểu bài</h2>
+        <p class="animate-in">
+          Hai câu hỏi nhanh để xác nhận các ý chính đã được nắm vững. Hãy hình dung luồng xử lý trong đầu trước khi chọn đáp án.
+        </p>
+
+        <div class="quiz-container animate-in" id="quiz-module1">
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="Giỏ hàng nằm trong Order Service — nó quản lý cả giỏ hàng và đơn hàng vì chúng chia sẻ cùng một nghiệp vụ (domain). Catalog chỉ xử lý danh mục sản phẩm và tìm kiếm."
+               data-explanation-wrong="Catalog Service xử lý tìm kiếm và danh mục sản phẩm, nhưng giỏ hàng thuộc về Order Service — giỏ hàng và đơn hàng thuộc cùng một domain nghiệp vụ.">
+            <h3 class="quiz-question">Bạn thêm một sản phẩm vào giỏ hàng. Service nào sẽ xử lý request đó?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>Catalog Service — nó sở hữu dữ liệu sản phẩm</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>Order Service — giỏ hàng và đơn hàng sống cùng nhau</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>Payment Service — nó cần biết phải thu bao nhiêu tiền</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>Identity Service — nó biết ai đang đăng nhập</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-c"
+               data-explanation-right="PostgreSQL luôn là nguồn sự thật (source of truth). Elasticsearch được cập nhật vài giây sau đó thông qua Kafka — điều này được gọi là tính nhất quán sau cùng (eventual consistency)."
+               data-explanation-wrong="PostgreSQL là database để ghi — nó luôn nhận các thay đổi trước. Elasticsearch sẽ cập nhật theo sau thông qua các sự kiện Kafka vài giây sau đó.">
+            <h3 class="quiz-question">Người bán cập nhật tên sản phẩm. Database nào được cập nhật đầu tiên?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>Elasticsearch — nó được tối ưu cho việc đọc nhanh</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>Cả hai cùng một lúc</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>PostgreSQL trước, sau đó là Elasticsearch qua Kafka</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>Bộ nhớ đệm (cache) của API Gateway — nó nằm gần client nhất</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module1')">Kiểm tra Đáp án</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module1')">Thử lại</button>
+        </div>
+
+        <div class="callout callout-accent animate-in">
+          <div class="callout-icon">➡️</div>
+          <div class="callout-content">
+            <strong class="callout-title">Tiếp theo: Bảy Chuyên gia</strong>
+            <p>Bây giờ bạn đã hiểu bức tranh tổng quan, Module 2 sẽ giới thiệu cận cảnh từng service — họ là ai, họ sở hữu cái gì, và tại sao những ranh giới đó lại tồn tại.</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-2" style="background: var(--color-bg-warm)">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">02</span>
+      <h1 class="module-title">Bảy Chuyên gia</h1>
+      <p class="module-subtitle">UrbanX không phải là một ứng dụng khổng lồ. Nó là bảy chương trình nhỏ — và sự chuyên môn hóa đó là một quyết định có chủ đích và đầy quyền năng.</p>
+    </header>
+
+    <div class="module-body">
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Một bác sĩ làm tất cả — Chuyện gì có thể xảy ra?</h2>
+        <p>
+          Hãy tưởng tượng một bệnh viện nơi một bác sĩ duy nhất vừa xử lý khoa tim mạch, nhãn khoa, vừa phẫu thuật cùng một lúc.
+          Kiệt sức, dễ sai sót và không thể mở rộng. Thay vào đó, các bệnh viện thuê các chuyên gia: mỗi người giỏi một lĩnh vực, chịu trách nhiệm về một nhóm kết quả.
+        </p>
+        <p>
+          UrbanX hoạt động theo cùng một cách. Nếu Payment Service bị sập, giỏ hàng của bạn vẫn hoạt động.
+          Nếu Catalog Service bị quá tải với các truy vấn tìm kiếm, đơn hàng vẫn tiếp tục được xử lý. Sự chuyên môn hóa
+          mang lại tính độc lập — và tính độc lập mang lại khả năng phục hồi (resilience).
+        </p>
+
+        <div class="callout callout-accent animate-in">
+          <div class="callout-icon">🏥</div>
+          <div class="callout-content">
+            <strong class="callout-title">Cốt lõi vấn đề</strong>
+            <p>Mỗi service sở hữu database riêng của mình. Không service nào có thể thọc tay vào dữ liệu của service khác một cách trực tiếp.
+            Chúng chỉ giao tiếp qua các sự kiện <span class="term" data-definition="Một message broker — giống như dịch vụ bưu điện cho phần mềm. Các service đăng tin nhắn vào các kênh (topic) và các service khác đăng ký để đọc chúng.">Kafka</span>
+            hoặc thông qua API HTTP mà chúng cung cấp.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen">
+        <h2 class="screen-heading animate-in">Dàn diễn viên — Nhấn để tìm hiểu từng vai trò</h2>
+        <p class="animate-in">
+          Bảy service, hai vùng hạ tầng. Nhấn vào bất kỳ thành phần nào để xem chính xác nó sở hữu cái gì và tại sao
+          nó lại tồn tại như một chuyên gia riêng biệt.
+        </p>
+
+        <div class="arch-diagram animate-in">
+          <div class="arch-zone">
+            <h4 class="arch-zone-label">Frontend &amp; Gateway</h4>
+            <div class="arch-component"
+                 data-desc="Ứng dụng React 19 SPA chạy trên trình duyệt người dùng. Chỉ giao tiếp thông qua API Gateway — không bao giờ gọi trực tiếp service nào. Tất cả những gì nó biết là một địa chỉ: cổng 5000.">
+              <div class="arch-icon">🌐</div>
+              <span>Browser / React</span>
+            </div>
+            <div class="arch-component"
+                 data-desc="API Gateway (cổng 5000) — được xây dựng bằng YARP reverse proxy. Đây là cánh cửa duy nhất: xác thực token JWT, thực thi giới hạn lưu lượng (100 request/phút) và điều hướng từng đường dẫn URL đến đúng service chuyên gia.">
+              <div class="arch-icon">🚪</div>
+              <span>API Gateway :5000</span>
+            </div>
+          </div>
+
+          <div class="arch-zone">
+            <h4 class="arch-zone-label">Backend Services</h4>
+            <div class="arch-component"
+                 data-desc="Identity Service (cổng 5005) — chạy Duende IdentityServer. Cấp và xác thực token JWT đăng nhập bằng OAuth 2.0 / OIDC. Đây là &quot;người bảo vệ&quot; của hệ thống — mọi service khác đều tin tưởng vào các token mà nó ký.">
+              <div class="arch-icon">🔐</div>
+              <span>Identity :5005</span>
+            </div>
+            <div class="arch-component"
+                 data-desc="Catalog Service (cổng 5001) — sở hữu danh mục sản phẩm. Việc ghi dữ liệu vào PostgreSQL; một Kafka consumer sẽ đồng bộ các thay đổi sang Elasticsearch để tìm kiếm toàn văn bản nhanh chóng. Đây là mô hình CQRS thực thụ.">
+              <div class="arch-icon">🛒</div>
+              <span>Catalog :5001</span>
+            </div>
+            <div class="arch-component"
+                 data-desc="Order Service (cổng 5002) — sở hữu giỏ hàng và đơn hàng. Đồng thời đóng vai trò là người điều phối Saga: phát đi OrderCreated, lắng nghe InventoryReserved và PaymentCompleted để thúc đẩy máy trạng thái đơn hàng.">
+              <div class="arch-icon">📋</div>
+              <span>Order :5002</span>
+            </div>
+            <div class="arch-component"
+                 data-desc="Merchant Service (cổng 5003) — sở hữu dữ liệu đăng ký và hồ sơ người bán. Service đơn giản nhất: không Kafka, không outbox — chỉ là một API REST trên database PostgreSQL.">
+              <div class="arch-icon">🏪</div>
+              <span>Merchant :5003</span>
+            </div>
+            <div class="arch-component"
+                 data-desc="Payment Service (cổng 5004) — service duy nhất giữ thông tin kết nối Stripe. Giao tiếp với Stripe, ghi kết quả vào database PostgreSQL của chính nó, và phát các sự kiện PaymentCompleted thông qua Transactional Outbox.">
+              <div class="arch-icon">💳</div>
+              <span>Payment :5004</span>
+            </div>
+            <div class="arch-component"
+                 data-desc="Inventory Service — chạy trên một cổng động do Aspire chỉ định. Theo dõi mức tồn kho. Lắng nghe OrderCreated để giữ hàng, và giải phóng hàng nếu thanh toán thất bại — đây chính là tính năng bồi hoàn (compensation) của Saga.">
+              <div class="arch-icon">📦</div>
+              <span>Inventory :động</span>
+            </div>
+          </div>
+
+          <div class="arch-description">Nhấn vào bất kỳ thành phần nào để xem nhiệm vụ của nó</div>
+        </div>
+      </section>
+
+      <section class="screen">
+        <h2 class="screen-heading animate-in">Cách Gateway quyết định gửi Request đi đâu</h2>
+        <p class="animate-in">
+          API Gateway sử dụng <span class="term" data-definition="Yet Another Reverse Proxy — một thư viện của Microsoft giúp biến một ứng dụng ASP.NET thành một API gateway có thể cấu hình được với tính năng điều hướng, cân bằng tải và giới hạn lưu lượng.">YARP</span>
+          (một thư viện <span class="term" data-definition="Một server đứng trước các server thực tế của bạn và chuyển tiếp các request đến chúng — người dùng không nhìn thấy nó nhưng nó rất quan trọng để điều hướng, bảo mật và cân bằng tải.">reverse proxy</span>)
+          được cấu hình qua JSON. Mỗi route sẽ ánh xạ một mẫu URL đến một service chuyên gia.
+          Bản thân Gateway không bao giờ xử lý logic nghiệp vụ — nó chỉ chuyển tiếp.
+        </p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-string">"Routes"</span><span class="code-operator">:</span> <span class="code-operator">{</span></span>
+<span class="code-line">  <span class="code-string">"catalog-route"</span><span class="code-operator">:</span> <span class="code-operator">{</span></span>
+<span class="code-line">    <span class="code-property">"ClusterId"</span><span class="code-operator">:</span> <span class="code-string">"catalog"</span><span class="code-operator">,</span></span>
+<span class="code-line">    <span class="code-property">"Match"</span><span class="code-operator">:</span> <span class="code-operator">{</span> <span class="code-string">"Path"</span><span class="code-operator">:</span> <span class="code-string">"/api/products/{**catch-all}"</span> <span class="code-operator">}</span></span>
+<span class="code-line">  <span class="code-operator">},</span></span>
+<span class="code-line">  <span class="code-string">"order-route"</span><span class="code-operator">:</span> <span class="code-operator">{</span></span>
+<span class="code-line">    <span class="code-property">"ClusterId"</span><span class="code-operator">:</span> <span class="code-string">"order"</span><span class="code-operator">,</span></span>
+<span class="code-line">    <span class="code-property">"Match"</span><span class="code-operator">:</span> <span class="code-operator">{</span> <span class="code-string">"Path"</span><span class="code-operator">:</span> <span class="code-string">"/api/orders/{**catch-all}"</span> <span class="code-operator">}</span></span>
+<span class="code-line">  <span class="code-operator">},</span></span>
+<span class="code-line">  <span class="code-string">"payment-route"</span><span class="code-operator">:</span> <span class="code-operator">{</span></span>
+<span class="code-line">    <span class="code-property">"ClusterId"</span><span class="code-operator">:</span> <span class="code-string">"payment"</span><span class="code-operator">,</span></span>
+<span class="code-line">    <span class="code-property">"Match"</span><span class="code-operator">:</span> <span class="code-operator">{</span> <span class="code-string">"Path"</span><span class="code-operator">:</span> <span class="code-string">"/api/payments/{**catch-all}"</span> <span class="code-operator">}</span></span>
+<span class="code-line">  <span class="code-operator">},</span></span>
+<span class="code-line">  <span class="code-string">"identity-route"</span><span class="code-operator">:</span> <span class="code-operator">{</span></span>
+<span class="code-line">    <span class="code-property">"ClusterId"</span><span class="code-operator">:</span> <span class="code-string">"identity"</span><span class="code-operator">,</span></span>
+<span class="code-line">    <span class="code-property">"Match"</span><span class="code-operator">:</span> <span class="code-operator">{</span> <span class="code-string">"Path"</span><span class="code-operator">:</span> <span class="code-string">"/connect/{**catch-all}"</span> <span class="code-operator">}</span></span>
+<span class="code-line">  <span class="code-operator">}</span></span>
+<span class="code-line"><span class="code-operator">}</span></span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">GIẢI THÍCH</span>
+            <div class="translation-lines">
+              <p class="tl">Bất kỳ URL nào bắt đầu bằng <code>/api/products</code> sẽ đi đến Catalog Service — chuyên gia sản phẩm.</p>
+              <p class="tl">Mọi thứ dưới <code>/api/orders</code> hoặc <code>/api/cart</code> sẽ đến Order Service — nơi giỏ hàng và đơn hàng ở cùng nhau.</p>
+              <p class="tl">Yêu cầu thanh toán dưới <code>/api/payments</code> sẽ đến Payment Service — nơi duy nhất biết về Stripe.</p>
+              <p class="tl">Đường dẫn <code>/connect/</code> dùng để đăng nhập — nó đi đến Identity Service chạy Duende IdentityServer.</p>
+              <p class="tl">Bản thân Gateway không xử lý logic — nó chỉ đọc sơ đồ này và chuyển tiếp tin nhắn.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-info animate-in">
+          <div class="callout-icon">🔒</div>
+          <div class="callout-content">
+            <strong class="callout-title">Giới hạn lưu lượng tại cửa (Rate Limiting)</strong>
+            <p>Gateway cũng thực thi <span class="term" data-definition="Giới hạn số lượng request mà một khách hàng có thể thực hiện trong một khoảng thời gian. Giống như một câu lạc bộ đêm chỉ cho phép tối đa 100 người — khi đã đầy, những người mới phải đợi bên ngoài.">giới hạn lưu lượng</span>
+            — 100 request mỗi phút cho mỗi khách hàng. Quy tắc duy nhất này bảo vệ cả bảy service cùng một lúc.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen">
+        <h2 class="screen-heading animate-in">Cách mỗi Service kiểm tra danh tính của bạn</h2>
+        <p class="animate-in">
+          Identity Service sử dụng <span class="term" data-definition="OpenID Connect — một tiêu chuẩn đăng nhập được xây dựng trên nền tảng OAuth 2.0. Đó là công nghệ đứng sau các nút 'Đăng nhập bằng Google'.">OIDC</span>
+          thông qua <span class="term" data-definition="Một thư viện .NET triển khai đầy đủ máy chủ OAuth 2.0 / OpenID Connect — phần mềm cấp và xác thực các token đăng nhập.">Duende IdentityServer</span>.
+          Sau khi đăng nhập, mỗi service sẽ độc lập xác thực
+          <span class="term" data-definition="JSON Web Token — một thông tin xác thực nhỏ gọn được ký bằng mã hóa. Chứa ID người dùng, vai trò và thời gian hết hạn của bạn. Giống như một chiếc vòng tay không thể giả mạo.">JWT</span>
+          bằng cách sử dụng một public key đã được lưu tạm (cache) — chúng không cần gọi đến Identity cho mọi request.
+        </p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">builder</span>.<span class="code-property">Services</span></span>
+<span class="code-line">  .<span class="code-function">AddAuthentication</span>(</span>
+<span class="code-line">    <span class="code-function">JwtBearerDefaults</span>.<span class="code-property">AuthenticationScheme</span>)</span>
+<span class="code-line">  .<span class="code-function">AddJwtBearer</span>(<span class="code-keyword">options</span> <span class="code-operator">=&gt;</span></span>
+<span class="code-line">  <span class="code-operator">{</span></span>
+<span class="code-line">    <span class="code-keyword">options</span>.<span class="code-property">Authority</span> <span class="code-operator">=</span></span>
+<span class="code-line">      <span class="code-string">"http://identity:5005"</span><span class="code-operator">;</span></span>
+<span class="code-line">    <span class="code-keyword">options</span>.<span class="code-property">Audience</span> <span class="code-operator">=</span></span>
+<span class="code-line">      <span class="code-string">"urbanx-api"</span><span class="code-operator">;</span></span>
+<span class="code-line">    <span class="code-keyword">options</span>.<span class="code-property">RequireHttpsMetadata</span></span>
+<span class="code-line">      <span class="code-operator">=</span> <span class="code-keyword">false</span><span class="code-operator">;</span></span>
+<span class="code-line">  <span class="code-operator">});</span></span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">GIẢI THÍCH</span>
+            <div class="translation-lines">
+              <p class="tl">Mọi service xác thực token bằng cách kiểm tra với Identity Service — tất cả đều chia sẻ cấu hình y hệt như thế này.</p>
+              <p class="tl"><strong>Authority</strong> — URL của Identity Service. Đến đây để lấy public key dùng để xác minh chữ ký của token.</p>
+              <p class="tl"><strong>Audience</strong> — chỉ chấp nhận các token được cấp riêng cho API này. Token từ các hệ thống khác sẽ bị từ chối.</p>
+              <p class="tl"><strong>RequireHttpsMetadata = false</strong> — chỉ dành cho lúc phát triển. Trong thực tế, HTTPS là bắt buộc cho mọi lưu lượng liên quan đến token.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-info animate-in">
+          <div class="callout-icon">📜</div>
+          <div class="callout-content">
+            <strong class="callout-title">Chính sách Phân quyền (Authorization Policies)</strong>
+            <p>Ngoài xác thực, các service cũng định nghĩa các
+            <span class="term" data-definition="Một quy tắc được đặt tên nhằm xác định ai có thể truy cập vào một endpoint. CustomerOnly nghĩa là chỉ người dùng có vai trò 'khách hàng' mới có thể gọi API này.">chính sách phân quyền</span>:
+            <code>CustomerOnly</code>, <code>MerchantOnly</code>, và <code>CustomerOrMerchant</code>.
+            Một endpoint được đánh dấu <code>[Authorize(Policy = "MerchantOnly")]</code> sẽ từ chối request của khách hàng ngay cả khi token của họ là hợp lệ.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen">
+        <h2 class="screen-heading animate-in">Các Service tự giới thiệu</h2>
+        <p class="animate-in">
+          Hãy tưởng tượng bảy chuyên gia trong một nhóm chat. Mỗi người tự giới thiệu bản thân — họ sở hữu cái gì,
+          họ không động vào cái gì, và họ khớp nối vào hệ thống như thế nào.
+        </p>
+
+        <div class="chat-window animate-in" id="chat-services">
+          <div class="chat-messages">
+
+            <div class="chat-message" data-msg="0" data-sender="identity" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">ID</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Identity Service</span>
+                <p>Tôi xử lý đăng nhập. Đưa tôi username và password, tôi sẽ đưa bạn một JWT token có hiệu lực trong 60 phút.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="1" data-sender="catalog" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-5)">CA</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-5)">Catalog Service</span>
+                <p>Tôi quản lý danh mục sản phẩm. Ghi dữ liệu vào PostgreSQL, tìm kiếm trên Elasticsearch. Tôi giữ chúng đồng bộ qua Kafka.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="2" data-sender="order" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-2)">OR</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-2)">Order Service</span>
+                <p>Giỏ hàng và đơn hàng thuộc về tôi. Tôi cũng chạy Saga — phối hợp kho hàng và thanh toán để quá trình thanh toán luôn nhất quán.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="3" data-sender="inventory" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">IN</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Inventory Service</span>
+                <p>Tôi theo dõi tồn kho. Khi Order báo có đơn mới, tôi sẽ giữ hàng. Nếu thanh toán lỗi, tôi sẽ thả hàng ra — đó là bồi hoàn Saga.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="4" data-sender="payment" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-4)">PA</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-4)">Payment Service</span>
+                <p>Tôi làm việc với Stripe. Tôi không bao giờ chia sẻ thông tin đó với bất kỳ ai khác. Việc của tôi là tính tiền và báo cáo kết quả — chỉ vậy thôi.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="5" data-sender="identity" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">ID</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Identity Service</span>
+                <p>Và không ai trong chúng tôi gọi nhau trực tiếp cả. Chúng tôi nói chuyện qua Kafka — đó là nội dung module tới.</p>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="chat-typing" style="display:none">
+            <div class="chat-avatar" id="chat-services-typing-avatar"></div>
+            <div class="chat-typing-dots">
+              <span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>
+            </div>
+          </div>
+
+          <div class="chat-controls">
+            <button class="btn chat-next-btn">Tin nhắn Tiếp theo</button>
+            <button class="btn chat-all-btn">Chạy tất cả</button>
+            <button class="btn chat-reset-btn">Xem lại</button>
+            <span class="chat-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen">
+        <h2 class="screen-heading animate-in">Luyện tập Quyết định Kiến trúc</h2>
+        <p class="animate-in">
+          Kiến trúc tốt là về những quyết định — cụ thể là service nào nên sở hữu dữ liệu nào. Hai câu hỏi này
+          kiểm tra phán đoán đó. Hãy nghĩ về <em>domain ownership</em> (quyền sở hữu nghiệp vụ) trước khi chọn.
+        </p>
+
+        <div class="quiz-container animate-in" id="quiz-module2">
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="Yêu thích (Favorites) liên quan đến sản phẩm, nên chúng thuộc về Catalog Service — chuyên gia sở hữu domain sản phẩm."
+               data-explanation-wrong="Hãy nghĩ xem service nào sở hữu dữ liệu liên quan. Favorites liên quan đến sản phẩm, nên chuyên gia sản phẩm — Catalog — là lựa chọn đúng.">
+            <h3 class="quiz-question">Bạn muốn thêm tính năng &quot;Sản phẩm Yêu thích&quot; để khách hàng lưu lại. Service nào nên sở hữu dữ liệu này?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>API Gateway — vì nó thấy mọi request</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>Catalog Service — nó sở hữu domain sản phẩm</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>Identity Service — nó đã biết người dùng là ai</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>Một microservice Favorites hoàn toàn mới</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="Các service tự xác thực token JWT bằng public key được lưu tạm — chúng không gọi Identity mỗi khi có request. Những người dùng đã đăng nhập có token hợp lệ và có thể tiếp tục sử dụng app."
+               data-explanation-wrong="Đây là mấu chốt: các service lưu tạm public key của Identity và tự xác thực token tại chỗ. Chúng chỉ cần Identity khi người dùng đăng nhập mới.">
+            <h3 class="quiz-question">Identity Service bị sập trong 5 phút. Điều gì vẫn hoạt động bình thường?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>Không cái gì hoạt động — mọi service đều cần auth</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>Những người dùng đã đăng nhập vẫn có thể duyệt và đặt hàng</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>Người dùng mới có thể đăng nhập nhưng người dùng cũ thì không</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div><span>Chỉ có API Gateway là hoạt động</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module2')">Kiểm tra Đáp án</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module2')">Thử lại</button>
+        </div>
+
+        <div class="callout callout-info animate-in">
+          <div class="callout-icon">➡️</div>
+          <div class="callout-content">
+            <strong class="callout-title">Tiếp theo: Xương sống Truyền tin</strong>
+            <p>Bạn đã biết về bảy chuyên gia và ranh giới của họ. Module 3 sẽ đi sâu vào Kafka — lớp truyền tin giúp họ phối hợp mà không bao giờ cần gọi trực tiếp cho nhau.</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-3" style="background: var(--color-bg)">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">03</span>
+      <h1 class="module-title">Xương sống Truyền tin</h1>
+      <p class="module-subtitle">Cách bảy chuyên gia nói chuyện với nhau — mà không bao giờ làm gián đoạn lẫn nhau.</p>
+    </header>
+
+    <div class="module-body">
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Bảng tin văn phòng</h2>
+        <p>Hãy tưởng tượng một văn phòng chung với bảy chuyên gia. Cách vụng về nhất để phối hợp là vỗ vai mọi người — mỗi lần, cho mỗi cập nhật. Họ bị ngắt quãng, phải bỏ dở việc đang làm, và nếu một người bị ốm, toàn bộ kế hoạch của bạn bị đình trệ.</p>
+        <p>UrbanX làm một cách thông minh hơn: sử dụng một <span class="term" data-definition="Phần mềm nhận tin nhắn từ người gửi (producers) và chuyển đến người nhận (consumers). Giống như một văn phòng phân loại bưu điện — nó xử lý việc điều hướng để người gửi và người nhận không cần phải kết nối cùng lúc.">message broker</span> tên là <strong>Kafka</strong> — bảng tin chung của văn phòng. Thay vì gọi trực tiếp cho Kho (Inventory), Order Service ghim một tờ ghi chú. Kho đọc nó khi họ sẵn sàng. Không ai bị ngắt quãng. Không tin nhắn nào bị bỏ sót.</p>
+
+        <div class="callout callout-info animate-in">
+          <div class="callout-icon">📌</div>
+          <div class="callout-content">
+            <strong class="callout-title">Gợi ý mở đầu</strong>
+            <p>Sẽ ra sao nếu Inventory Service bị sập ngay lúc bạn đang thanh toán? Trong hệ thống gọi trực tiếp, đơn hàng của bạn sẽ thất bại ngay lập tức. Với Kafka, tin nhắn đơn hàng chỉ đơn giản nằm chờ trên bảng cho đến khi Inventory hoạt động trở lại — và sau đó nó sẽ xử lý nốt.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Topics: Các kênh được đặt tên trên bảng</h2>
+        <p>Mọi ghi chú trên bảng tin đều đi vào một ô được đặt tên gọi là <span class="term" data-definition="Một bản ghi tin nhắn có thứ tự và được đặt tên trong Kafka. Bên gửi ghi vào đó; bên nhận đọc từ đó. Giống như một kênh truyền hình — đài truyền hình phát sóng, và khán giả dò kênh để xem.">topic</span>. UrbanX có năm topic — một cho mỗi loại sự kiện quan trọng đi xuyên qua ranh giới các service.</p>
+
+        <div class="badge-list animate-in">
+          <div class="badge-item">
+            <code class="badge-code">order.created</code>
+            <span class="badge-desc">Order Service → Inventory Service: kích hoạt giữ hàng cho đơn hàng mới</span>
+          </div>
+          <div class="badge-item">
+            <code class="badge-code">inventory.events</code>
+            <span class="badge-desc">Inventory Service → Order Service: mang kết quả Giữ hàng thành công hoặc Thất bại</span>
+          </div>
+          <div class="badge-item">
+            <code class="badge-code">payment.events</code>
+            <span class="badge-desc">Payment Service → Order Service: mang kết quả thanh toán Thành công hoặc Thất bại</span>
+          </div>
+          <div class="badge-item">
+            <code class="badge-code">order.cancelled</code>
+            <span class="badge-desc">Order Service → Inventory Service: kích hoạt giải phóng hàng khi thanh toán lỗi</span>
+          </div>
+          <div class="badge-item">
+            <code class="badge-code">catalog.products</code>
+            <span class="badge-desc">Catalog Service → Catalog Service: đồng bộ thay đổi sản phẩm sang Elasticsearch</span>
+          </div>
+        </div>
+
+        <div class="callout callout-accent animate-in">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">Tại sao bạn nên quan tâm?</strong>
+            <p>Hiểu về các topic có nghĩa là bạn có thể bảo AI: &ldquo;thêm một service mới lắng nghe sự kiện thanh toán&rdquo; và biết chính xác điều đó có nghĩa là gì: đăng ký vào topic <code>payment.events</code>. Không cần thay đổi bất cứ điều gì ở Payment Service.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Đọc Code: Inventory Consumer</h2>
+        <p>Đây là cách Inventory Service lắng nghe các đơn hàng mới. Mỗi dòng code đều có mục đích — hãy cùng giải mã chúng.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">var</span> config = <span class="code-keyword">new</span> <span class="code-function">ConsumerConfig</span></span>
+<span class="code-line">{</span>
+<span class="code-line">  <span class="code-property">BootstrapServers</span> = _kafkaSettings.<span class="code-property">BootstrapServers</span>,</span>
+<span class="code-line">  <span class="code-property">GroupId</span>          = <span class="code-string">"inventory-service"</span>,</span>
+<span class="code-line">  <span class="code-property">AutoOffsetReset</span>  = <span class="code-property">AutoOffsetReset</span>.<span class="code-property">Earliest</span>,</span>
+<span class="code-line">  <span class="code-property">EnableAutoCommit</span> = <span class="code-keyword">false</span></span>
+<span class="code-line">};</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-keyword">using var</span> consumer = <span class="code-keyword">new</span> <span class="code-function">ConsumerBuilder</span>&lt;<span class="code-keyword">string</span>, <span class="code-keyword">string</span>&gt;(config).<span class="code-function">Build</span>();</span>
+<span class="code-line">consumer.<span class="code-function">Subscribe</span>(<span class="code-string">"order.created"</span>);</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-keyword">while</span> (!stoppingToken.<span class="code-property">IsCancellationRequested</span>)</span>
+<span class="code-line">{</span>
+<span class="code-line">  <span class="code-keyword">var</span> result     = consumer.<span class="code-function">Consume</span>(stoppingToken);</span>
+<span class="code-line">  <span class="code-keyword">var</span> orderEvent = <span class="code-function">JsonSerializer</span>.<span class="code-function">Deserialize</span>&lt;<span class="code-function">OrderEvent</span>&gt;(result.<span class="code-property">Message</span>.<span class="code-property">Value</span>);</span>
+<span class="code-line">  <span class="code-keyword">await</span> <span class="code-function">ProcessOrderAsync</span>(orderEvent, stoppingToken);</span>
+<span class="code-line">  consumer.<span class="code-function">Commit</span>(result);</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">GIẢI THÍCH</span>
+            <div class="translation-lines">
+              <p class="tl">Kết nối đến server Kafka và tham gia vào <span class="term" data-definition="Một nhóm các thực thể service chia sẻ công việc đọc từ một topic. Mỗi tin nhắn chỉ được gửi đến duy nhất một thành viên trong nhóm — giúp cân bằng tải.">consumer group</span> tên là &ldquo;inventory-service&rdquo;.</p>
+              <p class="tl"><strong>GroupId</strong> có nghĩa là: nếu nhiều bản sao của Inventory chạy cùng lúc, chúng sẽ chia việc cho nhau — không tin nhắn nào bị xử lý hai lần.</p>
+              <p class="tl"><strong>EnableAutoCommit=false</strong>: chúng ta chỉ xác nhận đã nhận tin sau khi xử lý thành công — không lo mất tin nhắn nếu bị sập giữa chừng.</p>
+              <p class="tl">Đăng ký (Subscribe) vào topic <code>order.created</code> — bắt đầu lắng nghe đơn hàng mới.</p>
+              <p class="tl">Lặp vô tận: đợi tin nhắn đến, giải mã từ JSON, xử lý nó (giữ hàng), sau đó thủ công <strong>commit</strong> <span class="term" data-definition="Vị trí của một tin nhắn trong topic. Giống như một cái đánh dấu trang sách — Kafka theo dõi xem mỗi consumer group đã đọc đến đâu để có thể tiếp tục sau khi khởi động lại.">offset</span> để xác nhận đã xong.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Theo dõi Luồng Tin nhắn thực tế</h2>
+        <p>Hãy cùng theo dõi một đơn hàng hoàn chỉnh qua xương sống truyền tin — từ khoảnh khắc khách hàng nhấn &ldquo;Mua&rdquo; đến khi Kho xác nhận giữ hàng. Nhấn <strong>Tin nhắn Tiếp theo</strong> để xem.</p>
+
+        <div class="chat-window animate-in" id="chat-kafka">
+          <div class="chat-messages">
+
+            <div class="chat-message" data-msg="0" data-sender="order" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1); color: #fff">OR</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Order Service</span>
+                <p>Đơn hàng mới #abc123! Tôi KHÔNG gọi trực tiếp cho Kho. Tôi sẽ đăng lên <code>order.created</code>.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="1" data-sender="order" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1); color: #fff">OR</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Order Service</span>
+                <p>Bản ghi Outbox đã lưu vào DB của tôi. Relay sẽ lấy nó đi trong vòng chưa đầy 5 giây.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="2" data-sender="kafka" style="display:none">
+              <div class="chat-avatar" style="background: #1E1E2E; color: #CDD6F4">KF</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-4)">Kafka</span>
+                <p>Đã nhận tin nhắn. Lưu tại <span class="term" data-definition="Vị trí của tin nhắn. Giống như đánh dấu trang sách, giúp Kafka biết bạn đã đọc đến đâu.">offset</span> 182. Mọi bên đăng ký sẽ nhận được tin này — bất cứ khi nào họ sẵn sàng.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="3" data-sender="inventory" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3); color: #fff">IN</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Inventory Service</span>
+                <p>Đã rõ! Đang đọc đơn hàng #abc123... 2 Tai nghe không dây. Đang kiểm tra kho.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="4" data-sender="inventory" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3); color: #fff">IN</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Inventory Service</span>
+                <p>Còn 15 cái, chưa ai giữ cái nào. Đã giữ 2 cái. Đang đăng <code>InventoryReserved</code> lên <code>inventory.events</code>.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="5" data-sender="kafka" style="display:none">
+              <div class="chat-avatar" style="background: #1E1E2E; color: #CDD6F4">KF</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-4)">Kafka</span>
+                <p><code>InventoryReserved</code> đã lưu tại offset 183. Order Service có đăng ký kênh này — nó sẽ nhận được ngay.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="6" data-sender="order" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1); color: #fff">OR</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Order Service</span>
+                <p>Đã nhận <code>InventoryReserved</code>. Đơn hàng vẫn ở trạng thái Chờ (Pending). Đang đợi xác nhận thanh toán.</p>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="chat-typing" style="display:none">
+            <div class="chat-avatar" id="chat-kafka-typing-avatar"></div>
+            <div class="chat-typing-dots">
+              <span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>
+            </div>
+          </div>
+
+          <div class="chat-controls">
+            <button class="btn chat-next-btn">Tin nhắn Tiếp theo</button>
+            <button class="btn chat-all-btn">Chạy tất cả</button>
+            <button class="btn chat-reset-btn">Xem lại</button>
+            <span class="chat-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Đảm bảo Khả năng phục hồi</h2>
+        <p>Kafka lưu trữ tin nhắn trong một log có thứ tự. Khi Inventory Service bị ngoại tuyến (offline), các tin nhắn sẽ xếp hàng tại đúng <span class="term" data-definition="Vị trí cuối cùng mà consumer đọc được.">offset</span> nơi nó dừng lại. Khi nó khởi động lại, nó sẽ tiếp tục từ đúng điểm đánh dấu đó — không tin nhắn nào bị bỏ qua, không tin nhắn nào bị mất.</p>
+        <p>Đây là ý nghĩa của việc &ldquo;tách rời về mặt thời gian&rdquo;: người gửi không cần đợi người nhận. Người nhận có thể bắt kịp từ bất kỳ điểm nào trong lịch sử.</p>
+
+        <div class="callout callout-accent animate-in">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">At-least-once delivery (Giao ít nhất một lần)</strong>
+            <p><span class="term" data-definition="Đảm bảo rằng mọi tin nhắn sẽ được giao ít nhất một lần. Nhược điểm: có thể tin nhắn được giao nhiều hơn một lần, nên bên nhận phải xử lý trùng lặp an toàn.">At-least-once delivery</span>: Kafka đảm bảo mọi tin nhắn được giao ít nhất một lần. Nếu consumer sập giữa chừng, nó sẽ nhận lại tin nhắn đó khi khởi động lại. Các service phải xử lý trùng lặp một cách khéo léo — điều này được gọi là tính <span class="term" data-definition="Tính chất mà một thao tác có cùng kết quả cho dù bạn thực hiện nó một lần hay mười lần. Giải phóng hàng đã giải phóng rồi thì không làm gì thêm — đó là idempotent.">idempotent</span>. Pattern <strong>Transactional Outbox</strong> (Module 4) và <strong>Order Saga</strong> (Module 5) sẽ chỉ cho bạn cách UrbanX đạt được điều này.</p>
+          </div>
+        </div>
+
+        <div class="callout callout-info animate-in">
+          <div class="callout-icon">🔗</div>
+          <div class="callout-content">
+            <strong class="callout-title">Mô hình pub-sub trong một câu</strong>
+            <p><span class="term" data-definition="Publish-Subscribe: một mô hình truyền tin mà người gửi (publisher) gửi vào một topic mà không cần biết ai đọc, và người nhận (subscriber) đọc mà không cần biết ai gửi. Hoàn toàn tách rời.">Pub-sub</span> có nghĩa là Payment Service không bao giờ cần biết sự tồn tại của một Analytics Service — Analytics chỉ cần đăng ký vào <code>payment.events</code> và Payment Service không hề bị ảnh hưởng gì.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Kiểm tra mức độ hiểu bài</h2>
+
+        <div class="quiz-container animate-in" id="quiz-module3">
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="Kafka giữ các tin nhắn cho đến khi mỗi consumer group xác nhận đã đọc xong. Offset của group sẽ theo dõi chính xác nơi Inventory đọc lần cuối — nó sẽ tiếp tục từ đó."
+               data-explanation-wrong="Siêu năng lực chính của Kafka là tính bền vững. Tin nhắn không bị mất khi consumer offline — chúng chờ trong topic log cho đến khi consumer quay lại và đọc."
+               >
+            <h3 class="quiz-question">Inventory Service khởi động lại sau 10 phút bị sập. Điều gì xảy ra với các sự kiện đơn hàng đến trong lúc nó sập?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Chúng bị mất — Kafka chỉ giữ tin nhắn cho các consumer đang kết nối</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Kafka đã giữ chúng trong topic — Inventory sẽ đọc bù từ chỗ nó dừng lại</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Order Service sẽ tự động thử gửi lại chúng</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>API Gateway đã xếp hàng chờ chúng</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="Đây là vẻ đẹp của kiến trúc hướng sự kiện — bạn có thể thêm consumer mới mà không cần chạm vào producer. Payment Service không bao giờ cần biết về sự tồn tại của analytics."
+               data-explanation-wrong="Mô hình pub-sub của Kafka cho phép bất kỳ ai đăng ký vào một topic mà producer không cần biết. Không cần đổi code trong Payment Service — chỉ cần thêm một consumer mới.">
+            <h3 class="quiz-question">Bạn muốn một service phân tích mới theo dõi mọi thanh toán mà không cần thay đổi bất kỳ dòng code nào ở Payment Service. Làm thế nào?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Thêm code log trực tiếp vào Payment Service</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Đăng ký service phân tích vào topic Kafka <code>payment.events</code></span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Quét database của Payment Service mỗi phút một lần</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Thêm một endpoint mới vào Payment Service dành riêng cho analytics</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module3')">Kiểm tra Đáp án</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module3')">Thử lại</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-4" style="background: var(--color-bg-warm)">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">04</span>
+      <h1 class="module-title">Không bao giờ Mất Tin nhắn</h1>
+      <p class="module-subtitle">Mô hình Transactional Outbox — tại sao việc ghi vào hai hệ thống cùng lúc là bất khả thi, và cách UrbanX giải quyết nó.</p>
+    </header>
+
+    <div class="module-body">
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Khoảnh khắc nguy hiểm</h2>
+        <p>Hãy tưởng tượng đơn hàng của bạn đã được lưu vào database — và rồi server sập ngay trước khi tin nhắn kịp gửi đến Kafka. Đơn hàng tồn tại, nhưng Kho chưa bao giờ nghe thấy nó. Hàng không được giữ. Khách hàng mong đợi giao hàng, nhưng điều đó sẽ không bao giờ xảy ra.</p>
+        <p>Đây không phải là giả thuyết. Trong bất kỳ hệ thống phân tán nào, lỗi sập, hết thời gian chờ mạng, hoặc thậm chí là một đợt triển khai code định kỳ đều có thể xảy ra giữa hai lần ghi dữ liệu riêng biệt. Nếu không có lưới an toàn, khoảng trống đó sẽ là một thảm họa.</p>
+
+        <div class="step-cards stagger-children animate-in">
+
+          <div class="step-card animate-in">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>Đơn hàng lưu vào DB thành công ✓</strong>
+              <p>Bản ghi Đơn hàng được ghi vào PostgreSQL thành công.</p>
+            </div>
+          </div>
+
+          <div class="step-card animate-in" style="border-left-color: var(--color-error); background: var(--color-error-light)">
+            <div class="step-num" style="background: var(--color-error)">💥</div>
+            <div class="step-body">
+              <strong>Server sập tại đây</strong>
+              <p>Mất điện, lỗi bộ nhớ, khởi động lại — bất kỳ sự cố nào tại thời điểm này đều gây thảm họa.</p>
+            </div>
+          </div>
+
+          <div class="step-card animate-in">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>Tin nhắn Kafka chưa bao giờ được gửi ✗</strong>
+              <p>Đoạn code gửi tin nhắn lên Kafka chưa kịp chạy.</p>
+            </div>
+          </div>
+
+          <div class="step-card animate-in">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <strong>Đơn hàng có, nhưng Kho không biết ✗</strong>
+              <p>Đơn hàng đã được xác nhận nhưng hàng trong kho không được giữ. Khách hàng sẽ không nhận được hàng.</p>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="callout callout-warning animate-in">
+          <div class="callout-icon">⚠️</div>
+          <div class="callout-content">
+            <strong class="callout-title">Vấn đề cốt lõi</strong>
+            <p>Việc ghi vào hai hệ thống khác nhau — một database và một message broker — không bao giờ có thể mang tính <span class="term" data-definition="Một hoạt động database mà ở đó tất cả đều thành công hoặc tất cả đều thất bại cùng nhau — không có kết quả dở dang. Giống như chuyển khoản ngân hàng: cả bên trừ tiền và bên cộng tiền đều xảy ra, hoặc không bên nào xảy ra.">nguyên tử (atomic)</span>. Luôn có một khoảng trống. Mô hình <span class="term" data-definition="Một pattern mà bạn ghi một sự kiện vào một bảng trong cùng một giao dịch database với dữ liệu nghiệp vụ của mình — sau đó một worker chạy ngầm sẽ đẩy nó lên message broker. Đảm bảo sự kiện không bao giờ bị mất.">Transactional Outbox</span> sẽ lấp đầy khoảng trống đó.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Giải pháp: Danh sách kiểm tra của bác sĩ</h2>
+        <p>Trước khi phẫu thuật, mọi bước đều được ghi vào một biểu mẫu — ngay cả khi mất điện giữa chừng, nhân viên vẫn biết chính xác những gì đã làm và những gì cần làm tiếp theo. Bảng Outbox chính là danh sách kiểm tra đó.</p>
+        <p>Thay vì gọi trực tiếp cho Kafka, Order Service ghi sự kiện vào <em>chính database của nó</em>, trong cùng một transaction với chính đơn hàng đó. Một <span class="term" data-definition="Một chương trình chạy liên tục dưới nền, thực hiện công việc theo lịch trình hoặc phản ứng với sự kiện — mà không cần người dùng trực tiếp gọi đến.">background service</span> riêng biệt (<code>OutboxRelayService</code>) sau đó sẽ đọc các mục đang chờ xử lý đó và đẩy chúng lên Kafka.</p>
+
+        <div class="step-cards stagger-children animate-in">
+
+          <div class="step-card animate-in">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>Giao dịch database duy nhất</strong>
+              <p>Bản ghi đơn hàng + mục Outbox được ghi cùng nhau. Cả hai thành công, hoặc không cái nào thành công. Khoảng trống rủi ro bị xóa bỏ.</p>
+            </div>
+          </div>
+
+          <div class="step-card animate-in">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>Relay chạy ngầm kiểm tra mỗi 5 giây</strong>
+              <p><code>OutboxRelayService</code> quét các mục chưa xử lý và đẩy từng mục lên Kafka.</p>
+            </div>
+          </div>
+
+          <div class="step-card animate-in">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>Đánh dấu đã xử lý</strong>
+              <p>Sau khi đẩy lên thành công, <code>ProcessedAt</code> được cập nhật. Mục này sẽ không bao giờ được gửi lại nữa.</p>
+            </div>
+          </div>
+
+          <div class="step-card animate-in">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <strong>Thử lại nếu lỗi</strong>
+              <p>Nếu Kafka tạm thời không khả dụng, <code>RetryCount</code> sẽ tăng lên. Relay sẽ thử lại ở lượt kiểm tra tiếp theo. Tối đa 5 lần thử.</p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Code: Ghi dữ liệu nguyên tử</h2>
+        <p>Đây là đoạn code chính xác trong Order Service thực hiện việc ghi dữ liệu an toàn. Hãy chú ý rằng cả đơn hàng và mục outbox đều được lưu trong một lần gọi <code>SaveChangesAsync</code> duy nhất.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">await</span> db.<span class="code-property">Orders</span>.<span class="code-function">AddAsync</span>(order);</span>
+<span class="code-line"><span class="code-keyword">await</span> db.<span class="code-property">OutboxMessages</span>.<span class="code-function">AddAsync</span>(<span class="code-keyword">new</span> <span class="code-function">OutboxMessage</span></span>
+<span class="code-line">{</span>
+<span class="code-line">  <span class="code-property">Id</span>          = <span class="code-function">Guid</span>.<span class="code-function">NewGuid</span>(),</span>
+<span class="code-line">  <span class="code-property">EventType</span>   = <span class="code-string">"OrderCreated"</span>,</span>
+<span class="code-line">  <span class="code-property">Payload</span>     = <span class="code-function">JsonSerializer</span>.<span class="code-function">Serialize</span>(orderEvent),</span>
+<span class="code-line">  <span class="code-property">CreatedAt</span>   = <span class="code-function">DateTime</span>.<span class="code-property">UtcNow</span>,</span>
+<span class="code-line">  <span class="code-property">ProcessedAt</span> = <span class="code-keyword">null</span>,</span>
+<span class="code-line">  <span class="code-property">RetryCount</span>  = <span class="code-number">0</span></span>
+<span class="code-line">});</span>
+<span class="code-line"><span class="code-keyword">await</span> db.<span class="code-function">SaveChangesAsync</span>();</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">GIẢI THÍCH</span>
+            <div class="translation-lines">
+              <p class="tl">Lưu thực thể Đơn hàng mới vào bảng Orders.</p>
+              <p class="tl">Trong cùng một giao dịch database, lưu một <code>OutboxMessage</code> mới — bản ghi của sự kiện cần được phát đi.</p>
+              <p class="tl"><strong>ProcessedAt=null</strong> có nghĩa là: chưa được đẩy lên Kafka.</p>
+              <p class="tl"><strong>RetryCount=0</strong>: chưa có lần thử gửi nào bị lỗi.</p>
+              <p class="tl"><code>SaveChangesAsync</code> chốt (commit) CẢ đơn hàng VÀ mục outbox một cách <span class="term" data-definition="Cùng thành công hoặc cùng thất bại.">nguyên tử</span> — hoặc cả hai cùng thành công, hoặc không có cái nào.</p>
+              <p class="tl">Nếu server sập sau dòng này: cả hai bản ghi đã nằm yên trong database. Relay sẽ tiếp tục xử lý và đẩy lên Kafka khi khởi động lại.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Code: Vòng lặp Relay</h2>
+        <p><code>OutboxRelayService</code> là một <span class="term" data-definition="Service chạy nền.">background service</span> chạy mãi mãi. Mỗi 5 giây nó quét các tin nhắn chưa phát và gửi chúng lên Kafka.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">protected override async</span> <span class="code-function">Task</span> <span class="code-function">ExecuteAsync</span>(<span class="code-function">CancellationToken</span> stoppingToken)</span>
+<span class="code-line">{</span>
+<span class="code-line">  <span class="code-keyword">while</span> (!stoppingToken.<span class="code-property">IsCancellationRequested</span>)</span>
+<span class="code-line">  {</span>
+<span class="code-line">    <span class="code-keyword">var</span> pending = <span class="code-keyword">await</span> _db.<span class="code-property">OutboxMessages</span></span>
+<span class="code-line">      .<span class="code-function">Where</span>(m =&gt; m.<span class="code-property">ProcessedAt</span> == <span class="code-keyword">null</span> &amp;&amp; m.<span class="code-property">RetryCount</span> &lt; <span class="code-number">5</span>)</span>
+<span class="code-line">      .<span class="code-function">Take</span>(<span class="code-number">50</span>)</span>
+<span class="code-line">      .<span class="code-function">ToListAsync</span>(stoppingToken);</span>
+<span class="code-line"></span>
+<span class="code-line">    <span class="code-keyword">foreach</span> (<span class="code-keyword">var</span> msg <span class="code-keyword">in</span> pending)</span>
+<span class="code-line">    {</span>
+<span class="code-line">      <span class="code-keyword">try</span></span>
+<span class="code-line">      {</span>
+<span class="code-line">        <span class="code-keyword">await</span> _producer.<span class="code-function">ProduceAsync</span>(msg.<span class="code-property">EventType</span>, msg.<span class="code-property">Payload</span>);</span>
+<span class="code-line">        msg.<span class="code-property">ProcessedAt</span> = <span class="code-function">DateTime</span>.<span class="code-property">UtcNow</span>;</span>
+<span class="code-line">      }</span>
+<span class="code-line">      <span class="code-keyword">catch</span> (<span class="code-function">Exception</span> ex)</span>
+<span class="code-line">      {</span>
+<span class="code-line">        _logger.<span class="code-function">LogError</span>(ex, <span class="code-string">"Failed to publish outbox message {Id}"</span>, msg.<span class="code-property">Id</span>);</span>
+<span class="code-line">        msg.<span class="code-property">RetryCount</span>++;</span>
+<span class="code-line">      }</span>
+<span class="code-line">    }</span>
+<span class="code-line"></span>
+<span class="code-line">    <span class="code-keyword">await</span> _db.<span class="code-function">SaveChangesAsync</span>(stoppingToken);</span>
+<span class="code-line">    <span class="code-keyword">await</span> <span class="code-function">Task</span>.<span class="code-function">Delay</span>(<span class="code-function">TimeSpan</span>.<span class="code-function">FromSeconds</span>(<span class="code-number">5</span>), stoppingToken);</span>
+<span class="code-line">  }</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">GIẢI THÍCH</span>
+            <div class="translation-lines">
+              <p class="tl">Service nền này chạy liên tục cho đến khi ứng dụng dừng lại.</p>
+              <p class="tl">Tìm các tin nhắn chưa phát (<code>ProcessedAt=null</code>) có số lần lỗi ít hơn 5 — đây là những tin đang chờ gửi.</p>
+              <p class="tl">Lấy tối đa 50 tin mỗi lần — xử lý theo lô (batch) để tăng hiệu suất.</p>
+              <p class="tl">Phát từng tin lên Kafka, sử dụng <code>EventType</code> làm tên topic.</p>
+              <p class="tl">Đánh dấu đã xử lý bằng cách đặt <code>ProcessedAt</code> là thời gian hiện tại — nó sẽ không bao giờ bị lấy lại lần nữa.</p>
+              <p class="tl">Nếu phát lỗi: tăng <code>RetryCount</code> — tin nhắn sẽ được thử lại ở vòng lặp sau.</p>
+              <p class="tl">Đợi 5 giây, sau đó kiểm tra lại — lặp lại mãi mãi.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent animate-in">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">At-least-once, xử lý mượt mà</strong>
+            <p>Nếu relay đẩy lên Kafka thành công nhưng sập trước khi kịp đánh dấu <code>ProcessedAt</code>, tin nhắn sẽ được đẩy lại lần nữa khi khởi động lại. Bên nhận sẽ nhận được một bản trùng lặp. Đó là lý do tại sao bên nhận phải có tính <span class="term" data-definition="An toàn khi lặp lại. Nếu bạn thực hiện một thao tác idempotent hai lần, lần thứ hai sẽ không gây thêm tác động nào. Thiết yếu để xử lý tin nhắn trùng lặp trong hệ thống phân tán.">idempotent</span> — đoạn code tiếp theo sẽ chỉ cho bạn cách làm.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Code: Idempotent Consumer</h2>
+        <p>Điều gì xảy ra nếu Inventory nhận được cùng một sự kiện <code>order.cancelled</code> hai lần? Nếu không có biện pháp bảo vệ, nó sẽ cố gắng giải phóng hàng đã giải phóng rồi — làm sai lệch số lượng tồn kho. Đoạn code này sẽ giải quyết vấn đề đó.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">var</span> reservations = <span class="code-keyword">await</span> db.<span class="code-property">InventoryReservations</span></span>
+<span class="code-line">  .<span class="code-function">Where</span>(r =&gt; r.<span class="code-property">OrderId</span> == orderId</span>
+<span class="code-line">            &amp;&amp; r.<span class="code-property">Status</span>  == <span class="code-property">ReservationStatus</span>.<span class="code-property">Reserved</span>)</span>
+<span class="code-line">  .<span class="code-function">ToListAsync</span>();</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-keyword">if</span> (reservations.<span class="code-property">Count</span> == <span class="code-number">0</span>) <span class="code-keyword">return</span>;</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-keyword">foreach</span> (<span class="code-keyword">var</span> r <span class="code-keyword">in</span> reservations)</span>
+<span class="code-line">{</span>
+<span class="code-line">  r.<span class="code-property">Status</span> = <span class="code-property">ReservationStatus</span>.<span class="code-property">Released</span>;</span>
+<span class="code-line">  item.<span class="code-property">QuantityReserved</span> -= r.<span class="code-property">Quantity</span>;</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">GIẢI THÍCH</span>
+            <div class="translation-lines">
+              <p class="tl">Tìm tất cả các lượt giữ hàng cho đơn này mà vẫn đang ở trạng thái <code>Reserved</code> — những cái thực sự cần giải phóng.</p>
+              <p class="tl"><strong>Nếu không tìm thấy cái nào — nghĩa là chúng đã được giải phóng rồi — thoát ngay lập tức. Không làm gì cả.</strong></p>
+              <p class="tl">Kiểm tra đơn giản này làm cho toàn bộ hoạt động trở nên <span class="term" data-definition="An toàn khi lặp lại.">idempotent</span>: xử lý cùng một tin nhắn 10 lần cũng có kết quả như xử lý 1 lần.</p>
+              <p class="tl">Chỉ khi tồn tại lượt giữ hàng: giải phóng từng cái — đặt trạng thái thành Released và giảm số lượng hàng đang bị giữ.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Kiểm tra mức độ hiểu bài</h2>
+
+        <div class="quiz-container animate-in" id="quiz-module4">
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="RetryCount theo dõi các lần giao hàng thất bại. Tại lần thứ 5, relay sẽ ngừng thử. Bản ghi này cần được kiểm tra — hãy kiểm tra kết nối Kafka hoặc định dạng tin nhắn của bạn."
+               data-explanation-wrong="RetryCount đếm số lần thất bại, không phải số lần thành công. ProcessedAt=null có nghĩa là nó chưa bao giờ được phát thành công. RetryCount=4 nghĩa là nó đã lỗi 4 lần và chỉ còn một cơ hội cuối.">
+            <h3 class="quiz-question">OutboxRelayService đang hoạt động. Bạn nhận thấy một bản ghi outbox có RetryCount=4 và ProcessedAt=null. Điều này nghĩa là gì?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Tin nhắn đã được phát thành công 4 lần</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Gửi lên Kafka đã thất bại 4 lần — thêm một lần lỗi nữa và tin nhắn này sẽ bị bỏ qua</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Tin nhắn vẫn đang được xử lý ngay lúc này</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Bản ghi đang được giữ lại để kiểm toán (audit)</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="Đây chính xác là khoảnh khắc nguy hiểm mà Outbox pattern ngăn chặn. Một sự cố Kafka tạm thời hoặc trục trặc mạng giữa SaveChanges và ProduceAsync sẽ âm thầm làm mất sự kiện — và không có cơ chế thử lại."
+               data-explanation-wrong="Vấn đề nằm ở thời gian. Giữa SaveChangesAsync và ProduceAsync, bất cứ điều gì cũng có thể xảy ra: restart server, timeout Kafka, lỗi mạng. Không có Outbox, sự kiện đó biến mất mãi mãi.">
+            <h3 class="quiz-question">Một lập trình viên loại bỏ Outbox pattern và thay vào đó là gọi Kafka trực tiếp sau SaveChangesAsync. Code chạy tốt khi test. Vậy nó sẽ lỗi khi nào ở môi trường thực tế (production)?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Nó sẽ không bao giờ lỗi — SaveChangesAsync và ProduceAsync đều rất tin cậy</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Khi Kafka tạm thời không khả dụng, đơn hàng được lưu nhưng sự kiện không bao giờ được phát</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Chỉ khi database đang chịu tải cao</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Nó sẽ lỗi ngay lập tức — phát tin nhắn trực tiếp là không được phép</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module4')">Kiểm tra Đáp án</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module4')">Thử lại</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-5" style="background: var(--color-bg)">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">05</span>
+      <h1 class="module-title">Saga Đơn hàng</h1>
+      <p class="module-subtitle">Ba database. Một đơn hàng. Nếu bất kỳ bước nào thất bại, những bước khác phải hoàn tác việc đã làm. Giao dịch database thông thường không thể làm được điều này — đó là lý do chúng ta dùng Saga.</p>
+    </header>
+
+    <div class="module-body">
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Tại sao một transaction thông thường là không đủ?</h2>
+        <p>
+          Hoàn tất một đơn hàng yêu cầu ba việc phải xảy ra trên ba service khác nhau:
+          <strong>giữ hàng trong kho</strong>, <strong>thu tiền thanh toán</strong>, và
+          <strong>xác nhận đơn hàng</strong>. Nếu bất kỳ việc nào thất bại, những việc khác phải được hoàn tác.
+        </p>
+        <p>
+          Điều này là không thể với một <span class="term" data-definition="Một hoạt động phải mang tính nguyên tử trên nhiều database hoặc service riêng biệt — cực kỳ khó triển khai đúng cách, đó là lý do Sagas tồn tại.">distributed transaction</span> (giao dịch phân tán) thông thường.
+          PostgreSQL không thể thọc tay vào Stripe. Inventory không thể khóa Payment. Mỗi service sở hữu database riêng của nó.
+        </p>
+
+        <div class="icon-rows animate-in">
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-accent-light)">🏃</div>
+            <div>
+              <strong>Hãy nghĩ về nó như một cuộc chạy tiếp sức.</strong>
+              <p>Đơn hàng chuyển gậy cho Kho ("giữ hàng"), Kho chuyển gậy cho Thanh toán ("thu tiền thẻ"), Thanh toán chuyển gậy ngược lại cho Đơn hàng ("đã xác nhận"). Nếu một vận động viên làm rơi gậy, cả đội sẽ chạy ngược lại để hoàn tác những gì đã làm.</p>
+            </div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-info-light)">🎭</div>
+            <div>
+              <strong>Mô hình này được gọi là <span class="term" data-definition="Một cách để quản lý các hoạt động gồm nhiều bước trên các service riêng biệt. Mỗi bước phát ra một sự kiện; nếu một bước lỗi, các bước trước đó sẽ được hoàn tác thông qua các giao dịch bù (compensating transactions).">Saga pattern</span>.</strong>
+              <p>UrbanX sử dụng <span class="term" data-definition="Mỗi service tự phản ứng với các sự kiện một cách độc lập, không có người điều phối trung tâm. Giống như một đàn chim di chuyển cùng nhau mà không cần một con chim đầu đàn chỉ đạo từng chút một.">choreography</span> (biên đạo) — mỗi service tự phản ứng với các sự kiện Kafka. Không có bộ điều khiển trung tâm.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Luồng thành công — từng bước một</h2>
+        <p>Khi mọi thứ suôn sẻ, bốn diễn viên sẽ phối hợp qua các sự kiện Kafka. Nhấn qua từng bước để xem toàn bộ Saga diễn ra.</p>
+
+        <div class="flow-animation animate-in" id="flow-saga" data-steps='[
+          {"highlight":"flow-actor-1","label":"Khách hàng đặt hàng. Order Service lưu lại (Trạng thái: Pending) và ghi OrderCreated vào Outbox trong cùng một transaction."},
+          {"highlight":"flow-actor-2","label":"Outbox Relay phát sự kiện OrderCreated lên topic order.created của Kafka.","packet":true,"from":"actor-1","to":"actor-2"},
+          {"highlight":"flow-actor-3","label":"Inventory Service đọc sự kiện. Kiểm tra kho — còn 15 cái. Giữ 2 cái. Phát InventoryReserved lên inventory.events.","packet":true,"from":"actor-2","to":"actor-3"},
+          {"highlight":"flow-actor-2","label":"Kafka giữ sự kiện InventoryReserved cho Order Service.","packet":true,"from":"actor-3","to":"actor-2"},
+          {"highlight":"flow-actor-1","label":"Order Service đọc InventoryReserved. Đơn hàng vẫn ở trạng thái Pending — đợi thanh toán.","packet":true,"from":"actor-2","to":"actor-1"},
+          {"highlight":"flow-actor-4","label":"Khách hàng gửi thanh toán. Payment Service gọi Stripe API. Thẻ được chấp nhận. Phát PaymentCompleted lên payment.events."},
+          {"highlight":"flow-actor-2","label":"Kafka giữ sự kiện PaymentCompleted cho Order Service.","packet":true,"from":"actor-4","to":"actor-2"},
+          {"highlight":"flow-actor-1","label":"Order Service đọc PaymentCompleted. Cập nhật trạng thái thành PaymentReceived. Saga hoàn tất — người bán sẽ giao hàng.","packet":true,"from":"actor-2","to":"actor-1"}
+        ]'>
+          <div class="flow-actors">
+            <div class="flow-actor" id="flow-actor-1">
+              <div class="flow-actor-icon" style="background: var(--color-accent-light); border-color: var(--color-actor-1); color: var(--color-actor-1)">📋</div>
+              <span>Order Service</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-2">
+              <div class="flow-actor-icon" style="background: #1E1E2E; border-color: #45475A; color: #CDD6F4">📡</div>
+              <span>Kafka</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-3">
+              <div class="flow-actor-icon" style="background: #EDE9F6; border-color: var(--color-actor-3); color: var(--color-actor-3)">📦</div>
+              <span>Kho hàng</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-4">
+              <div class="flow-actor-icon" style="background: #E8F5EE; border-color: var(--color-actor-5); color: var(--color-actor-5)">💳</div>
+              <span>Thanh toán</span>
+            </div>
+          </div>
+          <div class="flow-packet"></div>
+          <div class="flow-step-label">Nhấn "Bước tiếp theo" để bắt đầu</div>
+          <div class="flow-controls">
+            <button class="btn btn-primary flow-next-btn">Bước tiếp theo</button>
+            <button class="btn flow-reset-btn">Khởi động lại</button>
+            <span class="flow-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Máy trạng thái (<span class="term" data-definition="Một hệ thống chỉ có thể ở một trạng thái xác định tại một thời điểm, với các quy tắc rõ ràng về việc chuyển đổi nào được phép. Ngăn chặn các đối tượng rơi vào trạng thái bất khả thi.">state machine</span>) đơn hàng</h2>
+        <p>Một đơn hàng không thể nhảy từ <em>Confirmed</em> (Đã xác nhận) vèo một cái sang <em>Delivered</em> (Đã giao). Đoạn code này thực thi mọi chuyển đổi hợp lệ và từ chối những cái còn lại.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">public static readonly</span> <span class="code-function">IReadOnlyDictionary</span>&lt;<span class="code-function">OrderStatus</span>, <span class="code-function">IReadOnlySet</span>&lt;<span class="code-function">OrderStatus</span>&gt;&gt; Allowed =</span>
+<span class="code-line">    <span class="code-keyword">new</span> <span class="code-function">Dictionary</span>&lt;<span class="code-function">OrderStatus</span>, <span class="code-function">IReadOnlySet</span>&lt;<span class="code-function">OrderStatus</span>&gt;&gt;</span>
+<span class="code-line">{</span>
+<span class="code-line">    [<span class="code-function">OrderStatus</span>.<span class="code-property">Confirmed</span>]      = <span class="code-keyword">new</span> <span class="code-function">HashSet</span>&lt;<span class="code-function">OrderStatus</span>&gt; { <span class="code-function">OrderStatus</span>.<span class="code-property">Preparing</span>,      <span class="code-function">OrderStatus</span>.<span class="code-property">Cancelled</span> },</span>
+<span class="code-line">    [<span class="code-function">OrderStatus</span>.<span class="code-property">Preparing</span>]      = <span class="code-keyword">new</span> <span class="code-function">HashSet</span>&lt;<span class="code-function">OrderStatus</span>&gt; { <span class="code-function">OrderStatus</span>.<span class="code-property">ReadyForPickup</span>, <span class="code-function">OrderStatus</span>.<span class="code-property">Cancelled</span> },</span>
+<span class="code-line">    [<span class="code-function">OrderStatus</span>.<span class="code-property">ReadyForPickup</span>] = <span class="code-keyword">new</span> <span class="code-function">HashSet</span>&lt;<span class="code-function">OrderStatus</span>&gt; { <span class="code-function">OrderStatus</span>.<span class="code-property">InTransit</span>,      <span class="code-function">OrderStatus</span>.<span class="code-property">Cancelled</span> },</span>
+<span class="code-line">    [<span class="code-function">OrderStatus</span>.<span class="code-property">InTransit</span>]      = <span class="code-keyword">new</span> <span class="code-function">HashSet</span>&lt;<span class="code-function">OrderStatus</span>&gt; { <span class="code-function">OrderStatus</span>.<span class="code-property">Delivered</span>,      <span class="code-function">OrderStatus</span>.<span class="code-property">Cancelled</span> },</span>
+<span class="code-line">};</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">GIẢI THÍCH</span>
+            <div class="translation-lines">
+              <p class="tl">Đây là một &quot;danh sách trắng&quot;: chỉ những chuyển đổi trạng thái này mới được phép.</p>
+              <p class="tl">Đã xác nhận (Confirmed) có thể chuyển sang Đang chuẩn bị (Preparing) hoặc Đã hủy (Cancelled) — không gì khác.</p>
+              <p class="tl">Bạn không thể nhảy cóc từ Đã xác nhận thẳng sang Đã giao (Delivered).</p>
+              <p class="tl">Mọi cập nhật từ các service đều kiểm tra bảng này trước khi đổi trạng thái.</p>
+              <p class="tl">Các chuyển đổi không hợp lệ sẽ báo lỗi — bảo vệ đơn hàng khỏi những trạng thái phi lý.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Luồng thất bại — Thẻ bị từ chối</h2>
+        <p>
+          Khi thanh toán thất bại, Saga không chỉ dừng lại — nó chạy ngược lại.
+          Điều này được gọi là <span class="term" data-definition="Hoàn tác các tác động của một bước đã thành công trước đó khi một bước sau đó thất bại. Tương đương với rollback database trong hệ thống phân tán — nhưng được thực hiện qua các sự kiện.">bồi hoàn (compensation)</span>.
+          Hãy xem cách hệ thống tự tháo gỡ một cách uyển chuyển.
+        </p>
+
+        <div class="chat-window animate-in" id="chat-saga-fail">
+          <div class="chat-messages">
+            <div class="chat-message" data-msg="0" data-sender="order" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">OR</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Order Service</span>
+                <p>Thẻ đã gửi. Đang đợi kết quả từ Payment Service...</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="1" data-sender="payment" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-5)">PY</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-5)">Payment Service</span>
+                <p>Đã gọi Stripe. Thẻ bị từ chối: không đủ số dư. Đang phát PaymentFailed lên payment.events.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="2" data-sender="order" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">OR</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Order Service</span>
+                <p>Đã nhận PaymentFailed. Đặt trạng thái đơn hàng thành Cancelled. Đang phát OrderCancelled lên order.cancelled.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="3" data-sender="inventory" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">IN</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Inventory Service</span>
+                <p>Đã nhận OrderCancelled cho đơn #abc123. Đang tìm các lượt giữ hàng (Reserved)...</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="4" data-sender="inventory" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">IN</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Inventory Service</span>
+                <p>Tìm thấy 2 Tai nghe đang bị giữ. Đang giải phóng. Số lượng bị giữ (QuantityReserved) quay về 0.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="5" data-sender="inventory" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">IN</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Inventory Service</span>
+                <p>Xong. Hàng đã sẵn sàng cho các khách hàng khác.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="6" data-sender="order" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">OR</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Order Service</span>
+                <p>Hoàn tất bồi hoàn. Hệ thống đã quay lại chính xác trạng thái trước khi đặt hàng. Không có hàng nào bị khóa, không có khoản phí nào bị thu.</p>
+              </div>
+            </div>
+          </div>
+          <div class="chat-typing" style="display:none">
+            <div class="chat-avatar" id="chat-saga-fail-typing-avatar"></div>
+            <div class="chat-typing-dots">
+              <span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>
+            </div>
+          </div>
+          <div class="chat-controls">
+            <button class="btn chat-next-btn">Tin nhắn Tiếp theo</button>
+            <button class="btn chat-all-btn">Chạy tất cả</button>
+            <button class="btn chat-reset-btn">Xem lại</button>
+            <span class="chat-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Cách bồi hoàn được kích hoạt trong code</h2>
+        <p>Khi Order Service nhận được sự kiện thanh toán thất bại, nó hủy đơn hàng <em>và</em> ghi một sự kiện <code>OrderCancelled</code> vào Outbox — tất cả chỉ trong một transaction duy nhất.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">if</span> (paymentEvent.<span class="code-property">EventType</span> <span class="code-operator">==</span> <span class="code-string">"Failed"</span>)</span>
+<span class="code-line">{</span>
+<span class="code-line">    order.<span class="code-property">Status</span> <span class="code-operator">=</span> <span class="code-function">OrderStatus</span>.<span class="code-property">Cancelled</span>;</span>
+<span class="code-line">    order.<span class="code-function">AddStatusHistory</span>(<span class="code-function">OrderStatus</span>.<span class="code-property">Cancelled</span>, <span class="code-string">"Payment failed"</span>);</span>
+<span class="code-line"></span>
+<span class="code-line">    <span class="code-keyword">await</span> db.<span class="code-property">OutboxMessages</span>.<span class="code-function">AddAsync</span>(<span class="code-keyword">new</span> <span class="code-function">OutboxMessage</span></span>
+<span class="code-line">    {</span>
+<span class="code-line">        <span class="code-property">EventType</span> <span class="code-operator">=</span> <span class="code-string">"OrderCancelled"</span>,</span>
+<span class="code-line">        <span class="code-property">Payload</span>   <span class="code-operator">=</span> <span class="code-function">JsonSerializer</span>.<span class="code-function">Serialize</span>(<span class="code-keyword">new</span> <span class="code-function">OrderCancelledEvent</span></span>
+<span class="code-line">        {</span>
+<span class="code-line">            <span class="code-property">OrderId</span>    <span class="code-operator">=</span> order.<span class="code-property">Id</span>,</span>
+<span class="code-line">            <span class="code-property">OccurredAt</span> <span class="code-operator">=</span> <span class="code-function">DateTime</span>.<span class="code-property">UtcNow</span></span>
+<span class="code-line">        })</span>
+<span class="code-line">    });</span>
+<span class="code-line"></span>
+<span class="code-line">    <span class="code-keyword">await</span> db.<span class="code-function">SaveChangesAsync</span>();</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">GIẢI THÍCH</span>
+            <div class="translation-lines">
+              <p class="tl">Loại sự kiện thanh toán là Failed — thẻ bị từ chối hoặc có lỗi xảy ra.</p>
+              <p class="tl">Cập nhật trạng thái đơn hàng thành Hủy (Cancelled).</p>
+              <p class="tl">Ghi lại điều này vào lịch sử trạng thái: thời điểm xảy ra và lý do.</p>
+              <p class="tl">Ghi một sự kiện OrderCancelled vào Outbox — trong cùng một transaction với việc cập nhật trạng thái.</p>
+              <p class="tl">Outbox đảm bảo Kho sẽ nghe thấy thông báo hủy này, ngay cả khi server restart ngay lúc này.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Tại sao Choreography giúp mở rộng dễ dàng?</h2>
+        <p>
+          Trong UrbanX, không có service trung tâm nào ra lệnh kiểu: &quot;Kho ơi giữ hàng đi, Thanh toán ơi thu tiền đi&quot;.
+          Thay vào đó, mỗi service tự lắng nghe sự kiện Kafka phù hợp và phản ứng độc lập. Đây là
+          <span class="term" data-definition="Mỗi service tự phản ứng với sự kiện một cách độc lập.">choreography</span> (biên đạo)
+          — trái ngược với
+          <span class="term" data-definition="Một bộ điều phối trung tâm ra lệnh cho từng service phải làm gì và theo thứ tự nào. Giống như một nhạc trưởng chỉ huy dàn nhạc. Kiểm soát tốt hơn nhưng là một điểm gây lỗi duy nhất (single point of failure).">orchestration</span> (điều phối).
+        </p>
+
+        <div class="step-cards animate-in">
+          <div class="step-card">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>Thêm một service mới</strong>
+              <p>Giả sử bạn cần thông báo cho hệ thống kho bãi khi đơn hàng được xác nhận. Hãy tạo một Warehouse Service mới.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>Đăng ký vào sự kiện phù hợp</strong>
+              <p>Warehouse Service chỉ cần đăng ký vào topic <code>order.confirmed</code> trên Kafka. Topic đó đã tồn tại sẵn rồi.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>Không thay đổi gì ở các service cũ</strong>
+              <p>Order Service, Inventory Service, Payment Service — không cái nào phải đổi một dòng code nào. Hệ thống Saga lớn dần một cách tự nhiên.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent animate-in">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">Choreography vs. Orchestration</strong>
+            <p>Trong choreography (cách của UrbanX), mỗi service tự phản ứng — giống như một ban nhạc jazz cùng nhau ngẫu hứng. Trong orchestration, một service &quot;quản lý đơn hàng&quot; trung tâm ra lệnh cho tất cả — giống như một nhạc trưởng. Choreography linh hoạt hơn (không sợ chết &quot;đầu não&quot;) nhưng khó hình dung hơn. Đó là lý do chúng ta có những hình ảnh minh họa này.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Kiểm tra mức độ hiểu bài</h2>
+
+        <div class="quiz-container animate-in" id="quiz-module5">
+
+          <div class="quiz-question-block"
+               data-correct="option-c"
+               data-explanation-right="Đây là điểm mạnh về khả năng mở rộng của choreography. Một Tax Notification Service mới đăng ký vào payment.events — không cần đổi code ở Payment Service, không cần đổi code ở Order Service. Tách biệt hoàn toàn."
+               data-explanation-wrong="Hãy nghĩ về những gì mô hình Saga mang lại cho bạn. Bất kỳ service nào cũng có thể đăng ký vào payment.events mà không cần đổi code của Payment Service. Một Tax Service riêng biệt là câu trả lời sạch sẽ nhất.">
+            <h3 class="quiz-question">Một quy định thuế mới yêu cầu UrbanX phải thông báo cho cơ quan thuế mỗi khi thanh toán hoàn tất. Code này nên nằm ở đâu?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Trong Payment Service — vì nó biết về thanh toán</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Trong Order Service — vì nó quản lý Saga</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Trong một Tax Notification Service mới đăng ký vào topic payment.events</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Trong API Gateway — vì nó thấy mọi giao dịch</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-c"
+               data-explanation-right="Máy trạng thái ngăn chặn các bước nhảy bất khả thi. Điều này bảo vệ tính toàn vẹn của dữ liệu — nếu Preparing nhảy thẳng sang Delivered, các bước đóng gói và vận chuyển sẽ bị bỏ qua hoàn toàn."
+               data-explanation-wrong="Kiểm tra máy trạng thái ở trên. Preparing chỉ có thể chuyển sang ReadyForPickup hoặc Cancelled. Code sẽ báo lỗi cho bất kỳ chuyển đổi nào khác — ngay cả khi đó là user admin.">
+            <h3 class="quiz-question">Một đơn hàng bị kẹt ở trạng thái Preparing. Người bán muốn chuyển nó thẳng sang Delivered để bỏ qua các bước khác. Hệ thống có cho phép không?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Có — vì người bán có quyền admin</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Có — cập nhật trạng thái không bị giới hạn đối với người bán</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Không — máy trạng thái chỉ cho phép Preparing → ReadyForPickup → InTransit → Delivered</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Không — chỉ hệ thống mới có quyền đổi trạng thái đơn hàng</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module5')">Kiểm tra Đáp án</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module5')">Thử lại</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-6" style="background: var(--color-bg-warm)">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">06</span>
+      <h1 class="module-title">Hai Cơ sở Dữ liệu, Một Sự thật</h1>
+      <p class="module-subtitle">PostgreSQL lưu sản phẩm chính xác. Elasticsearch tìm thấy chúng tức thì. Kafka giữ chúng đồng bộ. Đây chính là CQRS.</p>
+    </header>
+
+    <div class="module-body">
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Đúng database cho đúng việc</h2>
+        <p>
+          PostgreSQL rất tuyệt vời trong việc lưu trữ sản phẩm một cách chính xác — từng trường dữ liệu, từng ràng buộc, từng mối quan hệ.
+          Nhưng tìm kiếm <span class="term" data-definition="Tìm các tài liệu chứa từ hoặc cụm từ, ngay cả khi gõ sai hoặc khớp một phần. Google sử dụng nó. Elasticsearch được xây dựng vì nó. Các truy vấn LIKE của PostgreSQL thì không.">toàn văn bản (full-text search)</span> cho cụm &quot;tai nghe không dây&quot; trong 10.000 sản phẩm? Đó không phải là việc mà database quan hệ được sinh ra để làm.
+          <span class="term" data-definition="Một công cụ tìm kiếm và phân tích phân tán được xây dựng để tìm kiếm văn bản cực nhanh. Lưu trữ tài liệu trong một chỉ mục đảo ngược (inverted index) được tối ưu cho các truy vấn. Không phải là sự thay thế cho database quan hệ.">Elasticsearch</span> mới là chuyên gia. Vì vậy, UrbanX sử dụng cả hai — mỗi cái cho thế mạnh riêng của nó.
+        </p>
+        <p>
+          Mô hình này được gọi là <span class="term" data-definition="Command Query Responsibility Segregation — một pattern mà database dùng để ghi (lệnh - commands) tách biệt với database dùng để đọc (truy vấn - queries). Mỗi bên được tối ưu cho nhiệm vụ của mình.">CQRS</span>.
+          Ghi dữ liệu vào <span class="term" data-definition="Database có thẩm quyền cao nhất, xử lý mọi sự thay đổi dữ liệu. Trong UrbanX, PostgreSQL là write model — nguồn sự thật.">write model</span> (PostgreSQL). Đọc dữ liệu từ <span class="term" data-definition="Database hoặc cấu trúc dữ liệu được tối ưu cho việc đọc — thường được phi bình thường hóa (denormalized) và tính toán sẵn cho các truy vấn cụ thể. Trong UrbanX, Elasticsearch là read model cho danh mục sản phẩm.">read model</span> (Elasticsearch). Kafka là chiếc cầu nối.
+        </p>
+
+        <div class="icon-rows animate-in">
+          <div class="icon-row">
+            <div class="icon-circle" style="background: #E8F0F7">📚</div>
+            <div>
+              <strong>Hãy nghĩ về một thư viện với hai loại mục lục.</strong>
+              <p>Bàn nhập sách sử dụng một sổ cái chi tiết (PostgreSQL) — tác giả, mã ISBN, tình trạng sách, ngày mua. Trạm tra cứu công cộng (Elasticsearch) sử dụng một chỉ mục nhanh được xây dựng để &quot;tìm sách về rồng&quot;. Khi có sách mới, sổ cái được cập nhật trước, sau đó chỉ mục tra cứu được làm mới theo.</p>
+            </div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-info-light)">⚡</div>
+            <div>
+              <strong>Sự đánh đổi mà bạn chấp nhận một cách tỉnh táo.</strong>
+              <p>Chỉ mục tìm kiếm sẽ chậm hơn database thực vài giây — gọi là <span class="term" data-definition="Đảm bảo rằng dữ liệu trên các kho lưu trữ khác nhau cuối cùng sẽ khớp nhau, nhưng có một khoảng thời gian ngắn chúng có thể khác biệt. Chấp nhận được với hầu hết các tính năng; không chấp nhận được cho giao dịch tài chính.">nhất quán sau cùng (eventual consistency)</span>. Với danh mục sản phẩm, điều này hoàn toàn ổn. Với số dư ngân hàng, điều này là không thể.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Toàn bộ quy trình từ Ghi đến Tìm kiếm</h2>
+        <p>Khi người bán cập nhật một sản phẩm, thay đổi sẽ đi qua năm diễn viên trước khi khách hàng thấy nó trong kết quả tìm kiếm. Nhấn để theo dõi hành trình.</p>
+
+        <div class="flow-animation animate-in" id="flow-cqrs" data-steps='[
+          {"highlight":"flow-actor-1","label":"Người bán sửa tên sản phẩm qua PUT /api/products/{id}."},
+          {"highlight":"flow-actor-2","label":"PostgreSQL được cập nhật nguyên tử. Product.Name = giá trị mới. Một OutboxMessage cũng được lưu trong cùng giao dịch đó.","packet":true,"from":"actor-1","to":"actor-2"},
+          {"highlight":"flow-actor-3","label":"Outbox Relay phát ProductUpdated lên topic catalog.products của Kafka trong vòng khoảng 5 giây.","packet":true,"from":"actor-2","to":"actor-3"},
+          {"highlight":"flow-actor-4","label":"Kafka consumer của Catalog Service nhận sự kiện và gọi Elasticsearch.IndexAsync() để cập nhật tài liệu tìm kiếm.","packet":true,"from":"actor-3","to":"actor-4"},
+          {"highlight":"flow-actor-5","label":"Khách hàng tìm kiếm sản phẩm — Elasticsearch trả về cái tên đã cập nhật. Tổng thời gian trễ: dưới 10 giây. Đây là nhất quán sau cùng.","packet":true,"from":"actor-4","to":"actor-5"}
+        ]'>
+          <div class="flow-actors">
+            <div class="flow-actor" id="flow-actor-1">
+              <div class="flow-actor-icon" style="background: var(--color-accent-light); border-color: var(--color-actor-1); color: var(--color-actor-1)">🏪</div>
+              <span>Người bán</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-2">
+              <div class="flow-actor-icon" style="background: #336791; border-color: #1D4972; color: white; font-size: var(--text-sm)">PG</div>
+              <span>PostgreSQL</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-3">
+              <div class="flow-actor-icon" style="background: #1E1E2E; border-color: #45475A; color: #CDD6F4">📡</div>
+              <span>Outbox / Kafka</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-4">
+              <div class="flow-actor-icon" style="background: #FDE8F3; border-color: #F04E98; color: #F04E98; font-size: var(--text-sm)">ES</div>
+              <span>Elasticsearch</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-5">
+              <div class="flow-actor-icon" style="background: var(--color-success-light); border-color: var(--color-actor-5); color: var(--color-actor-5)">🛍️</div>
+              <span>Khách hàng</span>
+            </div>
+          </div>
+          <div class="flow-packet"></div>
+          <div class="flow-step-label">Nhấn "Bước tiếp theo" để bắt đầu</div>
+          <div class="flow-controls">
+            <button class="btn btn-primary flow-next-btn">Bước tiếp theo</button>
+            <button class="btn flow-reset-btn">Khởi động lại</button>
+            <span class="flow-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Một truy vấn tìm kiếm trông như thế nào trong code?</h2>
+        <p>
+          Khi khách hàng gõ &quot;tai nghe không dây&quot; vào thanh tìm kiếm, truy vấn này sẽ chạy trên
+          <span class="term" data-definition="Một tập hợp các tài liệu tìm kiếm trong Elasticsearch — tương đương với một bảng trong database quan hệ, nhưng được tối ưu cho các truy vấn tìm kiếm.">chỉ mục (index) của Elasticsearch</span>
+          — chứ không phải trên PostgreSQL.
+        </p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">var</span> response <span class="code-operator">=</span> <span class="code-keyword">await</span> _client.<span class="code-function">SearchAsync</span>&lt;<span class="code-function">ProductDocument</span>&gt;(s <span class="code-operator">=&gt;</span> s</span>
+<span class="code-line">    .<span class="code-function">Index</span>(<span class="code-string">"catalog-products"</span>)</span>
+<span class="code-line">    .<span class="code-function">Query</span>(q <span class="code-operator">=&gt;</span> q</span>
+<span class="code-line">        .<span class="code-function">Bool</span>(b <span class="code-operator">=&gt;</span> b</span>
+<span class="code-line">            .<span class="code-function">Must</span>(m <span class="code-operator">=&gt;</span> m</span>
+<span class="code-line">                .<span class="code-function">MultiMatch</span>(mm <span class="code-operator">=&gt;</span> mm</span>
+<span class="code-line">                    .<span class="code-function">Fields</span>(f <span class="code-operator">=&gt;</span> f</span>
+<span class="code-line">                        .<span class="code-function">Field</span>(p <span class="code-operator">=&gt;</span> p.<span class="code-property">Name</span>)</span>
+<span class="code-line">                        .<span class="code-function">Field</span>(p <span class="code-operator">=&gt;</span> p.<span class="code-property">Description</span>))</span>
+<span class="code-line">                    .<span class="code-function">Query</span>(searchTerm)))</span>
+<span class="code-line">            .<span class="code-function">Filter</span>(f <span class="code-operator">=&gt;</span> f</span>
+<span class="code-line">                .<span class="code-function">Term</span>(t <span class="code-operator">=&gt;</span> t</span>
+<span class="code-line">                    .<span class="code-function">Field</span>(p <span class="code-operator">=&gt;</span> p.<span class="code-property">IsActive</span>)</span>
+<span class="code-line">                    .<span class="code-function">Value</span>(<span class="code-keyword">true</span>)))))</span>
+<span class="code-line">    .<span class="code-function">From</span>((page <span class="code-operator">-</span> <span class="code-number">1</span>) <span class="code-operator">*</span> pageSize)</span>
+<span class="code-line">    .<span class="code-function">Size</span>(pageSize));</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">GIẢI THÍCH</span>
+            <div class="translation-lines">
+              <p class="tl">Tìm kiếm trong chỉ mục catalog-products của Elasticsearch (không phải database PostgreSQL).</p>
+              <p class="tl">Sử dụng truy vấn Bool — giống như kết hợp các điều kiện trong mệnh đề WHERE của SQL.</p>
+              <p class="tl">Must (Bắt buộc): cụm từ tìm kiếm phải xuất hiện ở đâu đó trong sản phẩm này.</p>
+              <p class="tl">MultiMatch: tìm trong CẢ trường tên (Name) VÀ mô tả (Description) — tìm được cả các kết quả khớp một phần.</p>
+              <p class="tl">Filter: chỉ hiển thị sản phẩm có IsActive=true — các sản phẩm đang ẩn sẽ không bao giờ hiện ra.</p>
+              <p class="tl">From/Size: phân trang — bỏ qua N kết quả đầu, lấy lô kết quả tiếp theo.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Cách lệnh Ghi kích hoạt quy trình đồng bộ</h2>
+        <p>
+          Hãy để ý những gì <em>không</em> có trong đoạn code này: Elasticsearch không hề được gọi ở đây.
+          Phía ghi (write side) chỉ biết đến PostgreSQL. Elasticsearch được cập nhật bất đồng bộ, sau đó, qua Kafka.
+          Đây chính là sự tách biệt của CQRS.
+        </p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line">app.<span class="code-function">MapPut</span>(<span class="code-string">"/api/products/{id}"</span>, <span class="code-keyword">async</span> (<span class="code-function">Guid</span> id, <span class="code-function">UpdateProductRequest</span> req, <span class="code-function">AppDbContext</span> db) <span class="code-operator">=&gt;</span></span>
+<span class="code-line">{</span>
+<span class="code-line">    <span class="code-keyword">var</span> product <span class="code-operator">=</span> <span class="code-keyword">await</span> db.<span class="code-property">Products</span>.<span class="code-function">FindAsync</span>(id);</span>
+<span class="code-line">    <span class="code-keyword">if</span> (product <span class="code-keyword">is null</span>) <span class="code-keyword">return</span> <span class="code-function">Results</span>.<span class="code-function">NotFound</span>();</span>
+<span class="code-line"></span>
+<span class="code-line">    product.<span class="code-property">Name</span>        <span class="code-operator">=</span> req.<span class="code-property">Name</span>;</span>
+<span class="code-line">    product.<span class="code-property">Description</span> <span class="code-operator">=</span> req.<span class="code-property">Description</span>;</span>
+<span class="code-line">    product.<span class="code-property">Price</span>       <span class="code-operator">=</span> req.<span class="code-property">Price</span>;</span>
+<span class="code-line">    product.<span class="code-property">UpdatedAt</span>   <span class="code-operator">=</span> <span class="code-function">DateTime</span>.<span class="code-property">UtcNow</span>;</span>
+<span class="code-line"></span>
+<span class="code-line">    <span class="code-keyword">await</span> db.<span class="code-property">OutboxMessages</span>.<span class="code-function">AddAsync</span>(<span class="code-keyword">new</span> <span class="code-function">OutboxMessage</span></span>
+<span class="code-line">    {</span>
+<span class="code-line">        <span class="code-property">EventType</span> <span class="code-operator">=</span> <span class="code-string">"ProductUpdated"</span>,</span>
+<span class="code-line">        <span class="code-property">Payload</span>   <span class="code-operator">=</span> <span class="code-function">JsonSerializer</span>.<span class="code-function">Serialize</span>(<span class="code-keyword">new</span> <span class="code-function">ProductEvent</span>(product))</span>
+<span class="code-line">    });</span>
+<span class="code-line"></span>
+<span class="code-line">    <span class="code-keyword">await</span> db.<span class="code-function">SaveChangesAsync</span>();</span>
+<span class="code-line">    <span class="code-keyword">return</span> <span class="code-function">Results</span>.<span class="code-function">Ok</span>(product);</span>
+<span class="code-line">});</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">GIẢI THÍCH</span>
+            <div class="translation-lines">
+              <p class="tl">Cập nhật các trường thông tin sản phẩm trong PostgreSQL.</p>
+              <p class="tl">Trong cùng transaction đó, ghi một sự kiện ProductUpdated vào Outbox.</p>
+              <p class="tl">SaveChangesAsync chốt cả hai thay đổi một cách nguyên tử.</p>
+              <p class="tl">Outbox Relay sẽ lấy tin này và phát lên topic catalog.products trong vòng 5 giây.</p>
+              <p class="tl">Lưu ý: Elasticsearch KHÔNG được cập nhật tại đây — nó sẽ được cập nhật bất đồng bộ qua Kafka.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Kafka consumer cập nhật Elasticsearch</h2>
+        <p>
+          Ở phía đọc, một Kafka consumer theo dõi topic <code>catalog.products</code>.
+          Mỗi khi có sự kiện <code>ProductUpdated</code> đến, nó xây dựng lại tài liệu tìm kiếm đã được
+          <span class="term" data-definition="Dữ liệu được lưu trữ dưới dạng tối ưu cho việc đọc, chấp nhận việc trùng lặp dữ liệu. Ngược lại với thiết kế chuẩn hóa database được dạy trong các khóa SQL. Read models thường là denormalized.">phi bình thường hóa (denormalized)</span>
+          và đẩy nó lên Elasticsearch.
+        </p>
+
+        <div class="badge-list animate-in">
+          <div class="badge-item">
+            <span class="badge-code">ProductDocument</span>
+            <span class="badge-desc">Một bản đại diện phẳng, được tối ưu hóa cho tìm kiếm của một sản phẩm — chỉ chứa các trường cần thiết cho các truy vấn tìm kiếm. Không khóa ngoại, không join bảng.</span>
+          </div>
+          <div class="badge-item">
+            <span class="badge-code">IndexAsync(document)</span>
+            <span class="badge-desc">Thay thế tài liệu hiện có trong Elasticsearch bằng phiên bản mới. Nếu chưa tồn tại, nó sẽ được tạo mới.</span>
+          </div>
+          <div class="badge-item">
+            <span class="badge-code">consumer.Commit(result)</span>
+            <span class="badge-desc">Báo cho Kafka biết tin nhắn này đã xử lý xong. Chỉ gọi sau khi chỉ mục đã được cập nhật — đảm bảo ít nhất một lần giao tin thành công.</span>
+          </div>
+        </div>
+
+        <div class="callout callout-info animate-in">
+          <div class="callout-icon">ℹ️</div>
+          <div class="callout-content">
+            <strong class="callout-title">Sự đánh đổi bạn chấp nhận với CQRS</strong>
+            <p>Một sản phẩm vừa cập nhật xong có thể vẫn hiện tên cũ trong kết quả tìm kiếm trong khoảng ~10 giây. Các kỹ sư gọi đây là nhất quán sau cùng (eventual consistency). Với danh mục sản phẩm, điều này hoàn toàn ổn. Chọn CQRS có nghĩa là bạn chấp nhận sự đánh đổi này một cách tỉnh táo — và nó hầu như luôn là lựa chọn đúng cho các tính năng tìm kiếm.</p>
+          </div>
+        </div>
+
+        <div class="callout callout-accent animate-in">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">Cùng một mô hình, hai mục đích khác nhau</strong>
+            <p>UrbanX dùng Kafka cho hai mục đích hoàn toàn khác nhau: Order Saga (phối hợp các service) và CQRS (đồng bộ các database). Cùng một hạ tầng, hai trường hợp sử dụng riêng biệt. Đó là lý do tại sao Kafka được coi là &quot;xương sống&quot; của kiến trúc này.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Kiểm tra mức độ hiểu bài</h2>
+
+        <div class="quiz-container animate-in" id="quiz-module6">
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="Đây là hành vi bình thường trong hệ thống CQRS. Chỉ mục Elasticsearch sẽ chậm hơn database PostgreSQL vài giây. Với danh mục sản phẩm, đây là sự đánh đổi chấp nhận được. Giá sẽ cập nhật sau khoảng ~10 giây."
+               data-explanation-wrong="Đây là thiết kế có chủ đích. CQRS chấp nhận một khoảng thời gian ngắn mà read model và write model không khớp nhau — gọi là nhất quán sau cùng. Với tính năng tìm kiếm, độ trễ vài giây là sự đánh đổi xứng đáng để có sức mạnh tìm kiếm của Elasticsearch.">
+            <h3 class="quiz-question">Khách hàng tìm kiếm &quot;loa bluetooth&quot; và thấy sản phẩm có giá cũ ($49) dù người bán đã đổi thành $59 cách đây ba giây. Đây có phải là lỗi (bug) không?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Có — dữ liệu phải luôn nhất quán, đây là lỗi nghiêm trọng</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Không — đây là nhất quán sau cùng và sẽ tự khớp sau vài giây</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Có — Outbox pattern đáng lẽ phải ngăn chặn điều này</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Không — kết quả tìm kiếm luôn hiển thị dữ liệu cũ vĩnh viễn</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="Tư duy CQRS: dữ liệu tối ưu cho việc đọc nên nằm ở read model. Tính toán sẵn kết quả khi dữ liệu thay đổi, lưu vào Elasticsearch, và hiển thị nó ngay lập tức mỗi khi trang web được tải."
+               data-explanation-wrong="Hãy nghĩ theo hướng CQRS: các thao tác đọc nặng nề không nên nằm trong các câu query PostgreSQL mỗi khi có request. Read model (Elasticsearch) nên được định hình theo nhu cầu của người dùng — các kết quả tính toán sẵn được cập nhật qua sự kiện Kafka.">
+            <h3 class="quiz-question">Bạn muốn thêm tính năng: &quot;giá thấp nhất trong mỗi danh mục&quot; trên trang chủ. Cách tiếp cận nào tốt hơn?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Truy vấn PostgreSQL với GROUP BY mỗi khi tải trang</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Tính toán sẵn và lưu giá thấp nhất vào Elasticsearch khi sản phẩm được cập nhật</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Tính toán nó ở frontend React từ tất cả dữ liệu sản phẩm</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Thêm một microservice mới truy vấn PostgreSQL mỗi 30 giây một lần</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module6')">Kiểm tra Đáp án</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module6')">Thử lại</button>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Chúc mừng! Bạn đã hoàn thành khóa học 🎉</h2>
+        <p>Bạn đã thấy mọi mô hình quan trọng của hệ thống phân tán trong UrbanX đang hoạt động thực tế.</p>
+
+        <div class="pattern-cards stagger-children">
+          <div class="pattern-card animate-in" style="border-top-color: var(--color-actor-1)">
+            <div class="pattern-icon" style="background: var(--color-accent-light)">📬</div>
+            <h4 class="pattern-title">Transactional Outbox</h4>
+            <p class="pattern-desc">Sự kiện được lưu vào DB trước khi lên Kafka — không bao giờ mất tin ngay cả khi sập nguồn.</p>
+          </div>
+          <div class="pattern-card animate-in" style="border-top-color: var(--color-actor-2)">
+            <div class="pattern-icon" style="background: var(--color-info-light)">🎭</div>
+            <h4 class="pattern-title">Choreography Saga</h4>
+            <p class="pattern-desc">Phối hợp đa dịch vụ qua sự kiện, có cơ chế bồi hoàn khi thất bại.</p>
+          </div>
+          <div class="pattern-card animate-in" style="border-top-color: var(--color-actor-3)">
+            <div class="pattern-icon" style="background: #EDE9F6">✂️</div>
+            <h4 class="pattern-title">CQRS</h4>
+            <p class="pattern-desc">Tách biệt database cho việc ghi (PostgreSQL) và việc đọc (Elasticsearch).</p>
+          </div>
+          <div class="pattern-card animate-in" style="border-top-color: var(--color-actor-4)">
+            <div class="pattern-icon" style="background: var(--color-surface-warm)">📡</div>
+            <h4 class="pattern-title">Kiến trúc Hướng sự kiện</h4>
+            <p class="pattern-desc">Các service nói chuyện bằng cách phát sự kiện — không bao giờ gọi trực tiếp cho nhau.</p>
+          </div>
+        </div>
+
+        <p style="margin-top: var(--space-8); color: var(--color-text-secondary)">
+          Khám phá toàn bộ mã nguồn tại
+          <a href="https://github.com/daohainam/urbanx-sample" style="color: var(--color-accent); font-weight: 600">github.com/daohainam/urbanx-sample</a>
+        </p>
+      </section>
+
+    </div>
+  </div>
+</section>
+  </main>
+
+</body>
+</html>

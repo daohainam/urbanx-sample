@@ -84,7 +84,14 @@ jobs:
         run: dotnet restore UrbanX.sln
 
       - name: Check NuGet vulnerabilities
-        run: dotnet list UrbanX.sln package --vulnerable --include-transitive
+        run: |
+          set -euo pipefail
+          output_file="$(mktemp)"
+          dotnet list UrbanX.sln package --vulnerable --include-transitive | tee "$output_file"
+          if grep -q "has the following vulnerable packages" "$output_file"; then
+            echo "NuGet vulnerability check failed."
+            exit 1
+          fi
 
       - name: Install frontend dependencies
         run: npm ci

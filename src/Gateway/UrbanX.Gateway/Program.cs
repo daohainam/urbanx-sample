@@ -68,13 +68,13 @@ builder.Services.AddRateLimiter(options =>
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
     {
         var userId = context.User.FindFirst("sub")?.Value
-            ?? context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-            ?? "anonymous";
+            ?? context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         var ipAddress = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        var partitionKey = !string.IsNullOrWhiteSpace(userId) ? $"user:{userId}" : $"anon:{ipAddress}";
 
         return RateLimitPartition.GetFixedWindowLimiter(
-            partitionKey: $"{userId}:{ipAddress}",
+            partitionKey: partitionKey,
             factory: _ => new FixedWindowRateLimiterOptions
             {
                 AutoReplenishment = true,
@@ -155,7 +155,10 @@ static void ValidateGatewayProductionConfiguration(
         return;
     }
 
-    if (allowedOrigins.Count == 0 || allowedOrigins.Any(origin => origin.Contains("localhost", StringComparison.OrdinalIgnoreCase)))
+    if (allowedOrigins.Count == 0
+        || allowedOrigins.Any(origin =>
+            origin.StartsWith("http://localhost", StringComparison.OrdinalIgnoreCase)
+            || origin.StartsWith("https://localhost", StringComparison.OrdinalIgnoreCase)))
     {
         throw new InvalidOperationException("Configure non-localhost CORS origins for production.");
     }

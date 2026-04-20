@@ -37,7 +37,7 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
       CLUSTER_ID: ${KAFKA_CLUSTER_ID:-MkU3OEVBNTcwNTJENDM2Qk}
     networks:
       - urbanx-network
@@ -58,6 +58,14 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__identitydb=Host=postgres;Database=urbanx_identity;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD}
+      - IdentityServer__IssuerUri=${IDENTITY_SERVER_ISSUER_URI}
+      - IdentityServer__SeedDefaultUsers=false
+      - IdentityServer__Clients__UrbanXSpa__RedirectUris=${SPA_REDIRECT_URIS}
+      - IdentityServer__Clients__UrbanXSpa__PostLogoutRedirectUris=${SPA_LOGOUT_URIS}
+      - IdentityServer__Clients__UrbanXSpa__AllowedCorsOrigins=${SPA_CORS_ORIGINS}
+      - IdentityServer__Clients__UrbanXMerchantSpa__RedirectUris=${MERCHANT_SPA_REDIRECT_URIS}
+      - IdentityServer__Clients__UrbanXMerchantSpa__PostLogoutRedirectUris=${MERCHANT_SPA_LOGOUT_URIS}
+      - IdentityServer__Clients__UrbanXMerchantSpa__AllowedCorsOrigins=${MERCHANT_SPA_CORS_ORIGINS}
       - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_COLLECTOR_ENDPOINT}
     depends_on:
       postgres:
@@ -256,6 +264,8 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
       - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
+      - RateLimit__RequestsPerMinute=${RATE_LIMIT_REQUESTS_PER_MINUTE:-100}
+      - IdentityServer__Authority=http://identity-service:8080
       - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_COLLECTOR_ENDPOINT}
     depends_on:
       - identity-service

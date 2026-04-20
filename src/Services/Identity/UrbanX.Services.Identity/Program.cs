@@ -251,6 +251,8 @@ builder.Services.AddIdentityServer(options =>
 // ── Authorization policies for management API endpoints ──────────────────────
 builder.Services.AddUrbanXAuthorization();
 
+ValidateProductionIdentityConfiguration(builder.Configuration, builder.Environment);
+
 // ── Build the application ─────────────────────────────────────────────────────
 var app = builder.Build();
 
@@ -262,6 +264,8 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+app.UseProductionDefaults();
 
 // ── Middleware pipeline ───────────────────────────────────────────────────────
 // Order matters: routing → static files → IdentityServer → auth → endpoints.
@@ -298,7 +302,18 @@ using (var scope = app.Services.CreateScope())
 // ── Seed initial data ─────────────────────────────────────────────────────────
 // Creates roles and default users if the database is empty.
 // Safe to call on every startup; each user/role is only created if absent.
-await SeedData.EnsureSeedDataAsync(app.Services);
+var seedDefaultUsers = builder.Configuration.GetValue<bool?>("IdentityServer:SeedDefaultUsers")
+    ?? app.Environment.IsDevelopment();
+
+if (seedDefaultUsers)
+{
+    await SeedData.EnsureSeedDataAsync(app.Services);
+}
+else
+{
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+    logger.LogInformation("Skipping identity default user seeding (IdentityServer:SeedDefaultUsers=false).");
+}
 
 // ── User management API ───────────────────────────────────────────────────────
 // These endpoints allow programmatic user management (e.g., customer self-registration,
@@ -407,6 +422,32 @@ static List<string> GetListFromConfig(IConfiguration config, string key, List<st
     var value = config[key];
     if (string.IsNullOrWhiteSpace(value)) return defaults;
     return value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+}
+
+static void ValidateProductionIdentityConfiguration(IConfiguration config, IHostEnvironment environment)
+{
+    if (!environment.IsProduction())
+    {
+        return;
+    }
+
+    var requiredKeys = new[]
+    {
+        "IdentityServer:IssuerUri",
+        "IdentityServer:Clients:UrbanXSpa:RedirectUris",
+        "IdentityServer:Clients:UrbanXSpa:PostLogoutRedirectUris",
+        "IdentityServer:Clients:UrbanXSpa:AllowedCorsOrigins",
+        "IdentityServer:Clients:UrbanXMerchantSpa:RedirectUris",
+        "IdentityServer:Clients:UrbanXMerchantSpa:PostLogoutRedirectUris",
+        "IdentityServer:Clients:UrbanXMerchantSpa:AllowedCorsOrigins"
+    };
+
+    var missing = requiredKeys.Where(key => string.IsNullOrWhiteSpace(config[key])).ToArray();
+    if (missing.Length > 0)
+    {
+        throw new InvalidOperationException(
+            $"Missing required production identity configuration keys: {string.Join(", ", missing)}");
+    }
 }
 
 // ── Request models ────────────────────────────────────────────────────────────

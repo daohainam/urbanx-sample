@@ -14,22 +14,17 @@ data:
   ASPNETCORE_ENVIRONMENT: "Production"
   OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4317"
   Kafka__BootstrapServers: "kafka:9092"
+  CORS_ALLOWED_ORIGINS: "https://app.yourdomain.com,https://merchant.yourdomain.com"
+  RATE_LIMIT_REQUESTS_PER_MINUTE: "100"
+  IdentityServer__IssuerUri: "https://identity.yourdomain.com"
+  IdentityServer__SeedDefaultUsers: "false"
+  IdentityServer__Clients__UrbanXSpa__RedirectUris: "https://app.yourdomain.com/callback"
+  IdentityServer__Clients__UrbanXSpa__PostLogoutRedirectUris: "https://app.yourdomain.com"
+  IdentityServer__Clients__UrbanXSpa__AllowedCorsOrigins: "https://app.yourdomain.com"
+  IdentityServer__Clients__UrbanXMerchantSpa__RedirectUris: "https://merchant.yourdomain.com/callback"
+  IdentityServer__Clients__UrbanXMerchantSpa__PostLogoutRedirectUris: "https://merchant.yourdomain.com"
+  IdentityServer__Clients__UrbanXMerchantSpa__AllowedCorsOrigins: "https://merchant.yourdomain.com"
   KAFKA_CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: urbanx-secrets
-  namespace: urbanx
-type: Opaque
-stringData:
-  POSTGRES_PASSWORD: "CHANGE_ME_IN_PRODUCTION"
-  ConnectionStrings__identitydb: "Host=postgres;Database=urbanx_identity;Username=postgres;Password=CHANGE_ME_IN_PRODUCTION"
-  ConnectionStrings__catalogdb: "Host=postgres;Database=urbanx_catalog;Username=postgres;Password=CHANGE_ME_IN_PRODUCTION"
-  ConnectionStrings__orderdb: "Host=postgres;Database=urbanx_order;Username=postgres;Password=CHANGE_ME_IN_PRODUCTION"
-  ConnectionStrings__paymentdb: "Host=postgres;Database=urbanx_payment;Username=postgres;Password=CHANGE_ME_IN_PRODUCTION"
-  ConnectionStrings__merchantdb: "Host=postgres;Database=urbanx_merchant;Username=postgres;Password=CHANGE_ME_IN_PRODUCTION"
-  ConnectionStrings__inventorydb: "Host=postgres;Database=urbanx_inventory;Username=postgres;Password=CHANGE_ME_IN_PRODUCTION"
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -185,7 +180,8 @@ spec:
         - name: KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
           value: "1"
         - name: KAFKA_AUTO_CREATE_TOPICS_ENABLE
-          value: "true"
+          # Topics must be provisioned explicitly (IaC/bootstrap job) before services start.
+          value: "false"
         - name: CLUSTER_ID
           valueFrom:
             configMapKeyRef:

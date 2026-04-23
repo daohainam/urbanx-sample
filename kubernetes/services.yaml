@@ -33,6 +33,46 @@ spec:
         env:
         - name: ASPNETCORE_URLS
           value: "http://+:8080"
+        - name: IdentityServer__IssuerUri
+          valueFrom:
+            configMapKeyRef:
+              name: urbanx-config
+              key: IdentityServer__IssuerUri
+        - name: IdentityServer__SeedDefaultUsers
+          valueFrom:
+            configMapKeyRef:
+              name: urbanx-config
+              key: IdentityServer__SeedDefaultUsers
+        - name: IdentityServer__Clients__UrbanXSpa__RedirectUris
+          valueFrom:
+            configMapKeyRef:
+              name: urbanx-config
+              key: IdentityServer__Clients__UrbanXSpa__RedirectUris
+        - name: IdentityServer__Clients__UrbanXSpa__PostLogoutRedirectUris
+          valueFrom:
+            configMapKeyRef:
+              name: urbanx-config
+              key: IdentityServer__Clients__UrbanXSpa__PostLogoutRedirectUris
+        - name: IdentityServer__Clients__UrbanXSpa__AllowedCorsOrigins
+          valueFrom:
+            configMapKeyRef:
+              name: urbanx-config
+              key: IdentityServer__Clients__UrbanXSpa__AllowedCorsOrigins
+        - name: IdentityServer__Clients__UrbanXMerchantSpa__RedirectUris
+          valueFrom:
+            configMapKeyRef:
+              name: urbanx-config
+              key: IdentityServer__Clients__UrbanXMerchantSpa__RedirectUris
+        - name: IdentityServer__Clients__UrbanXMerchantSpa__PostLogoutRedirectUris
+          valueFrom:
+            configMapKeyRef:
+              name: urbanx-config
+              key: IdentityServer__Clients__UrbanXMerchantSpa__PostLogoutRedirectUris
+        - name: IdentityServer__Clients__UrbanXMerchantSpa__AllowedCorsOrigins
+          valueFrom:
+            configMapKeyRef:
+              name: urbanx-config
+              key: IdentityServer__Clients__UrbanXMerchantSpa__AllowedCorsOrigins
         - name: ConnectionStrings__identitydb
           valueFrom:
             secretKeyRef:
@@ -72,7 +112,7 @@ spec:
   selector:
     app: identity-service
   ports:
-  - port: 80
+  - port: 8080
     targetPort: 8080
   type: ClusterIP
 ---
@@ -117,7 +157,7 @@ spec:
               name: urbanx-secrets
               key: ConnectionStrings__catalogdb
         - name: IdentityServer__Authority
-          value: "http://identity-service"
+          value: "http://identity-service:8080"
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
@@ -152,7 +192,7 @@ spec:
   selector:
     app: catalog-service
   ports:
-  - port: 80
+  - port: 8080
     targetPort: 8080
   type: ClusterIP
 ---
@@ -197,7 +237,7 @@ spec:
               name: urbanx-secrets
               key: ConnectionStrings__orderdb
         - name: IdentityServer__Authority
-          value: "http://identity-service"
+          value: "http://identity-service:8080"
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
@@ -232,7 +272,7 @@ spec:
   selector:
     app: order-service
   ports:
-  - port: 80
+  - port: 8080
     targetPort: 8080
   type: ClusterIP
 ---
@@ -277,7 +317,7 @@ spec:
               name: urbanx-secrets
               key: ConnectionStrings__paymentdb
         - name: IdentityServer__Authority
-          value: "http://identity-service"
+          value: "http://identity-service:8080"
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
@@ -312,7 +352,7 @@ spec:
   selector:
     app: payment-service
   ports:
-  - port: 80
+  - port: 8080
     targetPort: 8080
   type: ClusterIP
 ---
@@ -357,7 +397,7 @@ spec:
               name: urbanx-secrets
               key: ConnectionStrings__merchantdb
         - name: IdentityServer__Authority
-          value: "http://identity-service"
+          value: "http://identity-service:8080"
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
@@ -392,7 +432,7 @@ spec:
   selector:
     app: merchant-service
   ports:
-  - port: 80
+  - port: 8080
     targetPort: 8080
   type: ClusterIP
 ---
@@ -431,6 +471,18 @@ spec:
         env:
         - name: ASPNETCORE_URLS
           value: "http://+:8080"
+        - name: IdentityServer__Authority
+          value: "http://identity-service:8080"
+        - name: RateLimit__RequestsPerMinute
+          valueFrom:
+            configMapKeyRef:
+              name: urbanx-config
+              key: RATE_LIMIT_REQUESTS_PER_MINUTE
+        - name: CORS_ALLOWED_ORIGINS
+          valueFrom:
+            configMapKeyRef:
+              name: urbanx-config
+              key: CORS_ALLOWED_ORIGINS
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
@@ -510,7 +562,7 @@ spec:
               name: urbanx-secrets
               key: ConnectionStrings__inventorydb
         - name: IdentityServer__Authority
-          value: "http://identity-service"
+          value: "http://identity-service:8080"
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
@@ -545,6 +597,6 @@ spec:
   selector:
     app: inventory-service
   ports:
-  - port: 80
+  - port: 8080
     targetPort: 8080
   type: ClusterIP

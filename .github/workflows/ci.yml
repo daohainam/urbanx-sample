@@ -1,0 +1,100 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backend-build-test:
+    name: Backend build and test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore UrbanX.sln
+
+      - name: Build
+        run: dotnet build UrbanX.sln --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test UrbanX.sln --configuration Release --no-build
+
+  frontend-lint-build:
+    name: Frontend lint and build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/Frontend/urbanx-react
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: src/Frontend/urbanx-react/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+  dependency-audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/Frontend/urbanx-react
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: src/Frontend/urbanx-react/package-lock.json
+
+      - name: Restore backend dependencies
+        run: dotnet restore UrbanX.sln
+
+      - name: Check NuGet vulnerabilities
+        run: |
+          set -euo pipefail
+          output_file="$(mktemp)"
+          dotnet list UrbanX.sln package --vulnerable --include-transitive | tee "$output_file"
+          if grep -q "has the following vulnerable packages" "$output_file"; then
+            echo "NuGet vulnerability check failed."
+            exit 1
+          fi
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Check npm vulnerabilities (high+)
+        run: npm audit --audit-level=high

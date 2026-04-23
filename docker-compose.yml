@@ -17,7 +17,7 @@ services:
       - urbanx-network
 
   kafka:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:7.6.1
     container_name: urbanx-kafka
     ports:
       - "9092:9092"

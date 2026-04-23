@@ -129,13 +129,10 @@ public static class Extensions
     }
 
     /// <summary>
-    /// Adds production-ready error handling, HTTPS redirection, and security headers
+    /// Adds production-ready HTTPS redirection and security headers
     /// </summary>
     public static WebApplication UseProductionDefaults(this WebApplication app)
     {
-        // Enable exception handling middleware
-        app.UseExceptionHandler("/error");
-        
         // Enable HTTPS redirection for production
         if (!app.Environment.IsDevelopment())
         {

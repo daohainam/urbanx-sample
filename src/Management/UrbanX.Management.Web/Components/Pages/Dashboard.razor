@@ -1,0 +1,92 @@
+@page "/"
+@attribute [Authorize(Policy = "AdminOnly")]
+@inject CatalogApiClient Catalog
+@rendermode InteractiveServer
+
+<PageTitle>Dashboard · UrbanX Management</PageTitle>
+
+<MudText Typo="Typo.h4" Class="mb-1">Dashboard</MudText>
+<MudText Typo="Typo.body2" Class="mb-6 mud-text-secondary">System overview and key metrics</MudText>
+
+<MudGrid>
+    <MudItem xs="12" sm="6" md="3">
+        <KpiCard Title="Products" Value="@_productCount" Icon="@Icons.Material.Outlined.ShoppingBag" Color="Color.Primary" Loading="@_loading" />
+    </MudItem>
+    <MudItem xs="12" sm="6" md="3">
+        <KpiCard Title="Categories" Value="@_categoryCount" Icon="@Icons.Material.Outlined.Category" Color="Color.Secondary" Loading="@_loading" />
+    </MudItem>
+    <MudItem xs="12" sm="6" md="3">
+        <KpiCard Title="Active merchants" Value="@_activeMerchants" Icon="@Icons.Material.Outlined.Storefront" Color="Color.Tertiary" Loading="@_loading" Placeholder="—" />
+    </MudItem>
+    <MudItem xs="12" sm="6" md="3">
+        <KpiCard Title="Orders today" Value="@_ordersToday" Icon="@Icons.Material.Outlined.ReceiptLong" Color="Color.Info" Loading="@_loading" Placeholder="—" />
+    </MudItem>
+
+    <MudItem xs="12" md="8">
+        <MudPaper Class="pa-4" Elevation="1" Style="height: 360px;">
+            <MudText Typo="Typo.h6">Catalog activity</MudText>
+            <MudText Typo="Typo.body2" Class="mud-text-secondary mb-4">Recent product changes</MudText>
+            <MudList T="ProductDto" Dense="true">
+                @foreach (var p in _recentProducts.Take(8))
+                {
+                    <MudListItem T="ProductDto" Icon="@Icons.Material.Outlined.Edit">
+                        <MudText>@p.Name</MudText>
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                            @(p.Category ?? "Uncategorised") · updated @p.UpdatedAt.ToLocalTime().ToString("g")
+                        </MudText>
+                    </MudListItem>
+                }
+                @if (_recentProducts.Count == 0 && !_loading)
+                {
+                    <MudText Class="mud-text-secondary">No products yet.</MudText>
+                }
+            </MudList>
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" md="4">
+        <MudPaper Class="pa-4" Elevation="1" Style="height: 360px;">
+            <MudText Typo="Typo.h6">Quick actions</MudText>
+            <MudStack Spacing="2" Class="mt-4">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.AddBusiness" Href="/catalog/categories">
+                    Manage categories
+                </MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.ShoppingBag" Href="/catalog/products">
+                    Browse products
+                </MudButton>
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private bool _loading = true;
+    private int _productCount;
+    private int _categoryCount;
+    private int? _activeMerchants;
+    private int? _ordersToday;
+    private List<ProductDto> _recentProducts = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var products = await Catalog.GetProductsAsync(null, null, 1, 50);
+            _productCount = (int)products.Total;
+            _recentProducts = products.Products
+                .OrderByDescending(p => p.UpdatedAt)
+                .ToList();
+
+            var categories = await Catalog.GetCategoriesAsync(includeInactive: true);
+            _categoryCount = categories.Count;
+        }
+        catch
+        {
+            // Surface via UI later; for now leave defaults.
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

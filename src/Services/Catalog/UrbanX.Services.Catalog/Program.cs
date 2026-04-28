@@ -73,13 +73,13 @@ using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-    
+
     try
     {
         logger.LogInformation("Applying database migrations for CatalogDbContext...");
         await context.Database.MigrateAsync();
         logger.LogInformation("Database migrations applied successfully");
-        
+
         // Seed data in development
         if (app.Environment.IsDevelopment())
         {
@@ -137,9 +137,15 @@ app.MapPost("/api/products", async (CreateProductRequest request, CatalogDbConte
     RequestValidation.ValidateRequiredString(request.Name, nameof(request.Name), 200);
     RequestValidation.ValidatePositive(request.Price, nameof(request.Price));
 
-    var sub = httpContext.User.FindFirst("sub")?.Value;
-    if (!Guid.TryParse(sub, out var callerMerchantId) || callerMerchantId != request.MerchantId)
-        return Results.Forbid();
+    var isAdmin = httpContext.User.HasClaim("role", "admin");
+    if (!isAdmin)
+    {
+        var sub = httpContext.User.FindFirst("sub")?.Value;
+        if (!Guid.TryParse(sub, out var callerMerchantId) || callerMerchantId != request.MerchantId)
+            return Results.Forbid();
+    }
+
+    var (categoryId, categoryName) = await ResolveCategoryAsync(db, request.CategoryId, request.Category);
 
     var product = new Product
     {
@@ -150,7 +156,8 @@ app.MapPost("/api/products", async (CreateProductRequest request, CatalogDbConte
         MerchantId = request.MerchantId,
         StockQuantity = request.StockQuantity,
         ImageUrl = request.ImageUrl,
-        Category = request.Category,
+        CategoryId = categoryId,
+        Category = categoryName,
         IsActive = true,
         CreatedAt = DateTime.UtcNow,
         UpdatedAt = DateTime.UtcNow
@@ -183,7 +190,7 @@ app.MapPost("/api/products", async (CreateProductRequest request, CatalogDbConte
     await db.SaveChangesAsync();
 
     return Results.Created($"/api/products/{product.Id}", product);
-}).RequireAuthorization(AuthorizationPolicies.MerchantOnly);
+}).RequireAuthorization(AuthorizationPolicies.MerchantOrAdmin);
 
 app.MapPut("/api/products/{id:guid}", async (Guid id, UpdateProductRequest request, CatalogDbContext db, HttpContext httpContext) =>
 {
@@ -195,16 +202,23 @@ app.MapPut("/api/products/{id:guid}", async (Guid id, UpdateProductRequest reque
     var product = await db.Products.FindAsync(id);
     if (product is null) return Results.NotFound();
 
-    var sub = httpContext.User.FindFirst("sub")?.Value;
-    if (!Guid.TryParse(sub, out var callerMerchantId) || callerMerchantId != product.MerchantId)
-        return Results.Forbid();
+    var isAdmin = httpContext.User.HasClaim("role", "admin");
+    if (!isAdmin)
+    {
+        var sub = httpContext.User.FindFirst("sub")?.Value;
+        if (!Guid.TryParse(sub, out var callerMerchantId) || callerMerchantId != product.MerchantId)
+            return Results.Forbid();
+    }
+
+    var (categoryId, categoryName) = await ResolveCategoryAsync(db, request.CategoryId, request.Category);
 
     product.Name = request.Name;
     product.Description = request.Description;
     product.Price = request.Price;
     product.StockQuantity = request.StockQuantity;
     product.ImageUrl = request.ImageUrl;
-    product.Category = request.Category;
+    product.CategoryId = categoryId;
+    product.Category = categoryName;
     product.IsActive = request.IsActive;
     product.UpdatedAt = DateTime.UtcNow;
 
@@ -234,7 +248,7 @@ app.MapPut("/api/products/{id:guid}", async (Guid id, UpdateProductRequest reque
     await db.SaveChangesAsync();
 
     return Results.Ok(product);
-}).RequireAuthorization(AuthorizationPolicies.MerchantOnly);
+}).RequireAuthorization(AuthorizationPolicies.MerchantOrAdmin);
 
 app.MapDelete("/api/products/{id:guid}", async (Guid id, CatalogDbContext db, HttpContext httpContext) =>
 {
@@ -243,9 +257,13 @@ app.MapDelete("/api/products/{id:guid}", async (Guid id, CatalogDbContext db, Ht
     var product = await db.Products.FindAsync(id);
     if (product is null) return Results.NotFound();
 
-    var sub = httpContext.User.FindFirst("sub")?.Value;
-    if (!Guid.TryParse(sub, out var callerMerchantId) || callerMerchantId != product.MerchantId)
-        return Results.Forbid();
+    var isAdmin = httpContext.User.HasClaim("role", "admin");
+    if (!isAdmin)
+    {
+        var sub = httpContext.User.FindFirst("sub")?.Value;
+        if (!Guid.TryParse(sub, out var callerMerchantId) || callerMerchantId != product.MerchantId)
+            return Results.Forbid();
+    }
 
     var productEvent = new ProductEvent
     {
@@ -268,9 +286,141 @@ app.MapDelete("/api/products/{id:guid}", async (Guid id, CatalogDbContext db, Ht
     await db.SaveChangesAsync();
 
     return Results.NoContent();
-}).RequireAuthorization(AuthorizationPolicies.MerchantOnly);
+}).RequireAuthorization(AuthorizationPolicies.MerchantOrAdmin);
+
+// ────────────────────────────────────────────────────────
+// Category management endpoints
+// ────────────────────────────────────────────────────────
+
+app.MapGet("/api/categories", async (CatalogDbContext db, bool includeInactive = false) =>
+{
+    var query = db.Categories.AsQueryable();
+    if (!includeInactive) query = query.Where(c => c.IsActive);
+    var categories = await query.OrderBy(c => c.Name).ToListAsync();
+    return Results.Ok(categories);
+});
+
+app.MapGet("/api/categories/{id:guid}", async (Guid id, CatalogDbContext db) =>
+{
+    RequestValidation.ValidateGuid(id, nameof(id));
+    var category = await db.Categories.FindAsync(id);
+    return category is not null ? Results.Ok(category) : Results.NotFound();
+});
+
+app.MapPost("/api/categories", async (CreateCategoryRequest request, CatalogDbContext db) =>
+{
+    RequestValidation.Validate(request);
+    RequestValidation.ValidateRequiredString(request.Name, nameof(request.Name), 100);
+
+    var slug = string.IsNullOrWhiteSpace(request.Slug) ? Slugify(request.Name) : Slugify(request.Slug);
+
+    if (await db.Categories.AnyAsync(c => c.Name == request.Name))
+        return Results.Conflict(new { error = $"Category with name '{request.Name}' already exists." });
+    if (await db.Categories.AnyAsync(c => c.Slug == slug))
+        return Results.Conflict(new { error = $"Category with slug '{slug}' already exists." });
+
+    var category = new Category
+    {
+        Id = Guid.NewGuid(),
+        Name = request.Name,
+        Slug = slug,
+        Description = request.Description,
+        IsActive = true,
+        CreatedAt = DateTime.UtcNow,
+        UpdatedAt = DateTime.UtcNow
+    };
+
+    db.Categories.Add(category);
+    await db.SaveChangesAsync();
+
+    return Results.Created($"/api/categories/{category.Id}", category);
+}).RequireAuthorization(AuthorizationPolicies.AdminOnly);
+
+app.MapPut("/api/categories/{id:guid}", async (Guid id, UpdateCategoryRequest request, CatalogDbContext db) =>
+{
+    RequestValidation.ValidateGuid(id, nameof(id));
+    RequestValidation.Validate(request);
+    RequestValidation.ValidateRequiredString(request.Name, nameof(request.Name), 100);
+
+    var category = await db.Categories.FindAsync(id);
+    if (category is null) return Results.NotFound();
+
+    var slug = string.IsNullOrWhiteSpace(request.Slug) ? Slugify(request.Name) : Slugify(request.Slug);
+
+    if (await db.Categories.AnyAsync(c => c.Id != id && c.Name == request.Name))
+        return Results.Conflict(new { error = $"Category with name '{request.Name}' already exists." });
+    if (await db.Categories.AnyAsync(c => c.Id != id && c.Slug == slug))
+        return Results.Conflict(new { error = $"Category with slug '{slug}' already exists." });
+
+    var oldName = category.Name;
+    category.Name = request.Name;
+    category.Slug = slug;
+    category.Description = request.Description;
+    category.IsActive = request.IsActive;
+    category.UpdatedAt = DateTime.UtcNow;
+
+    // Mirror the rename onto products that referenced this category by name.
+    if (oldName != request.Name)
+    {
+        await db.Products
+            .Where(p => p.CategoryId == id)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(p => p.Category, request.Name)
+                .SetProperty(p => p.UpdatedAt, DateTime.UtcNow));
+    }
+
+    await db.SaveChangesAsync();
+    return Results.Ok(category);
+}).RequireAuthorization(AuthorizationPolicies.AdminOnly);
+
+app.MapDelete("/api/categories/{id:guid}", async (Guid id, CatalogDbContext db) =>
+{
+    RequestValidation.ValidateGuid(id, nameof(id));
+    var category = await db.Categories.FindAsync(id);
+    if (category is null) return Results.NotFound();
+
+    if (await db.Products.AnyAsync(p => p.CategoryId == id && p.IsActive))
+        return Results.Conflict(new { error = "Cannot delete a category that still has active products. Deactivate it instead." });
+
+    category.IsActive = false;
+    category.UpdatedAt = DateTime.UtcNow;
+    await db.SaveChangesAsync();
+    return Results.NoContent();
+}).RequireAuthorization(AuthorizationPolicies.AdminOnly);
 
 app.Run();
+
+// ────────────────────────────────────────────────────────
+// Helpers
+// ────────────────────────────────────────────────────────
+
+static async Task<(Guid? Id, string? Name)> ResolveCategoryAsync(CatalogDbContext db, Guid? categoryId, string? legacyName)
+{
+    if (categoryId is { } id)
+    {
+        var category = await db.Categories.FindAsync(id);
+        if (category is null || !category.IsActive)
+            throw new ArgumentException($"Category '{id}' does not exist or is inactive.", nameof(categoryId));
+        return (category.Id, category.Name);
+    }
+
+    if (!string.IsNullOrWhiteSpace(legacyName))
+    {
+        var match = await db.Categories.FirstOrDefaultAsync(c => c.Name == legacyName);
+        return (match?.Id, legacyName);
+    }
+
+    return (null, null);
+}
+
+static string Slugify(string value)
+{
+    var lower = value.Trim().ToLowerInvariant();
+    var chars = lower.Select(c => char.IsLetterOrDigit(c) ? c : '-').ToArray();
+    var slug = new string(chars);
+    while (slug.Contains("--")) slug = slug.Replace("--", "-");
+    return slug.Trim('-');
+}
 
 // Make the implicit Program class public so integration tests can reference it
 public partial class Program { }

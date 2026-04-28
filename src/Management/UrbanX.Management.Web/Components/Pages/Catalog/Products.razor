@@ -1,0 +1,139 @@
+@page "/catalog/products"
+@attribute [Authorize(Policy = "AdminOnly")]
+@inject CatalogApiClient Catalog
+@inject ISnackbar Snackbar
+@inject IDialogService Dialog
+@rendermode InteractiveServer
+
+<PageTitle>Products · UrbanX Management</PageTitle>
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4">
+    <div>
+        <MudText Typo="Typo.h4">Products</MudText>
+        <MudText Typo="Typo.body2" Class="mud-text-secondary">Browse, edit, and deactivate catalog products</MudText>
+    </div>
+    <MudSpacer />
+</MudStack>
+
+<MudPaper Class="pa-4 mb-4" Elevation="1">
+    <MudStack Row="true" Spacing="3" AlignItems="AlignItems.End">
+        <MudTextField T="string" @bind-Value="_search" Label="Search" Placeholder="Name or description" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.Search" Immediate="false" />
+        <MudSelect T="string" @bind-Value="_categoryFilter" Label="Category" Clearable="true">
+            <MudSelectItem Value="@((string?)null)">All</MudSelectItem>
+            @foreach (var c in _categories)
+            {
+                <MudSelectItem Value="@c.Name">@c.Name</MudSelectItem>
+            }
+        </MudSelect>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.FilterAlt" OnClick="ApplyFiltersAsync">
+            Apply
+        </MudButton>
+    </MudStack>
+</MudPaper>
+
+<MudPaper Elevation="1">
+    <MudDataGrid T="ProductDto" ServerData="LoadServerData" @ref="_grid" Dense="true" Hover="true" RowsPerPage="20">
+        <Columns>
+            <PropertyColumn Property="x => x.Name" Title="Name" />
+            <PropertyColumn Property="x => x.Category" Title="Category" />
+            <PropertyColumn Property="x => x.Price" Title="Price" Format="N2" />
+            <PropertyColumn Property="x => x.StockQuantity" Title="Stock" />
+            <TemplateColumn Title="Active" Sortable="false">
+                <CellTemplate>
+                    @if (context.Item.IsActive)
+                    {
+                        <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Filled">Active</MudChip>
+                    }
+                    else
+                    {
+                        <MudChip T="string" Color="Color.Default" Size="Size.Small" Variant="Variant.Outlined">Inactive</MudChip>
+                    }
+                </CellTemplate>
+            </TemplateColumn>
+            <TemplateColumn Title="Actions" Sortable="false">
+                <CellTemplate>
+                    <MudIconButton Icon="@Icons.Material.Outlined.Edit" Size="Size.Small" OnClick="@(() => OpenEditDialog(context.Item))" />
+                    @if (context.Item.IsActive)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Outlined.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteAsync(context.Item))" />
+                    }
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+        <PagerContent>
+            <MudDataGridPager T="ProductDto" />
+        </PagerContent>
+    </MudDataGrid>
+</MudPaper>
+
+@code {
+    private MudDataGrid<ProductDto>? _grid;
+    private List<CategoryDto> _categories = [];
+    private string? _search;
+    private string? _categoryFilter;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _categories = (await Catalog.GetCategoriesAsync()).ToList();
+        }
+        catch
+        {
+            _categories = [];
+        }
+    }
+
+    private async Task<GridData<ProductDto>> LoadServerData(GridState<ProductDto> state)
+    {
+        var page = state.Page + 1;
+        var pageSize = state.PageSize;
+        try
+        {
+            var result = await Catalog.GetProductsAsync(_search, _categoryFilter, page, pageSize);
+            return new GridData<ProductDto> { Items = result.Products, TotalItems = (int)result.Total };
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to load products: {ex.Message}", Severity.Error);
+            return new GridData<ProductDto> { Items = [], TotalItems = 0 };
+        }
+    }
+
+    private async Task ApplyFiltersAsync()
+    {
+        if (_grid is not null) await _grid.ReloadServerData();
+    }
+
+    private async Task OpenEditDialog(ProductDto product)
+    {
+        var parameters = new DialogParameters
+        {
+            ["Existing"] = product,
+            ["Categories"] = _categories
+        };
+        var dialog = await Dialog.ShowAsync<ProductEditor>($"Edit '{product.Name}'", parameters, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false } && _grid is not null) await _grid.ReloadServerData();
+    }
+
+    private async Task DeleteAsync(ProductDto product)
+    {
+        var confirm = await Dialog.ShowMessageBox(
+            "Deactivate product",
+            $"Soft-delete '{product.Name}'? It will be hidden from search results.",
+            yesText: "Deactivate", cancelText: "Cancel");
+        if (confirm != true) return;
+
+        try
+        {
+            await Catalog.DeleteProductAsync(product.Id);
+            Snackbar.Add("Product deactivated.", Severity.Success);
+            if (_grid is not null) await _grid.ReloadServerData();
+        }
+        catch (HttpRequestException ex)
+        {
+            Snackbar.Add($"Failed: {ex.Message}", Severity.Error);
+        }
+    }
+}

@@ -163,6 +163,7 @@ builder.Services.AddIdentityServer(options =>
     .AddInMemoryApiScopes(
     [
         new ApiScope("catalog.read",    "Read access to the product catalogue"),
+        new ApiScope("catalog.write",   "Write access to the product catalogue (admin)"),
         new ApiScope("orders.read",     "Read access to orders"),
         new ApiScope("orders.write",    "Write access to orders (create / update)"),
         new ApiScope("merchant.manage", "Manage merchant resources and orders")
@@ -243,6 +244,45 @@ builder.Services.AddIdentityServer(options =>
                 ["http://localhost:5174", "https://localhost:5174"]),
 
             RequireConsent = !builder.Environment.IsDevelopment(),
+            AccessTokenLifetime = 3600,
+            AllowOfflineAccess = false
+        },
+        // ── Management Portal (Blazor Server, Authorization Code + PKCE, confidential) ──
+        // Server-side Blazor app that runs on the host. It can keep a client secret,
+        // so we use a confidential client for defence-in-depth.
+        new Client
+        {
+            ClientId = "urbanx-admin",
+            ClientName = "UrbanX Management Portal",
+            AllowedGrantTypes = GrantTypes.Code,
+            RequirePkce = true,
+            RequireClientSecret = true,
+            ClientSecrets =
+            {
+                new Secret(
+                    (builder.Configuration["IdentityServer:Clients:UrbanXAdmin:ClientSecret"]
+                        ?? "dev-admin-secret-change-me").Sha256())
+            },
+
+            AllowedScopes =
+            [
+                "openid", "profile", "email",
+                "catalog.read", "catalog.write"
+            ],
+
+            RedirectUris = GetListFromConfig(builder.Configuration,
+                "IdentityServer:Clients:UrbanXAdmin:RedirectUris",
+                ["http://localhost:5006/signin-oidc", "https://localhost:5006/signin-oidc"]),
+
+            PostLogoutRedirectUris = GetListFromConfig(builder.Configuration,
+                "IdentityServer:Clients:UrbanXAdmin:PostLogoutRedirectUris",
+                ["http://localhost:5006/signout-callback-oidc", "https://localhost:5006/signout-callback-oidc"]),
+
+            AllowedCorsOrigins = GetListFromConfig(builder.Configuration,
+                "IdentityServer:Clients:UrbanXAdmin:AllowedCorsOrigins",
+                ["http://localhost:5006", "https://localhost:5006"]),
+
+            RequireConsent = false,
             AccessTokenLifetime = 3600,
             AllowOfflineAccess = false
         }

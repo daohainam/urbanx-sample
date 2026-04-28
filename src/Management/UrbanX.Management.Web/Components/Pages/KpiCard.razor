@@ -1,0 +1,29 @@
+@namespace UrbanX.Management.Web.Components.Pages
+
+<MudPaper Class="pa-4" Elevation="1">
+    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+        <MudAvatar Color="@Color" Size="Size.Large" Variant="Variant.Filled">
+            <MudIcon Icon="@Icon" />
+        </MudAvatar>
+        <MudStack Spacing="0">
+            <MudText Typo="Typo.body2" Class="mud-text-secondary">@Title</MudText>
+            @if (Loading)
+            {
+                <MudSkeleton Width="60px" Height="32px" />
+            }
+            else
+            {
+                <MudText Typo="Typo.h5">@(Value?.ToString("N0") ?? Placeholder)</MudText>
+            }
+        </MudStack>
+    </MudStack>
+</MudPaper>
+
+@code {
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public int? Value { get; set; }
+    [Parameter] public string Placeholder { get; set; } = "0";
+    [Parameter] public string Icon { get; set; } = MudBlazor.Icons.Material.Outlined.Info;
+    [Parameter] public Color Color { get; set; } = Color.Primary;
+    [Parameter] public bool Loading { get; set; }
+}

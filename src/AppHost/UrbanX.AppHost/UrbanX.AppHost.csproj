@@ -8,6 +8,7 @@
     <ProjectReference Include="..\..\Services\Inventory\UrbanX.Services.Inventory\UrbanX.Services.Inventory.csproj" />
     <ProjectReference Include="..\..\Services\Identity\UrbanX.Services.Identity\UrbanX.Services.Identity.csproj" />
     <ProjectReference Include="..\..\Gateway\UrbanX.Gateway\UrbanX.Gateway.csproj" />
+    <ProjectReference Include="..\..\Management\UrbanX.Management.Web\UrbanX.Management.Web.csproj" />
   </ItemGroup>
 
   <ItemGroup>

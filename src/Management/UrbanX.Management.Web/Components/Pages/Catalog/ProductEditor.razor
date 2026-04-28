@@ -1,0 +1,82 @@
+@inject CatalogApiClient Catalog
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form">
+            <MudTextField T="string" @bind-Value="_name" Label="Name" Required="true" MaxLength="200" />
+            <MudTextField T="string" @bind-Value="_description" Label="Description" Lines="3" />
+            <MudStack Row="true" Spacing="3">
+                <MudNumericField T="decimal" @bind-Value="_price" Label="Price" Min="0.01m" Format="F2" />
+                <MudNumericField T="int" @bind-Value="_stock" Label="Stock" Min="0" />
+            </MudStack>
+            <MudTextField T="string" @bind-Value="_imageUrl" Label="Image URL" />
+            <MudSelect T="Guid?" @bind-Value="_categoryId" Label="Category" Clearable="true">
+                <MudSelectItem T="Guid?" Value="@((Guid?)null)">— None —</MudSelectItem>
+                @foreach (var c in Categories)
+                {
+                    <MudSelectItem T="Guid?" Value="@((Guid?)c.Id)">@c.Name</MudSelectItem>
+                }
+            </MudSelect>
+            <MudSwitch T="bool" @bind-Value="_isActive" Color="Color.Primary" Label="Active" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving">
+            @(_saving ? "Saving…" : "Save")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter, EditorRequired] public ProductDto Existing { get; set; } = null!;
+    [Parameter] public IReadOnlyList<CategoryDto> Categories { get; set; } = [];
+
+    private MudForm? _form;
+    private string _name = "";
+    private string? _description;
+    private decimal _price;
+    private int _stock;
+    private string? _imageUrl;
+    private Guid? _categoryId;
+    private bool _isActive;
+    private bool _saving;
+
+    protected override void OnInitialized()
+    {
+        _name = Existing.Name;
+        _description = Existing.Description;
+        _price = Existing.Price;
+        _stock = Existing.StockQuantity;
+        _imageUrl = Existing.ImageUrl;
+        _categoryId = Existing.CategoryId;
+        _isActive = Existing.IsActive;
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task SaveAsync()
+    {
+        if (_form is not null) await _form.Validate();
+        if (_form?.IsValid != true) return;
+
+        _saving = true;
+        try
+        {
+            await Catalog.UpdateProductAsync(Existing.Id, new UpdateProductRequest(
+                _name, _description, _price, _stock, _imageUrl, _categoryId, _isActive));
+            Snackbar.Add("Product updated.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (HttpRequestException ex)
+        {
+            Snackbar.Add($"Save failed: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+}

@@ -13,6 +13,9 @@
         <MudText Typo="Typo.body2" Class="mud-text-secondary">Browse, edit, and deactivate catalog products</MudText>
     </div>
     <MudSpacer />
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.Add" OnClick="OpenCreateDialog">
+        New product
+    </MudButton>
 </MudStack>
 
 <MudPaper Class="pa-4 mb-4" Elevation="1">
@@ -103,6 +106,14 @@
     private async Task ApplyFiltersAsync()
     {
         if (_grid is not null) await _grid.ReloadServerData();
+    }
+
+    private async Task OpenCreateDialog()
+    {
+        var parameters = new DialogParameters { ["Categories"] = _categories };
+        var dialog = await Dialog.ShowAsync<ProductEditor>("New product", parameters, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false } && _grid is not null) await _grid.ReloadServerData();
     }
 
     private async Task OpenEditDialog(ProductDto product)

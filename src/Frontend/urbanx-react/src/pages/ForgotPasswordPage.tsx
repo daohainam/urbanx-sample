@@ -27,6 +27,7 @@ const ForgotPasswordPage = () => {
 
     return (
         <div className="min-h-[80vh] flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+            <title>Reset password — UrbanX</title>
             <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-lg border border-gray-100">
                 <div>
                     <h2 className="mt-2 text-3xl font-serif font-bold text-center text-gray-900">

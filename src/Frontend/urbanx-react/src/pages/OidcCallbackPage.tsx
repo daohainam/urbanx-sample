@@ -17,6 +17,7 @@ const OidcCallbackPage = () => {
 
     return (
         <div className="flex items-center justify-center min-h-screen">
+            <title>Signing in… — UrbanX</title>
             <p className="text-gray-500">Signing you in...</p>
         </div>
     );

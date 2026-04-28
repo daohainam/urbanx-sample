@@ -16,8 +16,9 @@ const AddressesPage = () => {
 
     return (
         <div className="container mx-auto px-6 py-12">
-            <button className="flex items-center gap-2 text-sm text-gray-500 hover:text-primary transition-colors mb-8" onClick={() => navigate('/profile')}>
-                <ArrowLeft size={16} /> Back to Dashboard
+            <title>Saved addresses — UrbanX</title>
+            <button type="button" className="flex items-center gap-2 text-sm text-gray-500 hover:text-primary transition-colors mb-8" onClick={() => navigate('/profile')}>
+                <ArrowLeft size={16} aria-hidden="true" /> Back to Dashboard
             </button>
 
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-8 mb-8 gap-4">

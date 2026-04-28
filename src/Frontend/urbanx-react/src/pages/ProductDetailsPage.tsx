@@ -78,6 +78,10 @@ const ProductDetailsPage = () => {
 
     return (
         <div className="container mx-auto px-6 py-12">
+            <title>{`${product.name} — UrbanX`}</title>
+            <meta name="description" content={product.description.slice(0, 160)} />
+            <meta property="og:title" content={product.name} />
+            <meta property="og:image" content={product.imageUrl} />
             <Link to="/catalog" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-primary transition-colors mb-8 group">
                 <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back to Catalog
             </Link>

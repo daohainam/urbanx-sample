@@ -167,6 +167,7 @@ const CheckoutPage = () => {
 
     return (
         <div className="container mx-auto px-6 py-12">
+            <title>Checkout — UrbanX</title>
             {/* Steps Indicator */}
             <div className="flex justify-center items-center gap-4 mb-16 overflow-x-auto pb-4 md:pb-0">
                 {([

@@ -125,7 +125,7 @@ export async function request<T>(path: string, opts: RequestOptions = {}): Promi
     }
 
     const timeoutCtrl = new AbortController();
-    const timer = setTimeout(() => timeoutCtrl.abort(new DOMException('Request timed out', 'TimeoutError')), timeoutMs);
+    const timer = setTimeout(() => timeoutCtrl.abort(), timeoutMs);
 
     let response: Response;
     try {
@@ -137,15 +137,15 @@ export async function request<T>(path: string, opts: RequestOptions = {}): Promi
         });
     } catch (err) {
         clearTimeout(timer);
-        if (err instanceof DOMException && err.name === 'AbortError') {
-            // Distinguish a timeout abort from a caller abort.
-            if (timeoutCtrl.signal.aborted) {
-                throw new ApiError(`Request to ${path} timed out after ${timeoutMs}ms`, {
-                    kind: 'timeout',
-                    correlationId,
-                    cause: err,
-                });
-            }
+        // Timeout abort takes precedence over a caller abort — check our own signal first.
+        if (timeoutCtrl.signal.aborted) {
+            throw new ApiError(`Request to ${path} timed out after ${timeoutMs}ms`, {
+                kind: 'timeout',
+                correlationId,
+                cause: err,
+            });
+        }
+        if (err instanceof Error && err.name === 'AbortError') {
             throw err; // Caller-initiated abort — propagate as-is so react-query treats it correctly.
         }
         throw new ApiError(`Network error calling ${path}`, {

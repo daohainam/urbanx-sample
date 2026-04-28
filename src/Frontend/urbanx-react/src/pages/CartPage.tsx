@@ -9,6 +9,7 @@ const CartPage = () => {
     if (items.length === 0) {
         return (
             <div className="container mx-auto px-6 py-32 text-center">
+                <title>Your cart — UrbanX</title>
                 <ShoppingBag size={64} className="mx-auto text-gray-200 mb-6" />
                 <h1 className="text-2xl font-serif font-bold text-gray-900 mb-3">Your cart is empty</h1>
                 <p className="text-gray-500 mb-8">Looks like you haven't added anything to your cart yet.</p>
@@ -21,6 +22,7 @@ const CartPage = () => {
 
     return (
         <div className="container mx-auto px-6 py-12">
+            <title>{`Cart (${totalItems}) — UrbanX`}</title>
             <h1 className="text-3xl font-serif font-bold text-gray-900 mb-8">Shopping Cart ({totalItems})</h1>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">

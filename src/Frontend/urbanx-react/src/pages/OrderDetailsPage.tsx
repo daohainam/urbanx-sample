@@ -84,6 +84,7 @@ const OrderDetailsPage = () => {
 
     return (
         <div className="container mx-auto px-6 py-12">
+            <title>{`Order #${order.orderNumber} — UrbanX`}</title>
             <button
                 type="button"
                 className="flex items-center gap-2 text-sm text-gray-500 hover:text-primary transition-colors mb-8"

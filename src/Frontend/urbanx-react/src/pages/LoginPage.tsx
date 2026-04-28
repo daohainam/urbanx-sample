@@ -21,6 +21,7 @@ const LoginPage = () => {
 
     return (
         <div className="min-h-[80vh] flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+            <title>Sign in — UrbanX</title>
             <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-lg border border-gray-100">
                 <div className="text-center">
                     <h2 className="mt-2 text-3xl font-serif font-bold text-gray-900">

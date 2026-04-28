@@ -64,6 +64,7 @@ const OrdersPage = () => {
 
     return (
         <div className="container mx-auto px-6 py-12 min-h-[70vh]" aria-busy={isFetching}>
+            <title>Your orders — UrbanX</title>
             <div className="mb-8 border-b border-gray-100 pb-4">
                 <h1 className="text-3xl font-serif font-bold text-gray-900 mb-2">Your Orders</h1>
                 <p className="text-gray-500">Track, manage, and review your previous purchases.</p>

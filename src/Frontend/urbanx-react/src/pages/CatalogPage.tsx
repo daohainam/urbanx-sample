@@ -49,6 +49,8 @@ const CatalogPage = () => {
 
     return (
         <div className="container mx-auto px-6 py-12 min-h-[80vh]">
+            <title>{category ? `${category[0].toUpperCase()}${category.slice(1)} — UrbanX` : 'Shop all — UrbanX'}</title>
+            <meta name="description" content="Browse our curated catalog of premium goods." />
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 border-b border-gray-100 pb-8 gap-6">
                 <div>
                     <h1 className="text-3xl font-serif font-bold text-gray-900 mb-2">Shop All</h1>

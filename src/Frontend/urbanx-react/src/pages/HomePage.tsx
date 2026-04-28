@@ -18,16 +18,17 @@ const featuredProducts = [
 const HomePage = () => {
     return (
         <div className="animate-fade-in">
+            <title>UrbanX — Curated marketplace</title>
+            <meta name="description" content="Premium electronics, watches, and home goods curated for the modern urbanite." />
             {/* Hero Section */}
             <section className="relative h-[80vh] w-full bg-gray-900 text-white overflow-hidden">
-                <div
-                    className="absolute inset-0 bg-cover bg-center"
-                    style={{
-                        backgroundImage: `url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=2000')`
-                    }}
-                >
-                    <div className="absolute inset-0 bg-black/40"></div>
-                </div>
+                <img
+                    src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=2000"
+                    alt=""
+                    aria-hidden="true"
+                    className="absolute inset-0 w-full h-full object-cover object-center"
+                />
+                <div className="absolute inset-0 bg-black/40" aria-hidden="true"></div>
 
                 <div className="relative h-full container mx-auto px-6 flex flex-col justify-center items-center text-center z-10">
                     <h1 className="text-5xl md:text-7xl font-serif font-bold mb-6 leading-tight tracking-tight">
@@ -60,12 +61,14 @@ const HomePage = () => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {categories.map(cat => (
                             <Link key={cat.id} to={`/catalog?category=${cat.slug}`} className="group block relative h-[500px] overflow-hidden rounded-sm bg-gray-100">
-                                <div
-                                    className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                                    style={{ backgroundImage: `url(${cat.imageUrl})` }}
-                                >
-                                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-500"></div>
-                                </div>
+                                <img
+                                    src={cat.imageUrl}
+                                    alt={cat.name}
+                                    loading="lazy"
+                                    decoding="async"
+                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                />
+                                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-500" aria-hidden="true"></div>
                                 <div className="absolute bottom-0 left-0 w-full p-8 text-white z-10">
                                     <h3 className="text-3xl font-serif mb-2">{cat.name}</h3>
                                     <span className="inline-block text-xs font-bold uppercase tracking-[0.15em] border-b border-white/50 pb-1 group-hover:border-white transition-colors">
@@ -109,10 +112,16 @@ const HomePage = () => {
                             Claim Discount
                         </Link>
                     </div>
-                    <div
-                        className="flex-1 min-h-[300px] md:min-h-auto bg-cover bg-center"
-                        style={{ backgroundImage: `url('https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&q=80&w=1200')` }}
-                    ></div>
+                    <div className="flex-1 min-h-[300px] md:min-h-auto relative">
+                        <img
+                            src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&q=80&w=1200"
+                            alt=""
+                            aria-hidden="true"
+                            loading="lazy"
+                            decoding="async"
+                            className="absolute inset-0 w-full h-full object-cover object-center"
+                        />
+                    </div>
                 </div>
             </section>
         </div>

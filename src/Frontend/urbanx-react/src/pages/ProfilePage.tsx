@@ -21,6 +21,7 @@ const ProfilePage = () => {
 
     return (
         <div className="container mx-auto px-6 py-12 min-h-[70vh]">
+            <title>Your account — UrbanX</title>
             <div className="flex flex-col md:flex-row gap-12">
                 {/* Sidebar */}
                 <aside className="w-full md:w-64 flex-shrink-0">

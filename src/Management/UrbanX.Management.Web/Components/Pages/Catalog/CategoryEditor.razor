@@ -1,0 +1,77 @@
+@inject CatalogApiClient Catalog
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form">
+            <MudTextField T="string" @bind-Value="_name" Label="Name" Required="true" RequiredError="Name is required" MaxLength="100" />
+            <MudTextField T="string" @bind-Value="_slug" Label="Slug (optional)" HelperText="Leave blank to auto-generate from name" MaxLength="120" />
+            <MudTextField T="string" @bind-Value="_description" Label="Description" Lines="3" MaxLength="500" />
+            @if (Existing is not null)
+            {
+                <MudSwitch T="bool" @bind-Value="_isActive" Color="Color.Primary" Label="Active" />
+            }
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving">
+            @(_saving ? "Saving…" : "Save")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public CategoryDto? Existing { get; set; }
+
+    private MudForm? _form;
+    private string _name = "";
+    private string? _slug;
+    private string? _description;
+    private bool _isActive = true;
+    private bool _saving;
+
+    protected override void OnInitialized()
+    {
+        if (Existing is not null)
+        {
+            _name = Existing.Name;
+            _slug = Existing.Slug;
+            _description = Existing.Description;
+            _isActive = Existing.IsActive;
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task SaveAsync()
+    {
+        if (_form is not null) await _form.Validate();
+        if (_form?.IsValid != true) return;
+
+        _saving = true;
+        try
+        {
+            if (Existing is null)
+            {
+                await Catalog.CreateCategoryAsync(new CreateCategoryRequest(_name, _slug, _description));
+                Snackbar.Add("Category created.", Severity.Success);
+            }
+            else
+            {
+                await Catalog.UpdateCategoryAsync(Existing.Id, new UpdateCategoryRequest(_name, _slug, _description, _isActive));
+                Snackbar.Add("Category updated.", Severity.Success);
+            }
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (HttpRequestException ex)
+        {
+            Snackbar.Add($"Save failed: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+}

@@ -65,6 +65,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+app.UseProductionDefaults();
 app.UseExceptionHandler();
 app.UseAuthentication();
 app.UseAuthorization();

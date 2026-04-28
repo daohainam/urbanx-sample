@@ -1,0 +1,109 @@
+@page "/catalog/categories"
+@attribute [Authorize(Policy = "AdminOnly")]
+@inject CatalogApiClient Catalog
+@inject ISnackbar Snackbar
+@inject IDialogService Dialog
+@rendermode InteractiveServer
+
+<PageTitle>Categories · UrbanX Management</PageTitle>
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4">
+    <div>
+        <MudText Typo="Typo.h4">Categories</MudText>
+        <MudText Typo="Typo.body2" Class="mud-text-secondary">Manage product categories used across the catalog</MudText>
+    </div>
+    <MudSpacer />
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.Add" OnClick="OpenCreateDialog">
+        New category
+    </MudButton>
+</MudStack>
+
+<MudPaper Elevation="1">
+    <MudDataGrid T="CategoryDto" Items="_categories" Loading="_loading" Dense="true" Hover="true" Bordered="false">
+        <Columns>
+            <PropertyColumn Property="x => x.Name" Title="Name" />
+            <PropertyColumn Property="x => x.Slug" Title="Slug" />
+            <PropertyColumn Property="x => x.Description" Title="Description" />
+            <TemplateColumn Title="Active" Sortable="false">
+                <CellTemplate>
+                    @if (context.Item.IsActive)
+                    {
+                        <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Filled">Active</MudChip>
+                    }
+                    else
+                    {
+                        <MudChip T="string" Color="Color.Default" Size="Size.Small" Variant="Variant.Outlined">Inactive</MudChip>
+                    }
+                </CellTemplate>
+            </TemplateColumn>
+            <TemplateColumn Title="Actions" Sortable="false">
+                <CellTemplate>
+                    <MudIconButton Icon="@Icons.Material.Outlined.Edit" Size="Size.Small" OnClick="@(() => OpenEditDialog(context.Item))" />
+                    <MudIconButton Icon="@Icons.Material.Outlined.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteAsync(context.Item))" />
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+        <NoRecordsContent>
+            <MudText Class="pa-4 mud-text-secondary">No categories defined yet.</MudText>
+        </NoRecordsContent>
+    </MudDataGrid>
+</MudPaper>
+
+@code {
+    private List<CategoryDto> _categories = [];
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync() => await ReloadAsync();
+
+    private async Task ReloadAsync()
+    {
+        _loading = true;
+        try
+        {
+            _categories = (await Catalog.GetCategoriesAsync(includeInactive: true)).ToList();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to load categories: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task OpenCreateDialog()
+    {
+        var dialog = await Dialog.ShowAsync<CategoryEditor>("New category", new DialogParameters(), new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false }) await ReloadAsync();
+    }
+
+    private async Task OpenEditDialog(CategoryDto category)
+    {
+        var parameters = new DialogParameters { ["Existing"] = category };
+        var dialog = await Dialog.ShowAsync<CategoryEditor>($"Edit '{category.Name}'", parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false }) await ReloadAsync();
+    }
+
+    private async Task DeleteAsync(CategoryDto category)
+    {
+        var confirm = await Dialog.ShowMessageBox(
+            "Delete category",
+            $"Deactivate the category '{category.Name}'? Products that reference it will keep their category name but the category will no longer appear in dropdowns.",
+            yesText: "Deactivate", cancelText: "Cancel");
+        if (confirm != true) return;
+
+        try
+        {
+            await Catalog.DeleteCategoryAsync(category.Id);
+            Snackbar.Add($"Category '{category.Name}' deactivated.", Severity.Success);
+            await ReloadAsync();
+        }
+        catch (HttpRequestException ex)
+        {
+            Snackbar.Add($"Failed to delete: {ex.Message}", Severity.Error);
+        }
+    }
+}

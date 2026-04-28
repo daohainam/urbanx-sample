@@ -163,6 +163,7 @@ builder.Services.AddIdentityServer(options =>
     .AddInMemoryApiScopes(
     [
         new ApiScope("catalog.read",    "Read access to the product catalogue"),
+        new ApiScope("catalog.write",   "Write access to the product catalogue (admin)"),
         new ApiScope("orders.read",     "Read access to orders"),
         new ApiScope("orders.write",    "Write access to orders (create / update)"),
         new ApiScope("merchant.manage", "Manage merchant resources and orders")
@@ -245,11 +246,52 @@ builder.Services.AddIdentityServer(options =>
             RequireConsent = !builder.Environment.IsDevelopment(),
             AccessTokenLifetime = 3600,
             AllowOfflineAccess = false
+        },
+        // ── Management Portal (Blazor Server, Authorization Code + PKCE, confidential) ──
+        // Server-side Blazor app that runs on the host. It can keep a client secret,
+        // so we use a confidential client for defence-in-depth.
+        new Client
+        {
+            ClientId = "urbanx-admin",
+            ClientName = "UrbanX Management Portal",
+            AllowedGrantTypes = GrantTypes.Code,
+            RequirePkce = true,
+            RequireClientSecret = true,
+            ClientSecrets =
+            {
+                new Secret(
+                    (builder.Configuration["IdentityServer:Clients:UrbanXAdmin:ClientSecret"]
+                        ?? "dev-admin-secret-change-me").Sha256())
+            },
+
+            AllowedScopes =
+            [
+                "openid", "profile", "email",
+                "catalog.read", "catalog.write"
+            ],
+
+            RedirectUris = GetListFromConfig(builder.Configuration,
+                "IdentityServer:Clients:UrbanXAdmin:RedirectUris",
+                ["http://localhost:5006/signin-oidc", "https://localhost:5006/signin-oidc"]),
+
+            PostLogoutRedirectUris = GetListFromConfig(builder.Configuration,
+                "IdentityServer:Clients:UrbanXAdmin:PostLogoutRedirectUris",
+                ["http://localhost:5006/signout-callback-oidc", "https://localhost:5006/signout-callback-oidc"]),
+
+            AllowedCorsOrigins = GetListFromConfig(builder.Configuration,
+                "IdentityServer:Clients:UrbanXAdmin:AllowedCorsOrigins",
+                ["http://localhost:5006", "https://localhost:5006"]),
+
+            RequireConsent = false,
+            AccessTokenLifetime = 3600,
+            AllowOfflineAccess = false
         }
     ]);
 
 // ── Authorization policies for management API endpoints ──────────────────────
 builder.Services.AddUrbanXAuthorization();
+
+ValidateProductionIdentityConfiguration(builder.Configuration, builder.Environment);
 
 // ── Build the application ─────────────────────────────────────────────────────
 var app = builder.Build();
@@ -262,6 +304,8 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+app.UseProductionDefaults();
 
 // ── Middleware pipeline ───────────────────────────────────────────────────────
 // Order matters: routing → static files → IdentityServer → auth → endpoints.
@@ -298,7 +342,18 @@ using (var scope = app.Services.CreateScope())
 // ── Seed initial data ─────────────────────────────────────────────────────────
 // Creates roles and default users if the database is empty.
 // Safe to call on every startup; each user/role is only created if absent.
-await SeedData.EnsureSeedDataAsync(app.Services);
+var seedDefaultUsers = builder.Configuration.GetValue<bool?>("IdentityServer:SeedDefaultUsers")
+    ?? app.Environment.IsDevelopment();
+
+if (seedDefaultUsers)
+{
+    await SeedData.EnsureSeedDataAsync(app.Services);
+}
+else
+{
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+    logger.LogInformation("Skipping identity default user seeding (IdentityServer:SeedDefaultUsers=false).");
+}
 
 // ── User management API ───────────────────────────────────────────────────────
 // These endpoints allow programmatic user management (e.g., customer self-registration,
@@ -407,6 +462,32 @@ static List<string> GetListFromConfig(IConfiguration config, string key, List<st
     var value = config[key];
     if (string.IsNullOrWhiteSpace(value)) return defaults;
     return value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+}
+
+static void ValidateProductionIdentityConfiguration(IConfiguration config, IHostEnvironment environment)
+{
+    if (!environment.IsProduction())
+    {
+        return;
+    }
+
+    var requiredKeys = new[]
+    {
+        "IdentityServer:IssuerUri",
+        "IdentityServer:Clients:UrbanXSpa:RedirectUris",
+        "IdentityServer:Clients:UrbanXSpa:PostLogoutRedirectUris",
+        "IdentityServer:Clients:UrbanXSpa:AllowedCorsOrigins",
+        "IdentityServer:Clients:UrbanXMerchantSpa:RedirectUris",
+        "IdentityServer:Clients:UrbanXMerchantSpa:PostLogoutRedirectUris",
+        "IdentityServer:Clients:UrbanXMerchantSpa:AllowedCorsOrigins"
+    };
+
+    var missing = requiredKeys.Where(key => string.IsNullOrWhiteSpace(config[key])).ToArray();
+    if (missing.Length > 0)
+    {
+        throw new InvalidOperationException(
+            $"Missing required production identity configuration keys: {string.Join(", ", missing)}");
+    }
 }
 
 // ── Request models ────────────────────────────────────────────────────────────

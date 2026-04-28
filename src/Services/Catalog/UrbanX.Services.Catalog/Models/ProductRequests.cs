@@ -21,6 +21,8 @@ public class CreateProductRequest
 
     public string? ImageUrl { get; set; }
 
+    public Guid? CategoryId { get; set; }
+
     public string? Category { get; set; }
 }
 
@@ -39,6 +41,8 @@ public class UpdateProductRequest
     public int StockQuantity { get; set; }
 
     public string? ImageUrl { get; set; }
+
+    public Guid? CategoryId { get; set; }
 
     public string? Category { get; set; }
 

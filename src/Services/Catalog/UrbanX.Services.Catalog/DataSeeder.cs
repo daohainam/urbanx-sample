@@ -9,10 +9,43 @@ public static class DataSeeder
 {
     public static async Task SeedAsync(CatalogDbContext context)
     {
-        if (await context.Products.AnyAsync())
+        await SeedCategoriesAsync(context);
+        await SeedProductsAsync(context);
+    }
+
+    private static async Task SeedCategoriesAsync(CatalogDbContext context)
+    {
+        var categoriesPath = Path.Combine(AppContext.BaseDirectory, "SeedData", "categories.json");
+        if (!File.Exists(categoriesPath)) return;
+
+        var jsonContent = await File.ReadAllTextAsync(categoriesPath);
+        var names = JsonSerializer.Deserialize<List<string>>(jsonContent);
+        if (names is null) return;
+
+        var existingNames = await context.Categories.Select(c => c.Name).ToListAsync();
+        var toAdd = names
+            .Where(n => !string.IsNullOrWhiteSpace(n) && !existingNames.Contains(n))
+            .Select(n => new Category
+            {
+                Id = Guid.NewGuid(),
+                Name = n,
+                Slug = Slugify(n),
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            })
+            .ToList();
+
+        if (toAdd.Count > 0)
         {
-            return; // Database already seeded
+            await context.Categories.AddRangeAsync(toAdd);
+            await context.SaveChangesAsync();
         }
+    }
+
+    private static async Task SeedProductsAsync(CatalogDbContext context)
+    {
+        if (await context.Products.AnyAsync()) return;
 
         var productsPath = Path.Combine(AppContext.BaseDirectory, "SeedData", "products.json");
         if (!File.Exists(productsPath))
@@ -26,10 +59,9 @@ public static class DataSeeder
             PropertyNameCaseInsensitive = true
         });
 
-        if (productsData == null || productsData.Count == 0)
-        {
-            return;
-        }
+        if (productsData == null || productsData.Count == 0) return;
+
+        var categoryByName = await context.Categories.ToDictionaryAsync(c => c.Name, c => c.Id);
 
         var products = productsData.Select(p => new Product
         {
@@ -40,6 +72,7 @@ public static class DataSeeder
             MerchantId = p.MerchantId,
             StockQuantity = p.StockQuantity,
             Category = p.Category,
+            CategoryId = p.Category is not null && categoryByName.TryGetValue(p.Category, out var id) ? id : null,
             IsActive = p.IsActive,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
@@ -47,6 +80,15 @@ public static class DataSeeder
 
         await context.Products.AddRangeAsync(products);
         await context.SaveChangesAsync();
+    }
+
+    private static string Slugify(string value)
+    {
+        var lower = value.Trim().ToLowerInvariant();
+        var chars = lower.Select(c => char.IsLetterOrDigit(c) ? c : '-').ToArray();
+        var slug = new string(chars);
+        while (slug.Contains("--")) slug = slug.Replace("--", "-");
+        return slug.Trim('-');
     }
 
     private class ProductSeedData

@@ -77,4 +77,23 @@ var frontend = builder.AddViteApp("frontend", "../../frontend/urbanx-react")
     .WaitFor(gateway)
     .WithExternalHttpEndpoints();
 
+// Management portal (Blazor Server admin app). The OIDC client secret defaults
+// to a dev value; override via the ADMIN_OIDC_CLIENT_SECRET environment variable
+// (also propagated to the Identity service so both ends agree).
+var adminClientSecret = builder.Configuration["ADMIN_OIDC_CLIENT_SECRET"] ?? "dev-admin-secret-change-me";
+
+var management = builder.AddProject<Projects.UrbanX_Management_Web>("management")
+    .WithReference(catalogService)
+    .WithReference(identityService)
+    .WaitFor(catalogService)
+    .WaitFor(identityService)
+    .WithEnvironment("Authentication__Oidc__ClientSecret", adminClientSecret)
+    // Pin to localhost:5006 (matches the redirect URIs registered for the
+    // urbanx-admin OIDC client). isProxied=false bypasses Aspire's reverse
+    // proxy so the browser sees exactly this URL.
+    //.WithHttpEndpoint(port: 5006, name: "http", isProxied: false)
+    .WithExternalHttpEndpoints();
+
+identityService.WithEnvironment("IdentityServer__Clients__UrbanXAdmin__ClientSecret", adminClientSecret);
+
 builder.Build().Run();

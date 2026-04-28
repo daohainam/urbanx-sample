@@ -1,0 +1,73 @@
+@inherits LayoutComponentBase
+
+<MudThemeProvider Theme="@_theme" IsDarkMode="@_isDark" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="1" Color="Color.Primary">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer" />
+        <MudText Typo="Typo.h6" Class="ml-2">UrbanX Management</MudText>
+        <MudSpacer />
+        <MudIconButton Icon="@(_isDark ? Icons.Material.Outlined.LightMode : Icons.Material.Outlined.DarkMode)"
+                       Color="Color.Inherit" OnClick="@(() => _isDark = !_isDark)" />
+        <AuthorizeView>
+            <Authorized>
+                <MudMenu Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
+                    <MudText Class="px-4 py-2" Typo="Typo.body2">@(context.User.Identity?.Name ?? "User")</MudText>
+                    <MudDivider />
+                    <form method="post" action="/logout">
+                        <AntiforgeryToken />
+                        <button type="submit" class="mud-menu-item-button mud-typography mud-typography-body1" style="width:100%; text-align:left; background:none; border:none; padding:8px 16px; cursor:pointer;">
+                            <span style="display:inline-flex; align-items:center; gap:8px;">
+                                <MudIcon Icon="@Icons.Material.Outlined.Logout" Size="Size.Small" />
+                                Log out
+                            </span>
+                        </button>
+                    </form>
+                </MudMenu>
+            </Authorized>
+        </AuthorizeView>
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="1" Variant="@DrawerVariant.Mini" OpenMiniOnHover="true">
+        <NavMenu />
+    </MudDrawer>
+
+    <MudMainContent Class="pt-4 px-4">
+        <MudContainer MaxWidth="MaxWidth.False">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private bool _drawerOpen = true;
+    private bool _isDark = false;
+
+    private readonly MudTheme _theme = new()
+    {
+        PaletteLight = new PaletteLight
+        {
+            Primary = "#1F5AA8",
+            Secondary = "#0CB39C",
+            AppbarBackground = "#1F5AA8",
+            Background = "#F6F8FB"
+        },
+        PaletteDark = new PaletteDark
+        {
+            Primary = "#5C8DDC",
+            Secondary = "#26D0BA"
+        },
+        Typography = new Typography
+        {
+            Default = new DefaultTypography
+            {
+                FontFamily = ["Roboto", "Helvetica", "Arial", "sans-serif"]
+            }
+        }
+    };
+
+    private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
+}

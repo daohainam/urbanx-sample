@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LogIn, Lock, User } from 'lucide-react';
 import { useAuth } from '../context/useAuth';
+import { logger } from '../lib/logger';
 
 const LoginPage = () => {
     const { login } = useAuth();
@@ -13,7 +14,7 @@ const LoginPage = () => {
         try {
             await login();
         } catch (err) {
-            console.error('Login failed:', err);
+            logger.error('Login failed', err);
             setIsLoading(false);
         }
     };

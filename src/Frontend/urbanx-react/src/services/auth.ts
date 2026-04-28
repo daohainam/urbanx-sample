@@ -1,10 +1,11 @@
 import { UserManager, WebStorageStateStore } from 'oidc-client-ts';
+import { env } from '../config/env';
 
 export const userManager = new UserManager({
-    authority: window.location.origin,
-    client_id: 'urbanx-spa',
+    authority: env.oidc.authority,
+    client_id: env.oidc.clientId,
     redirect_uri: `${window.location.origin}/callback`,
     post_logout_redirect_uri: window.location.origin,
-    scope: 'openid profile email catalog.read orders.read orders.write',
+    scope: env.oidc.scopes,
     userStore: new WebStorageStateStore({ store: localStorage }),
 });

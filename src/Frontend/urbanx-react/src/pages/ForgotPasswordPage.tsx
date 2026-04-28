@@ -1,21 +1,28 @@
-import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Mail, ArrowLeft } from 'lucide-react';
+import { logger } from '../lib/logger';
+import { forgotPasswordSchema, type ForgotPasswordForm } from '../schemas/auth';
+import { TextField } from '../components/forms/TextField';
 
 const ForgotPasswordPage = () => {
     const navigate = useNavigate();
-    const [email, setEmail] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const {
+        register,
+        handleSubmit,
+        formState: { errors, isSubmitting },
+    } = useForm<ForgotPasswordForm>({
+        resolver: zodResolver(forgotPasswordSchema),
+        mode: 'onBlur',
+        defaultValues: { email: '' },
+    });
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-        // Simulate API call
-        setTimeout(() => {
-            console.log('Reset code sent to:', email);
-            setIsSubmitting(false);
-            navigate('/reset-password');
-        }, 1000);
+    const onSubmit = async (values: ForgotPasswordForm) => {
+        // Simulate API call (real implementation lands with the BFF migration).
+        await new Promise((r) => setTimeout(r, 1000));
+        logger.info('Reset code sent (stub)', { email: values.email });
+        navigate('/reset-password');
     };
 
     return (
@@ -30,30 +37,26 @@ const ForgotPasswordPage = () => {
                     </p>
                 </div>
 
-                <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                    <div className="rounded-md shadow-sm">
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                                <Mail size={20} />
-                            </div>
-                            <input
-                                id="email"
-                                name="email"
-                                type="email"
-                                required
-                                className="appearance-none relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
-                                placeholder="Email Address"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                            />
-                        </div>
-                    </div>
+                <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)} noValidate>
+                    <TextField
+                        id="email"
+                        label="Email address"
+                        visuallyHiddenLabel
+                        placeholder="Email Address"
+                        type="email"
+                        autoComplete="email"
+                        icon={<Mail size={20} />}
+                        error={errors.email?.message}
+                        {...register('email')}
+                    />
 
                     <div>
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white btn-action-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+                            className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white btn-action-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors ${
+                                isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
+                            }`}
                         >
                             {isSubmitting ? 'Sending...' : 'Send Reset Code'}
                         </button>

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { userManager } from '../services/auth';
+import { logger } from '../lib/logger';
 
 const OidcCallbackPage = () => {
     const navigate = useNavigate();
@@ -9,7 +10,7 @@ const OidcCallbackPage = () => {
         userManager.signinRedirectCallback()
             .then(() => navigate('/'))
             .catch(err => {
-                console.error('OIDC callback error:', err);
+                logger.error('OIDC callback error', err);
                 navigate('/login');
             });
     }, [navigate]);

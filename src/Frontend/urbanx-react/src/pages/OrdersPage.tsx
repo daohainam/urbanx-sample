@@ -1,15 +1,18 @@
-import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { ShoppingBag, Package, Truck, CheckCircle, LogIn } from 'lucide-react';
 import { orderService } from '../services/api';
 import { useAuth } from '../context/useAuth';
-import type { Order } from '../types';
+import { ListRowSkeleton } from '../components/ui/Skeleton';
+import { ErrorState } from '../components/ui/ErrorState';
+import { EmptyState } from '../components/ui/EmptyState';
+import { queryKeys } from '../lib/queryKeys';
 
 const statusIcon = (status: string) => {
     switch (status) {
-        case 'Delivered': return <CheckCircle className="text-green-600" size={20} />;
-        case 'InTransit': return <Truck className="text-secondary" size={20} />;
-        default: return <Package className="text-gray-400" size={20} />;
+        case 'Delivered': return <CheckCircle className="text-green-600" size={20} aria-hidden="true" />;
+        case 'InTransit': return <Truck className="text-secondary" size={20} aria-hidden="true" />;
+        default: return <Package className="text-gray-400" size={20} aria-hidden="true" />;
     }
 };
 
@@ -25,35 +28,19 @@ const statusLabel = (status: string) => {
 const OrdersPage = () => {
     const navigate = useNavigate();
     const { user, isLoading: authLoading, login } = useAuth();
-    const [orders, setOrders] = useState<Order[]>([]);
-    const [fetchLoading, setFetchLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const customerId = user?.profile.sub;
 
-    const loading = authLoading || fetchLoading;
+    const { data: orders = [], isPending, isError, error, refetch, isFetching } = useQuery({
+        queryKey: customerId ? queryKeys.orders.list(customerId) : ['orders', 'list', 'anonymous'],
+        queryFn: ({ signal }) => orderService.getOrders(customerId as string, signal),
+        enabled: Boolean(customerId),
+    });
 
-    useEffect(() => {
-        if (authLoading || !user) return;
-        const customerId = user.profile.sub;
-        const fetchOrders = async () => {
-            setFetchLoading(true);
-            try {
-                const data = await orderService.getOrders(customerId);
-                setOrders(data);
-                setError(null);
-            } catch (err) {
-                console.error('Failed to fetch orders:', err);
-                setError('Failed to load orders. Please try again later.');
-            } finally {
-                setFetchLoading(false);
-            }
-        };
-        fetchOrders();
-    }, [user, authLoading]);
-
-    if (loading) {
+    if (authLoading) {
         return (
-            <div className="container mx-auto px-6 py-32 text-center text-gray-400">
-                Loading orders...
+            <div className="container mx-auto px-6 py-12 min-h-[70vh] space-y-6">
+                <ListRowSkeleton />
+                <ListRowSkeleton />
             </div>
         );
     }
@@ -61,38 +48,45 @@ const OrdersPage = () => {
     if (!user) {
         return (
             <div className="container mx-auto px-6 py-32 text-center">
-                <ShoppingBag size={64} className="mx-auto text-gray-200 mb-6" />
+                <ShoppingBag size={64} className="mx-auto text-gray-200 mb-6" aria-hidden="true" />
                 <h1 className="text-2xl font-serif font-bold text-gray-900 mb-3">Sign in to view your orders</h1>
                 <p className="text-gray-500 mb-8">Please sign in to access your order history.</p>
                 <button
+                    type="button"
                     onClick={login}
                     className="inline-flex items-center gap-2 h-10 justify-center rounded-md bg-primary px-8 text-sm font-medium text-white shadow transition-colors hover:bg-gray-900"
                 >
-                    <LogIn size={16} /> Sign In
+                    <LogIn size={16} aria-hidden="true" /> Sign In
                 </button>
             </div>
         );
     }
 
     return (
-        <div className="container mx-auto px-6 py-12 min-h-[70vh]">
+        <div className="container mx-auto px-6 py-12 min-h-[70vh]" aria-busy={isFetching}>
             <div className="mb-8 border-b border-gray-100 pb-4">
                 <h1 className="text-3xl font-serif font-bold text-gray-900 mb-2">Your Orders</h1>
                 <p className="text-gray-500">Track, manage, and review your previous purchases.</p>
             </div>
 
-            {error && (
-                <div className="py-6 px-4 text-red-600 bg-red-50 rounded-lg mb-6 border border-red-100">{error}</div>
-            )}
-
-            {orders.length === 0 && !error ? (
-                <div className="py-20 text-center text-gray-500 bg-gray-50 rounded-lg">
-                    <ShoppingBag size={48} className="mx-auto text-gray-200 mb-4" />
-                    <p className="mb-4">You haven't placed any orders yet.</p>
-                    <Link to="/catalog" className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-white shadow transition-colors hover:bg-gray-900">
-                        Start Shopping
-                    </Link>
+            {isPending ? (
+                <div className="space-y-6">
+                    <ListRowSkeleton />
+                    <ListRowSkeleton />
+                    <ListRowSkeleton />
                 </div>
+            ) : isError ? (
+                <ErrorState error={error} onRetry={() => refetch()} title="Couldn't load your orders" />
+            ) : orders.length === 0 ? (
+                <EmptyState
+                    icon={<ShoppingBag size={48} />}
+                    title="You haven't placed any orders yet."
+                    action={
+                        <Link to="/catalog" className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-white shadow transition-colors hover:bg-gray-900">
+                            Start Shopping
+                        </Link>
+                    }
+                />
             ) : (
                 <div className="space-y-6">
                     {orders.map((order) => (
@@ -122,7 +116,7 @@ const OrdersPage = () => {
                                 <div className="space-y-4">
                                     {order.items.map((item) => (
                                         <div key={item.id} className="flex items-center gap-4">
-                                            <div className="w-16 h-16 bg-gray-100 rounded-md flex items-center justify-center text-gray-400 flex-shrink-0">
+                                            <div className="w-16 h-16 bg-gray-100 rounded-md flex items-center justify-center text-gray-400 flex-shrink-0" aria-hidden="true">
                                                 <ShoppingBag size={24} />
                                             </div>
                                             <div className="flex-1">
@@ -137,6 +131,7 @@ const OrdersPage = () => {
 
                             <div className="p-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
                                 <button
+                                    type="button"
                                     className="px-4 py-2 bg-primary text-white rounded text-sm font-medium hover:bg-gray-900 transition-colors"
                                     onClick={() => navigate(`/orders/${order.id}`)}
                                 >

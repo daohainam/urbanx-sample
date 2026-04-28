@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \"C:\\\\Users\\\\dao.nam\\\\source\\\\repos\\\\daohainam\\\\urbanx-sample\\\\urbanx-course\\\\modules\")",
+      "Bash(mkdir -p \"C:\\\\Users\\\\dao.nam\\\\source\\\\repos\\\\daohainam\\\\urbanx-sample\\\\urbanx-course\\\\briefs\")",
+      "Bash(cp /c/Users/dao.nam/.claude/skills/codebase-to-course/references/styles.css /c/Users/dao.nam/source/repos/daohainam/urbanx-sample/urbanx-course/styles.css)",
+      "Bash(cp /c/Users/dao.nam/.claude/skills/codebase-to-course/references/main.js /c/Users/dao.nam/source/repos/daohainam/urbanx-sample/urbanx-course/main.js)",
+      "Bash(cp /c/Users/dao.nam/.claude/skills/codebase-to-course/references/_footer.html /c/Users/dao.nam/source/repos/daohainam/urbanx-sample/urbanx-course/_footer.html)",
+      "Bash(cp /c/Users/dao.nam/.claude/skills/codebase-to-course/references/build.sh /c/Users/dao.nam/source/repos/daohainam/urbanx-sample/urbanx-course/build.sh)"
+    ]
+  }
+}
